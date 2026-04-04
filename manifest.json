@@ -1,0 +1,27 @@
+{
+  "name": "Divine Pixels",
+  "short_name": "DivinePix",
+  "description": "Photographer Event Management App",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0b0d",
+  "theme_color": "#f5c842",
+  "orientation": "portrait",
+  "lang": "te",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["photography", "business", "productivity"]
+}

@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<html lang="te" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DivinePix">
+<meta name="application-name" content="Divine Pixels">
+<meta name="theme-color" content="#0b0b0d">
+<meta name="description" content="Photographer Event Management App">
+<title>📷 Divine Pixels</title>
+<!-- PWA Manifest -->
+<link rel="manifest" href="/manifest.json">
+<!-- Apple touch icons -->
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
+<link rel="icon" type="image/png" href="/icon-192.png">
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+/* ══ THEME ══ */
+[data-theme="dark"]{--bg:#0b0b0d;--surf:#161618;--card:#1c1c20;--bdr:#28282e;--text:#f0ede8;--muted:#666;--sh:rgba(0,0,0,.5);--tb:#0a0a0c;}
+[data-theme="light"]{--bg:#f0efe9;--surf:#fff;--card:#faf9f6;--bdr:#e4e0d6;--text:#1a1a1a;--muted:#888;--sh:rgba(0,0,0,.07);--tb:#fff;}
+:root{--acc:#f5c842;--own:#22c55e;--sup:#ef4444;--sky:#38bdf8;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+
+/* ══ LOGIN ══ */
+.lscr{position:fixed;inset:0;background:var(--bg);z-index:900;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+.lscr .logo{font-size:3rem;margin-bottom:4px;}
+.lscr h1{font-family:'Playfair Display',serif;font-size:1.8rem;background:linear-gradient(135deg,#f5c842,#ff9a3c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:2px;}
+.lscr p{color:var(--muted);font-size:.78rem;margin-bottom:18px;text-align:center;}
+.lcard{background:var(--card);border:1px solid var(--bdr);border-radius:20px;padding:20px;width:100%;max-width:370px;}
+.ltabs{display:flex;background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:3px;margin-bottom:14px;gap:2px;}
+.ltb{flex:1;padding:7px;border:none;background:transparent;color:var(--muted);font-size:.78rem;font-weight:600;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.ltb.on{background:var(--acc);color:#000;}
+.lf{margin-bottom:9px;}
+.lf label{display:block;font-size:.65rem;font-weight:700;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em;}
+.lf input{width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:8px;padding:9px 11px;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;transition:border .2s;}
+.lf input:focus{border-color:var(--acc);}
+.lf-photo{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:8px 11px;cursor:pointer;}
+.lf-photo-prev{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#f5c842,#ff9a3c);display:flex;align-items:center;justify-content:center;font-size:1rem;overflow:hidden;flex-shrink:0;}
+.lf-photo-prev img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.lbtn{width:100%;background:linear-gradient(135deg,#f5c842,#ff9a3c);color:#000;border:none;padding:11px;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;margin-top:6px;font-family:'DM Sans',sans-serif;}
+.lerr{color:var(--sup);font-size:.73rem;margin-top:6px;text-align:center;min-height:14px;}
+
+/* ══ APP SHELL ══ */
+#app{display:none;}
+
+/* ══ COVER ══ */
+.cover{position:relative;width:100%;height:185px;overflow:hidden;}
+.cover-img{width:100%;height:100%;object-fit:cover;display:block;}
+.cover-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.15),rgba(0,0,0,.7));}
+.cover-top{position:absolute;top:10px;left:12px;right:10px;display:flex;align-items:center;justify-content:space-between;}
+.cover-user{display:flex;align-items:center;gap:7px;cursor:pointer;}
+.cover-av{width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.6);overflow:hidden;background:linear-gradient(135deg,#f5c842,#ff9a3c);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#000;}
+.cover-av img{width:100%;height:100%;object-fit:cover;}
+.cover-uname{color:#fff;font-size:.78rem;font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,.5);}
+.cover-actions{display:flex;gap:5px;}
+.cov-btn{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.25);color:#fff;padding:4px 8px;border-radius:6px;font-size:.62rem;cursor:pointer;}
+.cover-bottom{position:absolute;bottom:0;left:0;right:0;padding:12px 16px;}
+.cover-studio{font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:900;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.5);line-height:1.1;}
+.cover-stats{display:flex;gap:12px;margin-top:4px;}
+.cv-stat{font-size:.66rem;color:rgba(255,255,255,.85);display:flex;align-items:center;gap:3px;}
+.cv-stat strong{color:#fff;}
+.nbadge{background:#ef4444;color:#fff;border-radius:50%;width:15px;height:15px;font-size:.5rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-left:3px;vertical-align:middle;}
+
+/* ══ TABS ══ */
+.main-tabs{display:flex;background:var(--tb);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:50;}
+.mt{flex:1;padding:9px 3px;border:none;background:transparent;color:var(--muted);font-size:.66rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:2px;border-bottom:2px solid transparent;}
+.mt.on{color:var(--acc);border-bottom-color:var(--acc);}
+.mt span{font-size:.88rem;}
+
+/* ══ PAGES ══ */
+.page{display:none;padding:12px 13px 90px;}
+.page.on{display:block;}
+
+/* ══ COMMON CARDS ══ */
+.sec-hd{font-family:'Playfair Display',serif;font-size:.95rem;margin-bottom:9px;display:flex;align-items:center;justify-content:space-between;}
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:13px;padding:13px;margin-bottom:9px;}
+.card-title{font-family:'Playfair Display',serif;font-size:.88rem;color:var(--acc);margin-bottom:11px;}
+
+/* ══ CLIENT FORM BANNER ══ */
+.cf-banner{background:linear-gradient(135deg,rgba(56,189,248,.12),rgba(56,189,248,.04));border:1px solid rgba(56,189,248,.35);border-radius:14px;padding:13px 14px;margin-bottom:12px;display:flex;align-items:center;gap:11px;cursor:pointer;}
+.cf-banner-icon{font-size:1.8rem;flex-shrink:0;}
+.cf-banner-body{flex:1;min-width:0;}
+.cf-banner-title{font-weight:700;font-size:.9rem;margin-bottom:2px;}
+.cf-banner-sub{font-size:.72rem;color:var(--muted);}
+.cf-banner-arr{color:var(--sky);font-size:1.2rem;flex-shrink:0;}
+
+/* ══ EVENT LIST ITEMS ══ */
+.ev-item{display:flex;gap:9px;padding:9px;background:var(--card);border:1px solid var(--bdr);border-radius:11px;margin-bottom:7px;cursor:pointer;transition:transform .15s;}
+.ev-item:active{transform:scale(.99);}
+.ev-dc{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:36px;background:var(--surf);border-radius:7px;padding:4px 3px;flex-shrink:0;}
+.ev-num{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;line-height:1;}
+.ev-day{font-size:.52rem;color:var(--muted);text-transform:uppercase;}
+.ev-mon{font-size:.52rem;color:var(--acc);font-weight:600;margin-top:1px;}
+.ev-stripe{width:3px;border-radius:2px;flex-shrink:0;align-self:stretch;}
+.ev-body{flex:1;min-width:0;}
+.ev-name{font-weight:600;font-size:.84rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ev-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px;}
+.tag{font-size:.6rem;padding:1px 5px;border-radius:4px;background:var(--bdr);color:var(--muted);}
+.ev-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.badge{font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:10px;}
+.own-b{background:rgba(34,197,94,.15);color:var(--own);}
+.sup-b{background:rgba(239,68,68,.15);color:var(--sup);}
+.sky-b{background:rgba(56,189,248,.15);color:var(--sky);}
+.act-row{display:flex;gap:3px;}
+.act-btn{background:none;border:1px solid var(--bdr);border-radius:4px;padding:2px 6px;cursor:pointer;font-size:.62rem;}
+
+/* ══ FORM ══ */
+.fg{margin-bottom:10px;}
+.fg label{display:block;font-size:.63rem;font-weight:700;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em;}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none;transition:border .2s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--acc);}
+.fg select option{background:var(--surf);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.tog2{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.togbtn{background:var(--surf);border:2px solid var(--bdr);color:var(--muted);padding:7px;border-radius:7px;cursor:pointer;font-size:.75rem;font-weight:600;text-align:center;transition:all .17s;}
+.togbtn.oa{border-color:var(--own);color:var(--own);background:rgba(34,197,94,.09);}
+.togbtn.sa{border-color:var(--sup);color:var(--sup);background:rgba(239,68,68,.09);}
+.togbtn.ac{border-color:var(--acc);color:#000;background:var(--acc);}
+.catg{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px;}
+.catb{background:var(--surf);border:2px solid var(--bdr);color:var(--muted);padding:6px 3px;border-radius:7px;cursor:pointer;font-size:.62rem;font-weight:600;text-align:center;line-height:1.4;transition:all .17s;}
+.catb.on{border-color:var(--acc);color:var(--acc);background:rgba(245,200,66,.09);}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px;}
+.chip-lbl{display:flex;align-items:center;gap:4px;background:var(--surf);border:1px solid var(--bdr);border-radius:6px;padding:5px 9px;cursor:pointer;font-size:.74rem;transition:all .15s;}
+.chip-lbl:has(input:checked){border-color:var(--acc);color:var(--acc);background:rgba(245,200,66,.07);}
+.chip-lbl input{accent-color:var(--acc);display:none;}
+.chip-lbl:has(input:checked)::before{content:'✓ ';font-weight:700;}
+/* sub-events */
+.sub-item{background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:9px;margin-bottom:6px;}
+.sub-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+.sub-name{font-size:.8rem;font-weight:600;color:var(--acc);}
+.xbtn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;padding:0;}
+/* action buttons */
+.act-btns{display:flex;gap:7px;flex-wrap:wrap;}
+.abtn{flex:1;min-width:70px;padding:10px 6px;border-radius:10px;font-size:.75rem;font-weight:700;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:4px;}
+.abtn-save{background:linear-gradient(135deg,#f5c842,#ff9a3c);color:#000;}
+.abtn-wa{background:#25D366;color:#fff;}
+.abtn-pdf{background:var(--surf);border:1px solid var(--bdr);color:var(--text);}
+.abtn-del{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:var(--sup);}
+.abtn-link{background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.3);color:var(--sky);}
+/* sheet row */
+.sheet-row{display:flex;gap:6px;margin-bottom:6px;align-items:center;}
+.sheet-sel{background:var(--card);border:1px solid var(--bdr);color:var(--text);border-radius:6px;padding:5px 7px;font-size:.75rem;font-family:'DM Sans',sans-serif;outline:none;flex:1;}
+.sheet-inp{width:70px;background:var(--card);border:1px solid var(--bdr);color:var(--text);border-radius:6px;padding:5px 7px;font-size:.75rem;font-family:'DM Sans',sans-serif;outline:none;}
+.add-row-btn{width:100%;border:1px dashed var(--bdr);background:none;color:var(--muted);border-radius:7px;padding:6px;cursor:pointer;font-size:.72rem;margin-top:2px;font-family:'DM Sans',sans-serif;}
+
+/* ══ DETAIL VIEW ══ */
+.det-hd{background:linear-gradient(135deg,rgba(245,200,66,.13),rgba(255,154,60,.06));border:1px solid rgba(245,200,66,.25);border-radius:14px;padding:14px;margin-bottom:10px;}
+.det-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;}
+.det-sec{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:12px;margin-bottom:8px;}
+.det-sec-t{font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;font-weight:700;}
+.det-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:.78rem;}
+.det-row:last-child{border-bottom:none;}
+.det-row strong{color:var(--acc);text-align:right;flex:1;margin-left:10px;}
+.stl-item{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;}
+.stl-dot{width:9px;height:9px;border-radius:50%;background:var(--sky);flex-shrink:0;margin-top:4px;}
+
+/* ══ CLIENT FORM MODAL ══ */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;align-items:flex-end;justify-content:center;padding:8px;}
+.modal-bg.on{display:flex;}
+.modal-sheet{background:var(--card);border:1px solid var(--bdr);border-radius:22px 22px 14px 14px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;padding:18px;animation:slideUp .25s ease;position:relative;}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-close{position:absolute;top:12px;right:12px;background:var(--bdr);border:none;color:var(--text);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;}
+.modal-title{font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:14px;padding-right:30px;}
+
+/* ══ REQUEST REVIEW MODAL ══ */
+.req-card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:12px;margin-bottom:8px;}
+.req-card.new{border-color:rgba(245,200,66,.4);background:rgba(245,200,66,.03);}
+.req-status{font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:10px;display:inline-block;margin-bottom:6px;}
+.req-new{background:rgba(245,200,66,.2);color:var(--acc);}
+.req-done{background:rgba(34,197,94,.2);color:var(--own);}
+.req-title{font-weight:700;font-size:.88rem;margin-bottom:3px;}
+.req-meta{font-size:.7rem;color:var(--muted);margin-bottom:8px;line-height:1.6;}
+.req-btns{display:flex;gap:6px;}
+.req-btn{flex:1;padding:8px;border-radius:8px;font-size:.74rem;font-weight:700;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;}
+.rbt-view{background:var(--surf);border:1px solid var(--bdr);color:var(--text);}
+.rbt-ok{background:var(--own);color:#fff;}
+
+/* ══ CALENDAR ══ */
+.cal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.cal-title{font-family:'Playfair Display',serif;font-size:.95rem;}
+.cal-nav{display:flex;gap:5px;}
+.cal-nb{background:var(--surf);border:1px solid var(--bdr);color:var(--text);width:26px;height:26px;border-radius:50%;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.cbox{background:var(--card);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;margin-bottom:10px;}
+.ch{display:grid;grid-template-columns:repeat(7,1fr);background:var(--surf);border-bottom:1px solid var(--bdr);}
+.ch span{text-align:center;padding:5px 1px;font-size:.56rem;font-weight:700;color:var(--muted);text-transform:uppercase;}
+.cg{display:grid;grid-template-columns:repeat(7,1fr);}
+.cc{border-right:1px solid var(--bdr);border-bottom:1px solid var(--bdr);min-height:42px;padding:3px 2px 2px;cursor:pointer;}
+.cc:nth-child(7n){border-right:none;}
+.cc.emp{cursor:default;background:rgba(0,0,0,.04);}
+.cc.tod .dn{background:var(--acc);color:#000;font-weight:700;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;}
+.dn{font-size:.66rem;font-weight:500;width:18px;height:18px;display:flex;align-items:center;justify-content:center;margin-bottom:1px;}
+.ed{border-radius:2px;padding:1px 2px;font-size:.44rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;margin-bottom:1px;}
+.ed.own{background:rgba(34,197,94,.18);color:var(--own);border-left:2px solid var(--own);}
+.ed.sup{background:rgba(239,68,68,.18);color:var(--sup);border-left:2px solid var(--sup);}
+.ed.sky{background:rgba(56,189,248,.18);color:var(--sky);border-left:2px solid var(--sky);}
+.lgnd{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+.li{display:flex;align-items:center;gap:3px;font-size:.62rem;color:var(--muted);}
+.ld{width:7px;height:7px;border-radius:2px;}
+.neb{background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(255,154,60,.06));border:1px solid rgba(245,200,66,.28);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;cursor:pointer;}
+
+/* ══ REPORTS ══ */
+.rsec{background:var(--card);border:1px solid var(--bdr);border-radius:13px;padding:12px;margin-bottom:9px;}
+.rtit{font-family:'Playfair Display',serif;font-size:.88rem;margin-bottom:9px;}
+.frow{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px;}
+.fchip{background:var(--surf);border:1px solid var(--bdr);color:var(--muted);padding:4px 9px;border-radius:20px;font-size:.68rem;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.fchip.on{background:var(--acc);color:#000;border-color:var(--acc);}
+.drrow{display:flex;gap:5px;margin-bottom:7px;}
+.drrow input{flex:1;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:5px 8px;font-size:.72rem;font-family:'DM Sans',sans-serif;outline:none;}
+.rrow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:.76rem;}
+.rrow:last-child{border-bottom:none;}
+.rval{font-weight:700;color:var(--acc);}
+.rbi{margin-bottom:6px;}
+.rbl{display:flex;justify-content:space-between;font-size:.66rem;margin-bottom:2px;}
+.rb{height:5px;background:var(--bdr);border-radius:3px;overflow:hidden;}
+.rbf{height:100%;background:linear-gradient(90deg,#f5c842,#ff9a3c);border-radius:3px;}
+
+/* ══ PROFILE MODAL ══ */
+.pmo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:700;align-items:flex-end;justify-content:center;padding:8px;}
+.pmo.on{display:flex;}
+.psheet{background:var(--card);border:1px solid var(--bdr);border-radius:22px 22px 14px 14px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;padding:18px;animation:slideUp .25s ease;position:relative;}
+.pf-av{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#f5c842,#ff9a3c);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#000;overflow:hidden;margin:0 auto 12px;cursor:pointer;}
+.pf-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.eq-grid{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px;}
+.eqc{display:flex;align-items:center;gap:3px;background:var(--surf);border:1px solid var(--bdr);border-radius:5px;padding:3px 7px;cursor:pointer;font-size:.7rem;}
+.eqc:has(input:checked){border-color:var(--acc);color:var(--acc);}
+.eqc input{display:none;}
+.pf-actions{display:flex;flex-direction:column;gap:7px;margin-top:14px;padding-top:12px;border-top:1px solid var(--bdr);}
+
+/* ══ TOAST & FAB ══ */
+.toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--acc);color:var(--text);padding:8px 16px;border-radius:10px;font-size:.78rem;z-index:999;display:none;white-space:nowrap;box-shadow:0 4px 16px var(--sh);}
+.toast.on{display:block;}
+.fab{position:fixed;bottom:20px;right:18px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#f5c842,#ff9a3c);border:none;color:#000;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 18px rgba(245,200,66,.45);z-index:100;display:none;align-items:center;justify-content:center;}
+.theme-tog{position:fixed;bottom:80px;right:18px;background:var(--card);border:1px solid var(--bdr);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;z-index:99;}
+input[type=file]{display:none;}
+
+/* ══ LINK BOX ══ */
+.link-box{background:var(--surf);border:1px solid rgba(56,189,248,.3);border-radius:9px;padding:9px 11px;margin-top:8px;}
+.link-url{font-size:.68rem;color:var(--sky);word-break:break-all;margin-bottom:6px;}
+.link-btns{display:flex;gap:6px;}
+.link-btn{padding:5px 10px;border-radius:6px;font-size:.7rem;font-weight:700;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;}
+
+/* ══ CLIENT FORM PAGE ══ */
+.cf-page{min-height:100vh;background:var(--bg);padding:0;font-family:'DM Sans',sans-serif;}
+.cf-hero{background:linear-gradient(135deg,#0b0b0d,#1c1c20);padding:24px 20px 20px;text-align:center;border-bottom:1px solid var(--bdr);}
+.cf-body{padding:16px;max-width:500px;margin:0 auto;}
+.cf-sec{background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:14px;margin-bottom:12px;}
+.cf-sec h3{font-family:'Playfair Display',serif;font-size:.95rem;color:var(--acc);margin-bottom:12px;}
+.cf-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px;}
+.cf-type-card{border:2px solid var(--bdr);border-radius:12px;padding:14px;cursor:pointer;text-align:center;transition:all .2s;background:var(--surf);}
+.cf-type-card.on{border-color:var(--acc);background:rgba(245,200,66,.07);}
+.cf-type-card .icon{font-size:1.8rem;margin-bottom:6px;}
+.cf-type-card .lbl{font-weight:700;font-size:.88rem;margin-bottom:2px;}
+.cf-type-card .sub{font-size:.68rem;color:var(--muted);}
+.cf-ev-item{background:var(--surf);border:1px solid var(--bdr);border-radius:9px;padding:10px;margin-bottom:7px;}
+.cf-ev-head{display:flex;align-items:center;margin-bottom:8px;}
+.cf-ev-chk{margin-right:8px;accent-color:var(--acc);width:16px;height:16px;cursor:pointer;}
+.cf-ev-lbl{font-size:.84rem;font-weight:600;flex:1;}
+.cf-ev-body{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding-top:4px;}
+.cf-submit{width:100%;background:linear-gradient(135deg,#f5c842,#ff9a3c);color:#000;border:none;padding:15px;border-radius:13px;font-weight:700;font-size:1rem;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:4px;}
+.cf-success{text-align:center;padding:40px 20px;}
+
+/* ══ REVIEW FORM (photographer edits client data) ══ */
+.review-banner{background:linear-gradient(135deg,rgba(245,200,66,.15),rgba(255,154,60,.08));border:1px solid rgba(245,200,66,.4);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.review-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;color:var(--acc);font-weight:700;}
+.review-note{font-size:.78rem;color:var(--text);margin-top:2px;}
+</style>
+</head>
+<body>
+
+<!-- ══════════ LOGIN SCREEN ══════════ -->
+<div class="lscr" id="lscr">
+  <div class="logo">📷</div>
+  <h1>Divine Pixels</h1>
+  <p>Photographer Event Management</p>
+  <div class="lcard">
+    <div class="ltabs">
+      <button class="ltb on" onclick="swL('in')" id="lt1">Login</button>
+      <button class="ltb" onclick="swL('reg')" id="lt2">Register</button>
+    </div>
+    <div id="lf-in">
+      <div class="lf"><label>Phone Number</label><input type="tel" id="lph" placeholder="9876543210" maxlength="10"></div>
+      <div class="lf"><label>Password</label><input type="password" id="lpw" placeholder="••••••"></div>
+      <button class="lbtn" onclick="doLogin()">Login →</button>
+      <div class="lerr" id="le"></div>
+    </div>
+    <div id="lf-reg" style="display:none">
+      <div class="lf"><label>మీ పేరు *</label><input type="text" id="rn" placeholder="పేరు రాయండి..."></div>
+      <div class="lf"><label>Studio పేరు *</label><input type="text" id="rs" placeholder="Studio పేరు..."></div>
+      <div class="lf"><label>గ్రామం / నగరం</label><input type="text" id="rvil" placeholder="మీ ఊరు..."></div>
+      <div class="lf"><label>Phone Number *</label><input type="tel" id="rph" placeholder="9876543210" maxlength="10"></div>
+      <div class="lf"><label>Profile Photo (optional)</label>
+        <div class="lf-photo" onclick="document.getElementById('regPhInp').click()">
+          <div class="lf-photo-prev" id="regPhPrev">📷</div>
+          <span style="font-size:.78rem;color:var(--muted)">Photo select చేయండి</span>
+        </div>
+        <input type="file" id="regPhInp" accept="image/*" onchange="prevRegPh(this)">
+      </div>
+      <div class="lf"><label>Password * (6-10 chars, letters+numbers)</label><input type="password" id="rpw" placeholder="e.g. abc123" maxlength="10"></div>
+      <div class="lf"><label>Confirm Password *</label><input type="password" id="rpw2" placeholder="మళ్ళీ రాయండి" maxlength="10"></div>
+      <button class="lbtn" onclick="doReg()">Register →</button>
+      <div class="lerr" id="re"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MAIN APP ══════════ -->
+<div id="app">
+  <!-- COVER -->
+  <div class="cover">
+    <img class="cover-img" id="coverImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200'%3E%3Crect fill='%23111' width='400' height='200'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23f5c842' font-size='50' opacity='.25'%3E📷%3C/text%3E%3C/svg%3E" alt="">
+    <div class="cover-overlay"></div>
+    <div class="cover-top">
+      <div class="cover-user" onclick="openProf()">
+        <div class="cover-av" id="covAv">📷</div>
+        <div class="cover-uname" id="covUname">Profile</div>
+      </div>
+      <div class="cover-actions">
+        <button class="cov-btn" onclick="swPage('reqs')" id="notifBtn">🔔 <span id="notifTxt"></span></button>
+        <button class="cov-btn" onclick="document.getElementById('coverInp').click()">📷</button>
+        <input type="file" id="coverInp" accept="image/*" onchange="changeCover(this)">
+      </div>
+    </div>
+    <div class="cover-bottom">
+      <div class="cover-studio" id="covStudio">Studio Name</div>
+      <div class="cover-stats">
+        <div class="cv-stat">✅ Free: <strong id="csFree">0</strong></div>
+        <div class="cv-stat">📅 Busy: <strong id="csBusy">0</strong></div>
+        <div class="cv-stat">🔜 Soon: <strong id="csUp">0</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN TABS -->
+  <div class="main-tabs">
+    <button class="mt on" onclick="swPage('sched')" id="mt1"><span>📅</span>Schedule</button>
+    <button class="mt" onclick="swPage('myev')" id="mt2"><span>📋</span>Events</button>
+    <button class="mt" onclick="swPage('reqs')" id="mt3"><span>🔔</span>Requests<span id="mtNBadge"></span></button>
+    <button class="mt" onclick="swPage('rep')" id="mt4"><span>📊</span>Reports</button>
+  </div>
+
+  <!-- ══ SCHEDULE ══ -->
+  <div class="page on" id="pg-sched">
+    <div id="nebDiv"></div>
+    <div class="cal-hd">
+      <div class="cal-title" id="calTitle"></div>
+      <div class="cal-nav">
+        <button class="cal-nb" onclick="chM(-1)">‹</button>
+        <button class="cal-nb" onclick="chM(1)">›</button>
+      </div>
+    </div>
+    <div class="cbox">
+      <div class="ch"><span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span></div>
+      <div class="cg" id="cg"></div>
+    </div>
+    <div class="lgnd">
+      <div class="li"><div class="ld" style="background:var(--own)"></div>Own</div>
+      <div class="li"><div class="ld" style="background:var(--sup)"></div>Support</div>
+      <div class="li"><div class="ld" style="background:var(--sky)"></div>Sub</div>
+    </div>
+    <div class="sec-hd"><span>🔜 Upcoming Events</span><span id="upBadge" style="background:var(--acc);color:#000;font-size:.63rem;font-weight:700;padding:2px 8px;border-radius:10px;">0</span></div>
+    <div id="upList"></div>
+  </div>
+
+  <!-- ══ MY EVENTS ══ -->
+  <div class="page" id="pg-myev">
+
+    <!-- LIST VIEW -->
+    <div id="evListView">
+      <!-- Client Application Form Banner -->
+      <div class="cf-banner" onclick="openClientFormGen()">
+        <div class="cf-banner-icon">📋</div>
+        <div class="cf-banner-body">
+          <div class="cf-banner-title">Client Application Form</div>
+          <div class="cf-banner-sub">మీకు ఏమి కావాలో select చేసి వివరాలు పెట్టండి అని client కి link పంపండి</div>
+        </div>
+        <div class="cf-banner-arr">›</div>
+      </div>
+
+      <!-- Events heading -->
+      <div class="sec-hd">
+        <span style="font-family:'Playfair Display',serif">📋 నా Events</span>
+        <button onclick="showAddForm(null)" style="background:var(--acc);color:#000;border:none;padding:6px 12px;border-radius:8px;font-size:.75rem;font-weight:700;cursor:pointer">+ కొత్తది</button>
+      </div>
+      <div id="myEvCards"></div>
+    </div>
+
+    <!-- ADD/EDIT FORM VIEW -->
+    <div id="evFormView" style="display:none">
+      <button onclick="showListView()" style="background:none;border:none;color:var(--acc);font-size:.8rem;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;gap:4px">‹ వెనక్కి</button>
+      <div id="evFormContent"></div>
+    </div>
+
+    <!-- DETAIL VIEW -->
+    <div id="evDetailView" style="display:none">
+      <div id="evDetailContent"></div>
+    </div>
+  </div>
+
+  <!-- ══ REQUESTS ══ -->
+  <div class="page" id="pg-reqs">
+    <div class="sec-hd" style="font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:12px">🔔 Client Requests</div>
+    <div id="reqsList"><div style="text-align:center;padding:24px;color:var(--muted);font-size:.82rem">📭 Requests లేవు</div></div>
+  </div>
+
+  <!-- ══ REPORTS ══ -->
+  <div class="page" id="pg-rep">
+    <div class="rsec">
+      <div class="rtit">🔽 Filters</div>
+      <div class="frow">
+        <button class="fchip on" onclick="togF('t','all',this)">All</button>
+        <button class="fchip" onclick="togF('t','own',this)">🟢 Own</button>
+        <button class="fchip" onclick="togF('t','support',this)">🔴 Support</button>
+      </div>
+      <div class="frow">
+        <button class="fchip on" onclick="togF('c','all',this)">All</button>
+        <button class="fchip" onclick="togF('c','birthday',this)">🎂 Birthday</button>
+        <button class="fchip" onclick="togF('c','wedding',this)">💍 Wedding</button>
+        <button class="fchip" onclick="togF('c','halfsaree',this)">👗 Half Saree</button>
+        <button class="fchip" onclick="togF('c','outdoor',this)">🌿 Outdoor</button>
+      </div>
+      <div class="drrow">
+        <input type="date" id="dfr" onchange="renRep()">
+        <input type="date" id="dto" onchange="renRep()">
+      </div>
+      <div class="frow">
+        <button class="fchip" onclick="qkR('tm',this)">ఈ నెల</button>
+        <button class="fchip" onclick="qkR('lm',this)">గత నెల</button>
+        <button class="fchip" onclick="qkR('ty',this)">ఈ సంవత్సరం</button>
+        <button class="fchip" onclick="qkR('all',this)">అన్నీ</button>
+      </div>
+    </div>
+    <div id="repOut"></div>
+  </div>
+</div>
+
+<!-- ══ PROFILE MODAL ══ -->
+<div class="pmo" id="pmo">
+  <div class="psheet">
+    <button class="modal-close" onclick="closeProf()">✕</button>
+    <div class="modal-title">👤 Profile</div>
+    <div class="pf-av" id="pfAv" onclick="document.getElementById('phInp').click()">📷</div>
+    <input type="file" id="phInp" accept="image/*" onchange="handlePhoto(this)">
+    <div class="lf"><label>పేరు</label><input type="text" id="pfN"></div>
+    <div class="lf"><label>Studio పేరు</label><input type="text" id="pfS"></div>
+    <div class="lf"><label>Phone</label><input type="tel" id="pfPh" readonly style="opacity:.5"></div>
+    <div class="lf"><label>గ్రామం</label><input type="text" id="pfV"></div>
+    <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px;font-weight:700">📷 Cameras</div>
+    <div class="eq-grid" id="pfCams"></div>
+    <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px;font-weight:700">🔭 Lenses</div>
+    <div class="eq-grid" id="pfLens"></div>
+    <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px;font-weight:700">🚁 Extras</div>
+    <div class="eq-grid" id="pfExtras"></div>
+    <div class="pf-actions">
+      <button style="background:linear-gradient(135deg,#f5c842,#ff9a3c);color:#000;border:none;padding:10px;border-radius:9px;font-weight:700;font-size:.88rem;cursor:pointer;font-family:'DM Sans',sans-serif;" onclick="saveProf()">💾 Save</button>
+      <button style="background:var(--surf);border:1px solid var(--bdr);color:var(--muted);padding:8px;border-radius:9px;font-size:.82rem;cursor:pointer;font-family:'DM Sans',sans-serif;" onclick="doLogout()">🚪 Logout</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ REQUEST REVIEW MODAL ══ -->
+<div class="modal-bg" id="rrMo">
+  <div class="modal-sheet">
+    <button class="modal-close" onclick="closeRR()">✕</button>
+    <div class="modal-title">📋 Client Request Review</div>
+    <div id="rrContent"></div>
+  </div>
+</div>
+
+<!-- ══ CLIENT LINK MODAL ══ -->
+<div class="modal-bg" id="clMo">
+  <div class="modal-sheet">
+    <button class="modal-close" onclick="document.getElementById('clMo').classList.remove('on')">✕</button>
+    <div class="modal-title">🔗 Client Application Link</div>
+    <div id="clContent"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<button class="fab" id="fab" onclick="swPage('myev');showAddForm(null)">+</button>
+<button class="theme-tog" id="themeTog" onclick="togTheme()">🌙</button>
+
+<script>
+// ════════════════════════════════════
+// SERVICE WORKER REGISTRATION (PWA / APK-like install)
+// ════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then(reg => {
+      console.log('SW registered:', reg.scope);
+    }).catch(err => console.log('SW error:', err));
+  });
+}
+
+// ════════════════════════════════════
+// PWA INSTALL PROMPT
+// ════════════════════════════════════
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  // Show install banner after 3 seconds if not installed
+  setTimeout(() => showInstallBanner(), 3000);
+});
+function showInstallBanner() {
+  if (!deferredInstallPrompt) return;
+  if (localStorage.getItem('dpInstalled')) return;
+  const banner = document.createElement('div');
+  banner.id = 'installBanner';
+  banner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f5c842,#ff9a3c);color:#000;padding:12px 18px;border-radius:12px;font-size:.82rem;font-weight:700;z-index:9999;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(245,200,66,.5);cursor:pointer;font-family:"DM Sans",sans-serif;white-space:nowrap;max-width:90vw';
+  banner.innerHTML = '<span style="font-size:1.2rem">📱</span><span>App Install చేయండి!</span><button onclick="doInstall()" style="background:#000;color:#f5c842;border:none;padding:5px 12px;border-radius:7px;font-weight:700;cursor:pointer;font-family:inherit;font-size:.78rem">Install</button><button onclick="this.parentElement.remove()" style="background:none;border:none;font-size:1rem;cursor:pointer;color:#000;margin-left:2px">✕</button>';
+  document.body.appendChild(banner);
+}
+async function doInstall() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  const { outcome } = await deferredInstallPrompt.userChoice;
+  if (outcome === 'accepted') {
+    localStorage.setItem('dpInstalled', '1');
+    const b = document.getElementById('installBanner');
+    if (b) b.remove();
+    toast('✅ App installed! Home screen లో icon వస్తుంది.');
+  }
+  deferredInstallPrompt = null;
+}
+window.addEventListener('appinstalled', () => {
+  localStorage.setItem('dpInstalled', '1');
+  toast('✅ Divine Pixels installed!');
+});
+
+// ════════════════════════════════════
+// FIREBASE CONFIG  (divinepixels.dvn@gmail.com)
+// NOTE: Replace with your actual Firebase config from console.firebase.google.com
+// Project: divine-pixels-app | Plan: Spark (Free)
+// ════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyAJjl_BWVvjupbbvPBgc_62Ss2bfDnjvng",
+  authDomain: "event-planer-6b03b.firebaseapp.com",
+  projectId: "event-planer-6b03b",
+  storageBucket: "event-planer-6b03b.firebasestorage.app",
+  messagingSenderId: "319299069469",
+  appId: "1:319299069469:web:7ab0776ee8923dd68748f4"
+};
+// Firebase offline fallback — works without config too (localStorage mode)
+let db = null;
+let fbOk = false;
+try {
+  firebase.initializeApp(fbCfg);
+  db = firebase.firestore();
+  db.enablePersistence().catch(()=>{});
+  fbOk = true;
+} catch(e) { fbOk = false; }
+
+// ══ Cloud helpers ══
+async function dbSet(col, id, data) {
+  if (fbOk) { try { await db.collection(col).doc(id).set(data, {merge:true}); return; } catch(e){} }
+  const store = JSON.parse(localStorage.getItem('dp_'+col)||'{}');
+  store[id] = data; localStorage.setItem('dp_'+col, JSON.stringify(store));
+}
+async function dbGet(col, id) {
+  if (fbOk) { try { const d = await db.collection(col).doc(id).get(); return d.exists ? d.data() : null; } catch(e){} }
+  const store = JSON.parse(localStorage.getItem('dp_'+col)||'{}');
+  return store[id] || null;
+}
+async function dbGetAll(col) {
+  if (fbOk) { try { const s = await db.collection(col).get(); return s.docs.map(d=>({...d.data(),_id:d.id})); } catch(e){} }
+  const store = JSON.parse(localStorage.getItem('dp_'+col)||'{}');
+  return Object.entries(store).map(([k,v])=>({...v,_id:k}));
+}
+async function dbDelete(col, id) {
+  if (fbOk) { try { await db.collection(col).doc(id).delete(); return; } catch(e){} }
+  const store = JSON.parse(localStorage.getItem('dp_'+col)||'{}');
+  delete store[id]; localStorage.setItem('dp_'+col, JSON.stringify(store));
+}
+function dbListen(col, filter, cb) {
+  if (fbOk) {
+    try {
+      let q = db.collection(col);
+      if (filter) q = q.where(filter[0], filter[1], filter[2]);
+      return q.onSnapshot(snap => cb(snap.docs.map(d=>({...d.data(),_id:d.id}))));
+    } catch(e) {}
+  }
+  return null;
+}
+
+// ════════════════════════════════════
+// CONSTANTS
+// ════════════════════════════════════
+const MN=['జనవరి','ఫిబ్రవరి','మార్చి','ఏప్రిల్','మే','జూన్','జులై','ఆగస్టు','సెప్టెంబర్','అక్టోబర్','నవంబర్','డిసెంబర్'];
+const SN=['Su','Mo','Tu','We','Th','Fr','Sa'];
+const CATS={birthday:'🎂 Birthday',wedding:'💍 Wedding',halfsaree:'👗 Half Saree',outdoor:'🌿 Outdoor',temple:'🛕 Temple',political:'🗳️ Political',others:'📸 Others'};
+const SUBEVS={
+  birthday:['Birthday Stills','Birthday Song','Others'],
+  wedding:['Engagement','Pasupu Paaya','Pellikoduku','Pellikuturu','Haldi','Reception','Wedding'],
+  halfsaree:['Photo Shoot','Song','Function'],
+  outdoor:['Photo/Video Shoot'],temple:['Events'],political:['Events'],others:[]
+};
+const CAMS=['Sony A7 IV','Sony A7 III','Canon R6','Canon 5D IV','Nikon Z6','Fujifilm X-T5'];
+const LENS=['24-70mm f/2.8','70-200mm f/2.8','50mm f/1.4','85mm f/1.8','16-35mm'];
+const EXTRAS=['Drone DJI Mini 3','Drone DJI Air 2S','Gimbal','Tripod'];
+const DELIVERABLES=['Photos','Videos','Pre Shoot','Save The Date Promo','Haldi Promos','Wedding Promo','Songs','Post Wedding Shoot'];
+const EXTRAS_SVC=['Flex/Banners','LED Screen','Live Streaming','Photo Booth','Instant Delivery (QR)','Entry'];
+
+// ════════════════════════════════════
+// STATE
+// ════════════════════════════════════
+let evs = JSON.parse(localStorage.getItem('ppEvs')||'[]');
+let users = JSON.parse(localStorage.getItem('ppUsers')||'[]');
+let cu = JSON.parse(localStorage.getItem('ppCu')||'null');
+let requests = JSON.parse(localStorage.getItem('ppReqs')||'[]');
+let cy, cm, sd, editEvId = null;
+let rf = {t:'all', c:'all'};
+let fSubEvs = [], fSheets = [], fReqG = {1:[],2:[],3:[]};
+const now = new Date();
+cy = now.getFullYear(); cm = now.getMonth(); sd = fmt(now);
+
+function fmt(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function saveEvs(){localStorage.setItem('ppEvs',JSON.stringify(evs)); if(cu) dbSet('events', cu.id, {evs, uid:cu.id});}
+function saveUsers(){localStorage.setItem('ppUsers',JSON.stringify(users));}
+function saveCu(){localStorage.setItem('ppCu',JSON.stringify(cu));}
+function saveReqs(){localStorage.setItem('ppReqs',JSON.stringify(requests));}
+
+// ════════════════════════════════════
+// THEME
+// ════════════════════════════════════
+function togTheme(){
+  const h=document.documentElement, cur=h.getAttribute('data-theme');
+  h.setAttribute('data-theme',cur==='dark'?'light':'dark');
+  document.getElementById('themeTog').textContent=cur==='dark'?'🌞':'🌙';
+  localStorage.setItem('ppTheme',cur==='dark'?'light':'dark');
+}
+(function(){
+  const t=localStorage.getItem('ppTheme')||'dark';
+  document.documentElement.setAttribute('data-theme',t);
+  const b=document.getElementById('themeTog'); if(b) b.textContent=t==='dark'?'🌙':'🌞';
+})();
+
+// ════════════════════════════════════
+// REGISTER PHOTO
+// ════════════════════════════════════
+let regPhData='';
+function prevRegPh(inp){
+  const f=inp.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>{regPhData=e.target.result; document.getElementById('regPhPrev').innerHTML=`<img src="${regPhData}">`;}; r.readAsDataURL(f);
+}
+
+// ════════════════════════════════════
+// LOGIN / REGISTER
+// ════════════════════════════════════
+function swL(t){
+  document.getElementById('lf-in').style.display=t==='in'?'block':'none';
+  document.getElementById('lf-reg').style.display=t==='reg'?'block':'none';
+  document.getElementById('lt1').className='ltb'+(t==='in'?' on':'');
+  document.getElementById('lt2').className='ltb'+(t==='reg'?' on':'');
+}
+function doLogin(){
+  const ph=document.getElementById('lph').value.trim();
+  const pw=document.getElementById('lpw').value;
+  if(!ph||!pw){setErr('le','❌ Phone & Password ఇవ్వండి');return;}
+  const u=users.find(x=>x.ph===ph&&x.pw===pw);
+  if(!u){setErr('le','❌ Phone లేదా Password తప్పు');return;}
+  cu=u; saveCu(); launchApp();
+}
+function doReg(){
+  const n=document.getElementById('rn').value.trim();
+  const s=document.getElementById('rs').value.trim();
+  const vil=document.getElementById('rvil').value.trim();
+  const ph=document.getElementById('rph').value.trim();
+  const pw=document.getElementById('rpw').value;
+  const pw2=document.getElementById('rpw2').value;
+  if(!n){setErr('re','❌ పేరు తప్పనిసరి');return;}
+  if(!s){setErr('re','❌ Studio పేరు తప్పనిసరి');return;}
+  if(ph.length!==10||!/^\d+$/.test(ph)){setErr('re','❌ Valid 10-digit phone ఇవ్వండి');return;}
+  if(users.find(x=>x.ph===ph)){setErr('re','❌ ఈ phone already registered');return;}
+  if(pw.length<6||pw.length>10){setErr('re','❌ Password 6-10 characters ఉండాలి');return;}
+  if(!/^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]+$/.test(pw)){setErr('re','❌ Password లో letters + numbers రెండూ ఉండాలి');return;}
+  if(pw!==pw2){setErr('re','❌ Passwords match కాలేదు');return;}
+  const u={id:'u'+Date.now(),name:n,studio:s,ph,pw,village:vil,photo:regPhData,cover:'',equip:{cams:[],lens:[],extras:[]}};
+  users.push(u); saveUsers(); cu=u; saveCu(); launchApp();
+}
+function setErr(id,msg){document.getElementById(id).textContent=msg;}
+function launchApp(){
+  document.getElementById('lscr').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('fab').style.display='flex';
+  updCover(); renAll(); renMyEvList(); renReqs();
+  loadCloudData();
+  // listen for new requests
+  dbListen('requests', ['uid','==',cu.id], (docs)=>{
+    requests = docs.map(d=>({...d, id:d._id}));
+    saveReqs(); renReqs(); updNotifBadge();
+  });
+  const t=new Date();
+  document.getElementById('dfr').value=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-01`;
+  document.getElementById('dto').value=fmt(new Date(t.getFullYear(),t.getMonth()+1,0));
+}
+async function loadCloudData(){
+  // Load events from cloud if available
+  try {
+    const data = await dbGet('events', cu.id);
+    if(data && data.evs && data.evs.length >= evs.length){
+      evs = data.evs; localStorage.setItem('ppEvs',JSON.stringify(evs));
+      renAll(); renMyEvList();
+    }
+  } catch(e){}
+}
+function doLogout(){if(!confirm('Logout?'))return;cu=null;localStorage.removeItem('ppCu');location.reload();}
+
+// ════════════════════════════════════
+// COVER
+// ════════════════════════════════════
+function updCover(){
+  if(!cu) return;
+  document.getElementById('covStudio').textContent=cu.studio||'My Studio';
+  document.getElementById('covUname').textContent=cu.name||'User';
+  const av=document.getElementById('covAv');
+  av.innerHTML=cu.photo?`<img src="${cu.photo}" alt="">`:(cu.name||'P').charAt(0).toUpperCase();
+  if(cu.cover) document.getElementById('coverImg').src=cu.cover;
+  const td=fmt(now), dim=new Date(cy,cm+1,0).getDate();
+  let busy=0;
+  for(let d=1;d<=dim;d++){
+    const ds=`${cy}-${String(cm+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    if(evs.some(e=>e.date===ds||e.subEvs?.some(s=>s.date===ds))) busy++;
+  }
+  document.getElementById('csFree').textContent=dim-busy;
+  document.getElementById('csBusy').textContent=busy;
+  document.getElementById('csUp').textContent=evs.filter(e=>e.date>=td).length;
+  updNotifBadge();
+}
+function updNotifBadge(){
+  const n=requests.filter(r=>r.uid===cu?.id&&!r.seen).length;
+  document.getElementById('notifTxt').textContent=n>0?`${n} New`:'';
+  document.getElementById('mtNBadge').innerHTML=n>0?`<span class="nbadge">${n}</span>`:'';
+  document.getElementById('notifBtn').style.borderColor=n>0?'rgba(239,68,68,.5)':'';
+}
+function changeCover(inp){
+  const f=inp.files[0]; if(!f) return;
+  const r=new FileReader(); r.onload=e=>{
+    cu.cover=e.target.result;
+    const ui=users.findIndex(u=>u.id===cu.id); if(ui>-1) users[ui]=cu;
+    saveUsers(); saveCu(); document.getElementById('coverImg').src=e.target.result;
+  }; r.readAsDataURL(f);
+}
+
+// ════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════
+function swPage(p){
+  ['sched','myev','reqs','rep'].forEach((x,i)=>{
+    document.getElementById('pg-'+x).className='page'+(x===p?' on':'');
+    document.getElementById('mt'+(i+1)).className='mt'+(x===p?' on':'');
+  });
+  if(p==='rep') renRep();
+  if(p==='myev') renMyEvList();
+  if(p==='reqs'){ renReqs(); markSeen(); }
+}
+
+// ════════════════════════════════════
+// CALENDAR
+// ════════════════════════════════════
+function chM(d){cm+=d;if(cm>11){cm=0;cy++;}if(cm<0){cm=11;cy--;}renAll();}
+function renAll(){updCover();renCal();renNEB();renUpcoming();}
+function renCal(){
+  document.getElementById('calTitle').textContent=`${MN[cm]} ${cy}`;
+  const g=document.getElementById('cg'); g.innerHTML='';
+  const fd=new Date(cy,cm,1).getDay(), dim=new Date(cy,cm+1,0).getDate(), ts=fmt(now);
+  for(let i=0;i<fd;i++){const c=document.createElement('div');c.className='cc emp';g.appendChild(c);}
+  for(let d=1;d<=dim;d++){
+    const ds=`${cy}-${String(cm+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const de=evs.filter(e=>e.date===ds);
+    const se=[]; evs.forEach(ev=>(ev.subEvs||[]).forEach(s=>{if(s.date===ds)se.push(s);}));
+    const cell=document.createElement('div');
+    cell.className='cc'+(ds===ts?' tod':'');
+    cell.onclick=()=>{sd=ds;renCal();};
+    const dn=document.createElement('div'); dn.className='dn'; dn.textContent=d; cell.appendChild(dn);
+    let sh=0;
+    de.slice(0,1).forEach(ev=>{if(sh<2){const dot=document.createElement('div');dot.className='ed '+(ev.type==='own'?'own':'sup');dot.textContent=ev.name.slice(0,7);cell.appendChild(dot);sh++;}});
+    se.slice(0,1).forEach(s=>{if(sh<2){const dot=document.createElement('div');dot.className='ed sky';dot.textContent=s.name.slice(0,6);cell.appendChild(dot);sh++;}});
+    if(de.length+se.length>sh){const m=document.createElement('div');m.style.cssText='font-size:.42rem;color:var(--muted);padding:1px 2px';m.textContent=`+${de.length+se.length-sh}`;cell.appendChild(m);}
+    g.appendChild(cell);
+  }
+}
+function renNEB(){
+  const td=fmt(now);
+  const all=[]; evs.forEach(ev=>{all.push({date:ev.date,name:ev.name,type:ev.type,loc:ev.location,id:ev.id});(ev.subEvs||[]).forEach(s=>{if(s.date)all.push({date:s.date,name:`${ev.name}—${s.name}`,type:'sky',id:ev.id});});});
+  const next=all.filter(e=>e.date>=td).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  const el=document.getElementById('nebDiv'); if(!next){el.innerHTML='';return;}
+  const diff=Math.round((new Date(next.date+'T00:00:00')-new Date(td+'T00:00:00'))/86400000);
+  const chip=diff===0?'⚡ ఈరోజు!':diff===1?'🔔 రేపు!':diff+' రోజులలో';
+  el.innerHTML=`<div class="neb" onclick="openEvById('${next.id}')">
+    <span style="font-size:1.5rem">${next.type==='own'?'🟢':next.type==='support'?'🔴':'🔵'}</span>
+    <div style="flex:1;min-width:0"><div style="font-size:.68rem;color:var(--muted);text-transform:uppercase">Next Event</div><div style="font-weight:700;font-size:.92rem">${next.name}</div><div style="font-size:.7rem;color:var(--muted)">${next.date}${next.loc?' · '+next.loc:''}</div></div>
+    <div style="background:var(--acc);color:#000;font-size:.63rem;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0">${chip}</div>
+  </div>`;
+}
+function renUpcoming(){
+  const td=fmt(now);
+  const all=[]; evs.forEach(ev=>{
+    all.push({date:ev.date,name:ev.name,type:ev.type,loc:ev.location,person:ev.clientName,phone:ev.clientPhone,cat:ev.cat,id:ev.id});
+    (ev.subEvs||[]).forEach(s=>{if(s.date)all.push({date:s.date,name:s.name,parent:ev.name,type:'sky',loc:s.location||ev.location,id:ev.id});});
+  });
+  const list=all.filter(e=>e.date>=td).sort((a,b)=>a.date.localeCompare(b.date));
+  document.getElementById('upBadge').textContent=list.length;
+  const ul=document.getElementById('upList');
+  if(!list.length){ul.innerHTML='<div style="text-align:center;padding:14px;color:var(--muted);font-size:.78rem">📭 రాబోయే events లేవు</div>';return;}
+  ul.innerHTML=list.map(e=>{
+    const d=new Date(e.date+'T00:00:00');
+    const diff=Math.round((d-new Date(td+'T00:00:00'))/86400000);
+    const dstr=diff===0?'⚡ ఈరోజు!':diff===1?'🔔 రేపు!':diff+' రోజులలో';
+    return`<div class="ev-item" onclick="openEvById('${e.id}')">
+      <div class="ev-dc"><div class="ev-num">${d.getDate()}</div><div class="ev-day">${SN[d.getDay()]}</div><div class="ev-mon">${MN[d.getMonth()].slice(0,3)}</div></div>
+      <div class="ev-stripe" style="background:var(--${e.type==='own'?'own':e.type==='support'?'sup':'sky'})"></div>
+      <div class="ev-body">
+        <div class="ev-name">${e.name}${e.parent?` <span style="color:var(--muted);font-size:.7rem">(${e.parent})</span>`:''}</div>
+        <div class="ev-tags">${e.cat?`<span class="tag">${CATS[e.cat]||e.cat}</span>`:''}</div>
+        ${e.person?`<div style="font-size:.68rem;color:var(--muted);margin-top:3px">👤 ${e.person}</div>`:''}
+        <div style="font-size:.6rem;font-weight:700;color:var(--acc);margin-top:3px">${dstr}</div>
+      </div>
+      <div class="ev-right">
+        <div class="badge ${e.type==='own'?'own-b':e.type==='support'?'sup-b':'sky-b'}">${e.type==='own'?'Own':e.type==='support'?'Sup':'Sub'}</div>
+        ${e.phone?`<div class="act-row"><button class="act-btn" style="color:var(--own);border-color:var(--own)" onclick="event.stopPropagation();window.location.href='tel:${e.phone}'">📞</button><button class="act-btn" style="color:#25D366;border-color:#25D366" onclick="event.stopPropagation();waOpen('${e.phone}')">💬</button></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function waOpen(p){const c=p.replace(/\D/g,'');window.open(`https://wa.me/${c.startsWith('91')?c:'91'+c}`,'_blank');}
+
+// ════════════════════════════════════
+// MY EVENTS LIST
+// ════════════════════════════════════
+function renMyEvList(){
+  const el=document.getElementById('myEvCards');
+  if(!evs.length){el.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);font-size:.82rem">📭 Events లేవు<br><small style="font-size:.7rem">పై + కొత్తది నొక్కండి</small></div>';return;}
+  el.innerHTML=[...evs].sort((a,b)=>a.date.localeCompare(b.date)).map(ev=>{
+    const d=new Date(ev.date+'T00:00:00');
+    return`<div class="ev-item" onclick="openEvById('${ev.id}')">
+      <div class="ev-dc"><div class="ev-num">${d.getDate()}</div><div class="ev-day">${SN[d.getDay()]}</div><div class="ev-mon">${MN[d.getMonth()].slice(0,3)}</div></div>
+      <div class="ev-stripe" style="background:var(--${ev.type==='own'?'own':'sup'})"></div>
+      <div class="ev-body">
+        <div class="ev-name">${ev.name}</div>
+        <div class="ev-tags"><span class="tag">${CATS[ev.cat]||ev.cat}</span>${ev.clientName?`<span class="tag">👤 ${ev.clientName}</span>`:''}</div>
+        ${ev.location?`<div style="font-size:.66rem;color:var(--muted);margin-top:2px">📍 ${ev.location}</div>`:''}
+        ${ev.budget?`<div style="font-size:.66rem;color:var(--muted);margin-top:1px">💰 ₹${ev.budget}${ev.advance?' | ₹'+ev.advance+' paid':''}</div>`:''}
+      </div>
+      <div class="ev-right">
+        <div class="badge ${ev.type==='own'?'own-b':'sup-b'}">${ev.type==='own'?'Own':'Sup'}</div>
+        <button onclick="event.stopPropagation();showAddForm('${ev.id}')" style="background:none;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;font-size:.62rem;cursor:pointer;color:var(--muted)">✏️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════
+// CLIENT FORM LINK GENERATOR
+// ════════════════════════════════════
+function openClientFormGen(){
+  const base = location.href.split('?')[0];
+  const uid = cu?.id || '';
+  // Generate a standalone client form link
+  const link = `${base}?mode=clientform&uid=${uid}`;
+  document.getElementById('clContent').innerHTML=`
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:2rem;margin-bottom:8px">📋</div>
+      <div style="font-size:.85rem;color:var(--muted);line-height:1.6">
+        ఈ link client కి పంపండి. వారు వారికి కావలసిన services select చేసి submit చేస్తారు.<br>
+        Submit అయినప్పుడు మీ దగ్గర notification వస్తుంది.
+      </div>
+    </div>
+    <div style="background:var(--surf);border:1px solid rgba(56,189,248,.3);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+      <div style="font-size:.65rem;color:var(--sky);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Client Booking Form Link</div>
+      <div style="font-size:.72rem;color:var(--text);word-break:break-all;line-height:1.5" id="cfLinkTxt">${link}</div>
+    </div>
+    <div style="display:flex;gap:7px">
+      <button onclick="copyText('${link}')" style="flex:1;background:var(--acc);color:#000;border:none;padding:11px;border-radius:9px;font-weight:700;font-size:.82rem;cursor:pointer;font-family:'DM Sans',sans-serif">📋 Copy Link</button>
+      <button onclick="waSendLink('${link}')" style="flex:1;background:#25D366;color:#fff;border:none;padding:11px;border-radius:9px;font-weight:700;font-size:.82rem;cursor:pointer;font-family:'DM Sans',sans-serif">📤 WhatsApp</button>
+    </div>
+    <div style="margin-top:10px;padding:10px;background:rgba(245,200,66,.06);border-radius:8px;font-size:.72rem;color:var(--muted)">
+      💡 ఈ link మీ app file తో పని చేస్తుంది. Client submit చేస్తే మీకు 🔔 Requests లో వస్తుంది.
+    </div>`;
+  document.getElementById('clMo').classList.add('on');
+}
+function copyText(t){
+  navigator.clipboard?.writeText(t).then(()=>toast('📋 Copied!')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('📋 Copied!');
+  });
+}
+function waSendLink(link){
+  const msg=`నమస్కారం! 🙏\n\n*${cu?.studio||'Divine Pixels'}* Photography Booking Form:\n\n👇 మీకు కావలసిన వివరాలు fill చేయండి:\n${link}\n\n📷 ${cu?.name||''}\n📞 ${cu?.ph||''}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+// ════════════════════════════════════
+// ADD / EDIT FORM
+// ════════════════════════════════════
+function showAddForm(id){
+  editEvId=id||null;
+  document.getElementById('evListView').style.display='none';
+  document.getElementById('evFormView').style.display='block';
+  document.getElementById('evDetailView').style.display='none';
+  fSubEvs=[]; fSheets=[]; fReqG={1:[],2:[],3:[]};
+  const ev=id?evs.find(e=>e.id===id):null;
+  if(ev){
+    fSubEvs=JSON.parse(JSON.stringify(ev.subEvs||[]));
+    fSheets=JSON.parse(JSON.stringify(ev.sheets||[]));
+    fReqG={1:[...(ev.reqGroup1||[])],2:[...(ev.reqGroup2||[])],3:[...(ev.reqGroup3||[])]};
+  }
+  document.getElementById('evFormContent').innerHTML=buildForm(ev);
+  setTimeout(()=>{
+    hlCat(ev?.cat||'wedding');
+    if(ev?.type==='support'){document.getElementById('bown').className='togbtn';document.getElementById('bsup').className='togbtn sa';}
+  },30);
+}
+function showListView(){
+  document.getElementById('evListView').style.display='block';
+  document.getElementById('evFormView').style.display='none';
+  document.getElementById('evDetailView').style.display='none';
+  renMyEvList();
+}
+function openEvById(id){
+  const ev=evs.find(e=>e.id===id); if(!ev) return;
+  swPage('myev');
+  setTimeout(()=>{
+    document.getElementById('evListView').style.display='none';
+    document.getElementById('evFormView').style.display='none';
+    document.getElementById('evDetailView').style.display='block';
+    document.getElementById('evDetailContent').innerHTML=buildDetail(ev);
+  },40);
+}
+
+function buildForm(ev){
+  const cats=Object.entries(CATS).map(([k,v])=>`<button type="button" class="catb" data-cat="${k}" onclick="pickCat('${k}')">${v}</button>`).join('');
+  const curCat=ev?.cat||'wedding';
+  const subOpts=(SUBEVS[curCat]||[]).map(s=>`<option>${s}</option>`).join('');
+  const delChips=DELIVERABLES.map(r=>`<label class="chip-lbl"><input type="checkbox" value="${r}" ${(ev?.reqGroup2||[]).includes(r)?'checked':''} onchange="togReq(2,'${r}',this.checked)"> ${r}</label>`).join('');
+  const extChips=EXTRAS_SVC.map(r=>`<label class="chip-lbl"><input type="checkbox" value="${r}" ${(ev?.reqGroup3||[]).includes(r)?'checked':''} onchange="togReq(3,'${r}',this.checked)"> ${r}</label>`).join('');
+  const isW=curCat==='wedding';
+  // Review banner if came from client request
+  const reviewBanner = ev?.fromRequest ? `<div class="review-banner"><span style="font-size:1.5rem">📋</span><div><div class="review-label">Client Request Review</div><div class="review-note">Client పంపిన వివరాలు ఇక్కడ ఉన్నాయి. మీరు edit చేసి Save చేయండి.</div></div></div>` : '';
+
+  return`
+  ${reviewBanner}
+  <div class="card" style="border-top:3px solid var(--acc)">
+    <div class="card-title">📋 Step 1: Event వివరాలు</div>
+    <div class="fg">
+      <label>Event రకం</label>
+      <div class="tog2">
+        <button type="button" class="togbtn oa" id="bown" onclick="setTyp('own')">🟢 Own Event</button>
+        <button type="button" class="togbtn" id="bsup" onclick="setTyp('support')">🔴 Support</button>
+      </div>
+      <input type="hidden" id="fType" value="${ev?.type||'own'}">
+    </div>
+    <div class="fg">
+      <label>Category</label>
+      <div class="catg">${cats}</div>
+      <input type="hidden" id="fCat" value="${curCat}">
+    </div>
+    <div class="g2">
+      <div class="fg"><label>${isW?'పెళ్ళికొడుకు':'Person 1'}</label><input type="text" id="fGroom" value="${ev?.groom||''}" placeholder="${isW?'పేరు...':'పేరు...'}"></div>
+      <div class="fg"><label>${isW?'పెళ్ళికూతురు':'Person 2'}</label><input type="text" id="fBride" value="${ev?.bride||''}" placeholder="${isW?'పేరు...':'పేరు...'}"></div>
+    </div>
+    <div class="g2">
+      <div class="fg"><label>${isW?'పెళ్ళికొడుకు గ్రామం':'Village 1'}</label><input type="text" id="fGVil" value="${ev?.groomVillage||''}" placeholder="గ్రామం..."></div>
+      <div class="fg"><label>${isW?'పెళ్ళికూతురు గ్రామం':'Village 2'}</label><input type="text" id="fBVil" value="${ev?.brideVillage||''}" placeholder="గ్రామం..."></div>
+    </div>
+    <div class="fg"><label>Event పేరు</label><input type="text" id="fName" value="${ev?.name||''}" placeholder="e.g. Ravi & Priya Wedding..."></div>
+    <div class="fg"><label>Client Phone</label><input type="tel" id="fPhone" value="${ev?.clientPhone||''}" placeholder="9876543210"></div>
+    <div class="g2">
+      <div class="fg"><label>Main తేదీ *</label><input type="date" id="fDate" value="${ev?.date||''}"></div>
+      <div class="fg"><label>సమయం</label><input type="time" id="fTime" value="${ev?.mainTime||''}"></div>
+    </div>
+    <div class="fg"><label>వేదిక / Location</label><input type="text" id="fLoc" value="${ev?.location||''}" placeholder="Kalyana Mandapam..."></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📅 Step 2: Sub Events</div>
+    <div style="display:flex;gap:6px;margin-bottom:8px">
+      <select id="subSel" style="flex:1;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px;font-size:.82rem;outline:none">${subOpts}<option value="__c">✏️ Custom...</option></select>
+      <button onclick="addSub()" style="background:var(--acc);color:#000;border:none;padding:7px 14px;border-radius:7px;font-weight:700;cursor:pointer;font-size:.9rem">+</button>
+    </div>
+    <div id="subList">${renSubList()}</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Step 3: Requirements</div>
+    <div style="font-size:.68rem;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase">Coverage Type</div>
+    <div class="chips" style="margin-bottom:12px">
+      ${['Candid','Regular'].map(r=>`<label class="chip-lbl"><input type="checkbox" value="${r}" ${(ev?.reqGroup1||[]).includes(r)?'checked':''} onchange="togReq(1,'${r}',this.checked)"> ${r}</label>`).join('')}
+    </div>
+    <div style="font-size:.68rem;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase">Deliverables</div>
+    <div class="chips" style="margin-bottom:12px">${delChips}</div>
+    <div style="font-size:.68rem;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase">Extra Services</div>
+    <div class="chips">${extChips}</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💰 Step 4: Budget & Deliverables</div>
+    <div class="g2">
+      <div class="fg"><label>Package Amount (₹)</label><input type="number" id="fBudget" value="${ev?.budget||''}" placeholder="50000"></div>
+      <div class="fg"><label>Advance Paid (₹)</label><input type="number" id="fAdv" value="${ev?.advance||''}" placeholder="10000"></div>
+    </div>
+    <div class="fg"><label>Deliverables Count</label></div>
+    <div id="sheetList">${fSheets.map((s,i)=>shRow(s,i)).join('')}</div>
+    <button class="add-row-btn" onclick="addSheet()">+ Add Deliverable Row</button>
+    <div class="g2" style="margin-top:10px">
+      <div class="fg"><label>Agreement Date</label><input type="date" id="fAgrDate" value="${ev?.agrDate||''}"></div>
+      <div class="fg"><label>Spoke With</label><input type="text" id="fSpoke" value="${ev?.spokeWith||''}" placeholder="పేరు..."></div>
+    </div>
+    <div class="fg"><label>Notes</label><textarea id="fNotes" rows="2" placeholder="మరిన్ని వివరాలు...">${ev?.notes||''}</textarea></div>
+  </div>
+
+  <div class="card">
+    <div class="act-btns">
+      <button class="abtn abtn-save" onclick="saveForm()">💾 Save</button>
+      <button class="abtn abtn-wa" onclick="waShareForm()">📤 WhatsApp</button>
+      <button class="abtn abtn-pdf" onclick="pdfDownload()">📄 PDF</button>
+      <button class="abtn abtn-link" onclick="genClientLink()">🔗 Client Link</button>
+    </div>
+    <div id="fLinkBox" style="display:none;margin-top:10px"></div>
+    ${ev ? `<div style="margin-top:8px"><button class="abtn abtn-del" onclick="delEv('${ev.id}')" style="width:100%">🗑️ Delete Event</button></div>` : ''}
+  </div>`;
+}
+
+// ════════════════════════════════════
+// FORM HELPERS
+// ════════════════════════════════════
+function setTyp(t){
+  document.getElementById('fType').value=t;
+  document.getElementById('bown').className='togbtn'+(t==='own'?' oa':'');
+  document.getElementById('bsup').className='togbtn'+(t==='support'?' sa':'');
+}
+function pickCat(k){
+  document.getElementById('fCat').value=k; hlCat(k);
+  const sel=document.getElementById('subSel');
+  if(sel) sel.innerHTML=(SUBEVS[k]||[]).map(s=>`<option>${s}</option>`).join('')+'<option value="__c">✏️ Custom...</option>';
+}
+function hlCat(k){document.querySelectorAll('.catb').forEach(b=>b.className='catb'+(b.dataset.cat===k?' on':''));}
+function togReq(g,v,chk){if(chk){if(!fReqG[g].includes(v))fReqG[g].push(v);}else{fReqG[g]=fReqG[g].filter(x=>x!==v);}}
+function addSub(){
+  const sel=document.getElementById('subSel'); let name=sel.value;
+  if(name==='__c') name=prompt('Sub event పేరు:');
+  if(!name) return;
+  fSubEvs.push({name,date:'',time:'',location:'',services:{photo:true,video:false,drone:false}});
+  document.getElementById('subList').innerHTML=renSubList();
+}
+function rmSub(i){fSubEvs.splice(i,1);document.getElementById('subList').innerHTML=renSubList();}
+function renSubList(){
+  if(!fSubEvs.length) return`<div style="color:var(--muted);font-size:.75rem;padding:6px 0">Sub events లేవు</div>`;
+  return fSubEvs.map((s,i)=>`
+    <div class="sub-item">
+      <div class="sub-hd"><span class="sub-name">📌 ${s.name}</span><button class="xbtn" onclick="rmSub(${i})">✕</button></div>
+      <div class="g2">
+        <div class="fg"><label>తేది</label><input type="date" value="${s.date}" onchange="fSubEvs[${i}].date=this.value"></div>
+        <div class="fg"><label>సమయం</label><input type="time" value="${s.time}" onchange="fSubEvs[${i}].time=this.value"></div>
+      </div>
+      <div class="fg"><label>స్థలం</label><input type="text" value="${s.location}" placeholder="వేదిక..." onchange="fSubEvs[${i}].location=this.value"></div>
+      <div class="chips">
+        ${['📷 Photo','🎬 Video','🚁 Drone'].map((l,si)=>{const k=['photo','video','drone'][si];return`<label class="chip-lbl" style="font-size:.72rem"><input type="checkbox" ${s.services?.[k]?'checked':''} onchange="fSubEvs[${i}].services['${k}']=this.checked"> ${l}</label>`;}).join('')}
+      </div>
+    </div>`).join('');
+}
+function shRow(s,i){
+  return`<div class="sheet-row">
+    <select class="sheet-sel" onchange="fSheets[${i}].type=this.value">
+      ${['Album Sheets','Video Hours','Songs','Reels','Promos','Others'].map(o=>`<option ${s.type===o?'selected':''}>${o}</option>`).join('')}
+    </select>
+    <input class="sheet-inp" type="number" placeholder="qty" value="${s.count||''}" onchange="fSheets[${i}].count=this.value">
+    <button onclick="fSheets.splice(${i},1);document.getElementById('sheetList').innerHTML=fSheets.map((x,j)=>shRow(x,j)).join('')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem">✕</button>
+  </div>`;
+}
+function addSheet(){
+  fSheets.push({type:'Album Sheets',count:''});
+  const i=fSheets.length-1;
+  const d=document.createElement('div'); d.innerHTML=shRow({type:'Album Sheets',count:''},i);
+  document.getElementById('sheetList').appendChild(d.firstElementChild);
+}
+function getFormData(){
+  const g=document.getElementById('fGroom')?.value.trim()||'';
+  const b=document.getElementById('fBride')?.value.trim()||'';
+  const cat=document.getElementById('fCat')?.value||'wedding';
+  const nm=document.getElementById('fName')?.value.trim()||(g&&b?`${g} & ${b}`:g||b||'Event');
+  return{
+    id:editEvId||('e'+Date.now()), uid:cu?.id||'',
+    type:document.getElementById('fType')?.value||'own',
+    groom:g, bride:b,
+    groomVillage:document.getElementById('fGVil')?.value.trim()||'',
+    brideVillage:document.getElementById('fBVil')?.value.trim()||'',
+    clientName:g||b, clientPhone:document.getElementById('fPhone')?.value.trim()||'',
+    name:nm, date:document.getElementById('fDate')?.value||'',
+    mainTime:document.getElementById('fTime')?.value||'',
+    location:document.getElementById('fLoc')?.value.trim()||'',
+    cat, subEvs:fSubEvs.filter(s=>s.name),
+    reqGroup1:fReqG[1]||[], reqGroup2:fReqG[2]||[], reqGroup3:fReqG[3]||[],
+    budget:document.getElementById('fBudget')?.value||'',
+    advance:document.getElementById('fAdv')?.value||'',
+    sheets:fSheets, agrDate:document.getElementById('fAgrDate')?.value||'',
+    spokeWith:document.getElementById('fSpoke')?.value.trim()||'',
+    notes:document.getElementById('fNotes')?.value.trim()||'',
+    created:Date.now(), updated:Date.now(),
+  };
+}
+function saveForm(){
+  const d=getFormData();
+  if(!d.date){toast('⚠️ తేదీ తప్పనిసరి!');return;}
+  if(editEvId){const i=evs.findIndex(e=>e.id===editEvId);if(i>-1)evs[i]=d;else evs.push(d);}
+  else evs.push(d);
+  saveEvs(); renAll(); showListView(); toast('✅ Event saved!');
+}
+function delEv(id){
+  if(!confirm('Delete చేయాలా?'))return;
+  evs=evs.filter(e=>e.id!==id); saveEvs(); showListView(); toast('🗑️ Deleted');
+}
+
+// ════════════════════════════════════
+// GENERATE CLIENT LINK FROM FORM
+// ════════════════════════════════════
+function genClientLink(){
+  const d=getFormData();
+  if(!d.date){toast('⚠️ ముందు date ఇవ్వండి');return;}
+  // Save event first
+  if(!editEvId){evs.push(d);editEvId=d.id;saveEvs();}
+  else{const i=evs.findIndex(e=>e.id===editEvId);if(i>-1)evs[i]=d;else evs.push(d);saveEvs();}
+  const base=location.href.split('?')[0];
+  const link=`${base}?mode=clientform&uid=${cu?.id||''}&evid=${editEvId}`;
+  const box=document.getElementById('fLinkBox');
+  box.style.display='block';
+  box.innerHTML=`<div class="link-box">
+    <div style="font-size:.63rem;color:var(--sky);text-transform:uppercase;margin-bottom:5px">Client Booking Link for this event</div>
+    <div class="link-url">${link}</div>
+    <div class="link-btns">
+      <button class="link-btn" style="background:var(--acc);color:#000" onclick="copyText('${link}')">📋 Copy</button>
+      <button class="link-btn" style="background:#25D366;color:#fff" onclick="waEvLink('${link}','${editEvId}')">📤 WhatsApp</button>
+    </div>
+  </div>`;
+  toast('🔗 Link ready!');
+}
+function waEvLink(link, evId){
+  const ev=evs.find(e=>e.id===evId)||{};
+  const ph=(ev.clientPhone||'').replace(/\D/g,'');
+  const msg=`నమస్కారం! 🙏\n\n*${cu?.studio||'Divine Pixels'}* Photography Booking Form:\n\n📋 మీ వివరాలు confirm చేయండి:\n${link}\n\n📷 ${cu?.name||''} | 📞 ${cu?.ph||''}`;
+  if(ph){window.open(`https://wa.me/${ph.startsWith('91')?ph:'91'+ph}?text=${encodeURIComponent(msg)}`,'_blank');}
+  else{window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');}
+}
+
+// ════════════════════════════════════
+// WHATSAPP SHARE FROM FORM
+// ════════════════════════════════════
+function waShareForm(){
+  const d=getFormData();
+  const subs=(d.subEvs||[]).map(s=>`  • ${s.name}: ${s.date||'--'} ${s.time||''} ${s.location||''}`).join('\n');
+  const text=`📷 *${cu?.studio||'Divine Pixels'}* - Booking Confirmation\n\n💍 *${d.name}*\n📅 Date: ${d.date}\n⏰ Time: ${d.mainTime||'--'}\n📍 Venue: ${d.location||'--'}\n${d.groomVillage?`🏠 Groom: ${d.groom} (${d.groomVillage})\n`:''}${d.brideVillage?`🏠 Bride: ${d.bride} (${d.brideVillage})\n`:''}\n${subs?`📋 Sub Events:\n${subs}\n\n`:''}💰 Package: ₹${d.budget||'--'}\n✅ Advance: ₹${d.advance||'--'}\n\n📷 *${cu?.name||''} | ${cu?.ph||''}*`;
+  const ph=(d.clientPhone||'').replace(/\D/g,'');
+  if(ph){window.open(`https://wa.me/${ph.startsWith('91')?ph:'91'+ph}?text=${encodeURIComponent(text)}`,'_blank');}
+  else{window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,'_blank');}
+}
+
+// ════════════════════════════════════
+// PDF DOWNLOAD
+// ════════════════════════════════════
+function pdfDownload(){
+  const d=getFormData();
+  const win=window.open('','_blank');
+  const subs=(d.subEvs||[]).map(s=>`<tr><td style="padding:6px 10px;border-bottom:1px solid #eee">${s.name}</td><td style="padding:6px 10px;border-bottom:1px solid #eee">${s.date||'--'} ${s.time||''}</td><td style="padding:6px 10px;border-bottom:1px solid #eee">${s.location||'--'}</td></tr>`).join('');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${d.name} - Booking</title>
+  <style>body{font-family:'Segoe UI',sans-serif;padding:30px;color:#111;max-width:700px;margin:0 auto}
+  h1{color:#f5c842;font-size:22px;margin-bottom:4px}.studio{color:#666;font-size:13px;margin-bottom:20px}
+  .sec{background:#f9f9f9;border-radius:8px;padding:14px;margin-bottom:14px}
+  .sec h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#888}
+  table{width:100%;border-collapse:collapse}td,th{padding:7px 10px;border-bottom:1px solid #eee;font-size:13px;text-align:left}
+  th{background:#f5c842;color:#000;font-weight:700}.kv{display:grid;grid-template-columns:140px 1fr;gap:4px 10px;font-size:13px}
+  .k{color:#888}.v{font-weight:600}.footer{text-align:center;font-size:11px;color:#aaa;margin-top:20px;padding-top:14px;border-top:1px solid #eee}
+  @media print{body{padding:10px}}</style></head><body>
+  <h1>📷 ${cu?.studio||'Divine Pixels'}</h1>
+  <div class="studio">${cu?.village||''} | 📞 ${cu?.ph||''}</div>
+  <div class="sec"><h3>Event Details</h3><div class="kv">
+    <span class="k">Event</span><span class="v">${d.name}</span>
+    <span class="k">Date</span><span class="v">${d.date}</span>
+    <span class="k">Time</span><span class="v">${d.mainTime||'--'}</span>
+    <span class="k">Venue</span><span class="v">${d.location||'--'}</span>
+    ${d.groom?`<span class="k">Groom</span><span class="v">${d.groom} ${d.groomVillage?'('+d.groomVillage+')':''}</span>`:''}
+    ${d.bride?`<span class="k">Bride</span><span class="v">${d.bride} ${d.brideVillage?'('+d.brideVillage+')':''}</span>`:''}
+    <span class="k">Client Phone</span><span class="v">${d.clientPhone||'--'}</span>
+    <span class="k">Type</span><span class="v">${d.type==='own'?'Own Event':'Support'}</span>
+  </div></div>
+  ${subs?`<div class="sec"><h3>Sub Events</h3><table><tr><th>Event</th><th>Date & Time</th><th>Venue</th></tr>${subs}</table></div>`:''}
+  ${d.reqGroup1.length||d.reqGroup2.length||d.reqGroup3.length?`<div class="sec"><h3>Requirements</h3><div class="kv">
+    ${d.reqGroup1.length?`<span class="k">Coverage</span><span class="v">${d.reqGroup1.join(', ')}</span>`:''}
+    ${d.reqGroup2.length?`<span class="k">Deliverables</span><span class="v">${d.reqGroup2.join(', ')}</span>`:''}
+    ${d.reqGroup3.length?`<span class="k">Extra Services</span><span class="v">${d.reqGroup3.join(', ')}</span>`:''}
+  </div></div>`:''}
+  <div class="sec"><h3>Budget</h3><div class="kv">
+    <span class="k">Package Amount</span><span class="v">₹${d.budget||'--'}</span>
+    <span class="k">Advance Paid</span><span class="v">₹${d.advance||'--'}</span>
+    <span class="k">Balance Pending</span><span class="v">₹${d.budget&&d.advance?(parseInt(d.budget)-parseInt(d.advance)).toLocaleString():'--'}</span>
+    ${d.sheets?.length?`<span class="k">Deliverables</span><span class="v">${d.sheets.map(s=>s.type+': '+s.count).join(' | ')}</span>`:''}
+  </div></div>
+  ${d.notes?`<div class="sec"><h3>Notes</h3><p style="font-size:13px;margin:0">${d.notes}</p></div>`:''}
+  <div style="background:#f5c842;border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:#000">
+    <strong>Terms:</strong> 1. కొత్తం అమాసం ఉంటే ఒక్కరోజు ముందు చెప్పాలి. 2. Pre/Post Shoot అద్దె, tickets, భోజనాలు మీరు భరించాలి. 3. Extra requirements కి అదనపు amount ఉంటుంది. 4. Wedding తర్వాత 3 నెలల లో selection, 1 సంవత్సరం లో delivery.
+  </div>
+  <div class="footer">${cu?.studio||'Divine Pixels'} | Generated on ${new Date().toLocaleDateString('te-IN')}</div>
+  <script>window.print();<\/script></body></html>`);
+  win.document.close();
+}
+
+// ════════════════════════════════════
+// DETAIL VIEW
+// ════════════════════════════════════
+function buildDetail(ev){
+  const stl=(ev.subEvs||[]).map(s=>{
+    const sv=Object.entries(s.services||{}).filter(([,v])=>v).map(([k])=>({photo:'📷',video:'🎬',drone:'🚁'}[k]||k)).join(' ');
+    return`<div class="stl-item"><div class="stl-dot"></div><div><div style="font-size:.82rem;font-weight:600">${s.name} ${sv}</div><div style="font-size:.7rem;color:var(--muted)">${s.date||'--'}${s.time?' · '+s.time:''}${s.location?' · '+s.location:''}</div></div></div>`;
+  }).join('')||'<div style="color:var(--muted);font-size:.78rem">Sub events లేవు</div>';
+  const bal=ev.budget&&ev.advance?`₹${(parseInt(ev.budget)-parseInt(ev.advance)).toLocaleString()}`:'--';
+  const reqCards=requests.filter(r=>r.evId===ev.id);
+  const base=location.href.split('?')[0];
+  const link=`${base}?mode=clientform&uid=${cu?.id||''}&evid=${ev.id}`;
+  return`
+  <button onclick="showListView()" style="background:none;border:none;color:var(--acc);font-size:.8rem;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;gap:4px">‹ వెనక్కి</button>
+  <div class="det-hd">
+    <div class="det-title">${ev.name}</div>
+    <div style="font-size:.7rem;color:var(--muted);margin-top:2px">${cu?.studio||''} · ${cu?.ph||''}</div>
+    <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap">
+      <span class="tag">${CATS[ev.cat]||ev.cat}</span>
+      <span class="badge ${ev.type==='own'?'own-b':'sup-b'}">${ev.type==='own'?'🟢 Own':'🔴 Support'}</span>
+    </div>
+  </div>
+  <div class="det-sec">
+    <div class="det-sec-t">📋 వివరాలు</div>
+    ${ev.groom?`<div class="det-row"><span>పెళ్ళికొడుకు</span><strong>${ev.groom}${ev.groomVillage?' ('+ev.groomVillage+')':''}</strong></div>`:''}
+    ${ev.bride?`<div class="det-row"><span>పెళ్ళికూతురు</span><strong>${ev.bride}${ev.brideVillage?' ('+ev.brideVillage+')':''}</strong></div>`:''}
+    <div class="det-row"><span>తేదీ</span><strong>${ev.date}</strong></div>
+    ${ev.mainTime?`<div class="det-row"><span>సమయం</span><strong>${ev.mainTime}</strong></div>`:''}
+    ${ev.location?`<div class="det-row"><span>వేదిక</span><strong>${ev.location}</strong></div>`:''}
+    ${ev.clientPhone?`<div class="det-row"><span>Phone</span><strong>${ev.clientPhone}</strong></div>`:''}
+  </div>
+  <div class="det-sec">
+    <div class="det-sec-t">📅 Sub Events</div>
+    <div>${stl}</div>
+  </div>
+  ${ev.reqGroup1?.length||ev.reqGroup2?.length||ev.reqGroup3?.length?`<div class="det-sec">
+    <div class="det-sec-t">📋 Requirements</div>
+    ${ev.reqGroup1?.length?`<div class="det-row"><span>Coverage</span><strong>${ev.reqGroup1.join(', ')}</strong></div>`:''}
+    ${ev.reqGroup2?.length?`<div class="det-row"><span>Deliverables</span><strong>${ev.reqGroup2.join(', ')}</strong></div>`:''}
+    ${ev.reqGroup3?.length?`<div class="det-row"><span>Extra Services</span><strong>${ev.reqGroup3.join(', ')}</strong></div>`:''}
+  </div>`:''}
+  <div class="det-sec">
+    <div class="det-sec-t">💰 Budget</div>
+    <div class="det-row"><span>Package</span><strong>₹${ev.budget||'--'}</strong></div>
+    <div class="det-row"><span>Advance</span><strong>₹${ev.advance||'--'}</strong></div>
+    <div class="det-row"><span>Balance</span><strong>${bal}</strong></div>
+    ${ev.sheets?.length?`<div class="det-row"><span>Deliverables</span><strong>${ev.sheets.map(s=>s.type+': '+s.count).join(' | ')}</strong></div>`:''}
+  </div>
+  ${reqCards.length?`<div class="det-sec">
+    <div class="det-sec-t">📩 Client Submissions (${reqCards.length})</div>
+    ${reqCards.map(r=>`<div style="background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:8px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font-size:.8rem;font-weight:600">${r.data?.groomName||'--'} & ${r.data?.brideName||'--'}</div><div style="font-size:.68rem;color:var(--muted)">${r.submittedAt||''} · ${r.status==='accepted'?'✅ Accepted':'⏳ Pending'}</div></div>
+      <button onclick="openRR('${r.id}')" style="background:var(--acc);color:#000;border:none;padding:4px 10px;border-radius:6px;font-size:.7rem;cursor:pointer">View</button>
+    </div>`).join('')}
+  </div>`:''}
+  <div class="act-btns" style="flex-wrap:wrap;gap:7px">
+    <button class="abtn abtn-save" onclick="showAddForm('${ev.id}')">✏️ Edit</button>
+    <button class="abtn abtn-wa" onclick="waDetShare('${ev.id}')">📤 WhatsApp</button>
+    <button class="abtn abtn-pdf" onclick="pdfDownloadDet('${ev.id}')">📄 PDF</button>
+    <button class="abtn abtn-link" onclick="copyDetLink('${ev.id}')">🔗 Client Link</button>
+    <button class="abtn abtn-del" onclick="delEv('${ev.id}')">🗑️ Delete</button>
+  </div>
+  <div class="link-box" style="margin-top:10px">
+    <div style="font-size:.63rem;color:var(--sky);margin-bottom:5px;text-transform:uppercase">Client Booking Link</div>
+    <div style="font-size:.68rem;color:var(--text);word-break:break-all;margin-bottom:6px">${link}</div>
+    <div style="display:flex;gap:6px">
+      <button onclick="copyText('${link}')" style="background:var(--acc);color:#000;border:none;padding:5px 10px;border-radius:6px;font-size:.7rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">📋 Copy</button>
+      <button onclick="waEvLink('${link}','${ev.id}')" style="background:#25D366;color:#fff;border:none;padding:5px 10px;border-radius:6px;font-size:.7rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">📤 WhatsApp</button>
+    </div>
+  </div>`;
+}
+function copyDetLink(evId){
+  const base=location.href.split('?')[0];
+  const link=`${base}?mode=clientform&uid=${cu?.id||''}&evid=${evId}`;
+  copyText(link);
+}
+function waDetShare(id){
+  const ev=evs.find(e=>e.id===id); if(!ev) return;
+  const text=`📷 *${cu?.studio||'Divine Pixels'}*\n💍 *${ev.name}*\n📅 ${ev.date}\n📍 ${ev.location||'--'}\n💰 ₹${ev.budget||'--'} | Advance: ₹${ev.advance||'--'}\n📞 ${cu?.ph||''}`;
+  const ph=(ev.clientPhone||'').replace(/\D/g,'');
+  if(ph){window.open(`https://wa.me/${ph.startsWith('91')?ph:'91'+ph}?text=${encodeURIComponent(text)}`,'_blank');}
+}
+function pdfDownloadDet(id){
+  const ev=evs.find(e=>e.id===id); if(!ev) return;
+  editEvId=id; fSubEvs=ev.subEvs||[]; fSheets=ev.sheets||[];
+  fReqG={1:ev.reqGroup1||[],2:ev.reqGroup2||[],3:ev.reqGroup3||[]};
+  pdfDownload();
+}
+
+// ════════════════════════════════════
+// REQUESTS
+// ════════════════════════════════════
+function renReqs(){
+  const myR=requests.filter(r=>r.uid===cu?.id);
+  const el=document.getElementById('reqsList');
+  if(!myR.length){el.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);font-size:.82rem">📭 Client requests లేవు</div>';return;}
+  el.innerHTML=[...myR].sort((a,b)=>b.createdAt-a.createdAt).map(r=>{
+    const ev=evs.find(e=>e.id===r.evId);
+    return`<div class="req-card ${r.seen?'':'new'}">
+      <div class="req-status ${r.status==='accepted'?'req-done':'req-new'}">${r.status==='accepted'?'✅ Accepted':'🆕 New'}</div>
+      <div class="req-title">${r.data?.groomName||'--'} & ${r.data?.brideName||'--'}</div>
+      <div class="req-meta">📅 ${r.data?.weddingDate||'--'} · 📍 ${r.data?.weddingVenue||'--'}<br>📷 ${r.data?.photoType||'--'} · 💰 ₹${r.data?.budget||'--'}<br>🕐 ${r.submittedAt||''}</div>
+      <div class="req-btns">
+        <button class="req-btn rbt-view" onclick="openRR('${r.id}')">👁️ వివరాలు</button>
+        ${r.status!=='accepted'?`<button class="req-btn rbt-ok" onclick="openRR('${r.id}')">✅ Review & Accept</button>`:'<span style="font-size:.75rem;color:var(--own)">✅ Event లో add అయింది</span>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+function markSeen(){
+  requests.filter(r=>r.uid===cu?.id).forEach(r=>r.seen=true);
+  saveReqs(); updNotifBadge();
+}
+function openRR(rid){
+  const r=requests.find(x=>x.id===rid); if(!r) return;
+  const d=r.data||{};
+  const ev=evs.find(e=>e.id===r.evId)||{};
+  // Build the review+edit form
+  document.getElementById('rrContent').innerHTML=`
+    <div class="review-banner"><span style="font-size:1.5rem">📋</span><div><div class="review-label">Client Request — Review & Edit</div><div class="review-note">వివరాలు చూసి అవసరమైతే edit చేసి "Accept & Save" నొక్కండి.</div></div></div>
+    <div class="card">
+      <div class="card-title">👤 Client వివరాలు</div>
+      <div class="fg"><label>పెళ్ళికొడుకు పేరు</label><input type="text" id="rr_groom" value="${d.groomName||''}"></div>
+      <div class="fg"><label>పెళ్ళికొడుకు గ్రామం</label><input type="text" id="rr_gvil" value="${d.groomVillage||''}"></div>
+      <div class="fg"><label>పెళ్ళికూతురు పేరు</label><input type="text" id="rr_bride" value="${d.brideName||''}"></div>
+      <div class="fg"><label>పెళ్ళికూతురు గ్రామం</label><input type="text" id="rr_bvil" value="${d.brideVillage||''}"></div>
+      <div class="fg"><label>Phone</label><input type="tel" id="rr_phone" value="${d.clientPhone||''}"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">💍 Wedding వివరాలు</div>
+      <div class="g2">
+        <div class="fg"><label>Wedding Date</label><input type="date" id="rr_wdate" value="${d.weddingDate||''}"></div>
+        <div class="fg"><label>సమయం</label><input type="time" id="rr_wtime" value="${d.weddingTime||''}"></div>
+      </div>
+      <div class="fg"><label>వేదిక</label><input type="text" id="rr_wvenue" value="${d.weddingVenue||''}"></div>
+      <div class="fg"><label>Photography Type</label>
+        <select id="rr_ptype" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none">
+          <option ${d.photoType==='Regular'?'selected':''}>Regular</option>
+          <option ${d.photoType==='Candid'?'selected':''}>Candid</option>
+        </select>
+      </div>
+    </div>
+    ${d.groomEvents?.length?`<div class="card"><div class="card-title">🤵 పెళ్ళికొడుకు Events</div>${d.groomEvents.map((e,i)=>`<div class="g2" style="margin-bottom:8px"><div class="fg"><label>${e.name}</label><input type="date" id="rr_gev_date_${i}" value="${e.date||''}"></div><div class="fg"><label>సమయం</label><input type="time" id="rr_gev_time_${i}" value="${e.time||''}"></div></div>`).join('')}</div>`:''}
+    ${d.brideEvents?.length?`<div class="card"><div class="card-title">👰 పెళ్ళికూతురు Events</div>${d.brideEvents.map((e,i)=>`<div class="g2" style="margin-bottom:8px"><div class="fg"><label>${e.name}</label><input type="date" id="rr_bev_date_${i}" value="${e.date||''}"></div><div class="fg"><label>సమయం</label><input type="time" id="rr_bev_time_${i}" value="${e.time||''}"></div></div>`).join('')}</div>`:''}
+    ${d.reception?.date||true?`<div class="card"><div class="card-title">🎉 Reception</div><div class="g2"><div class="fg"><label>Date</label><input type="date" id="rr_rdate" value="${d.reception?.date||''}"></div><div class="fg"><label>సమయం</label><input type="time" id="rr_rtime" value="${d.reception?.time||''}"></div></div><div class="fg"><label>వేదిక</label><input type="text" id="rr_rvenue" value="${d.reception?.venue||''}"></div></div>`:''}
+    <div class="card">
+      <div class="card-title">💰 Budget</div>
+      <div class="g2">
+        <div class="fg"><label>Budget (₹)</label><input type="number" id="rr_budget" value="${d.budget||''}"></div>
+        <div class="fg"><label>Album Sheets</label><input type="number" id="rr_sheets" value="${d.sheets||''}"></div>
+      </div>
+      <div class="fg"><label>Video Hours</label><input type="number" id="rr_vhrs" value="${d.videoHours||''}"></div>
+    </div>
+    ${d.notes?`<div class="card"><div class="card-title">📝 Client Notes</div><div style="font-size:.82rem;color:var(--text);line-height:1.6">${d.notes}</div></div>`:''}
+    <div style="display:flex;gap:7px;margin-top:4px">
+      <button class="abtn abtn-save" style="flex:2" onclick="acceptRR('${rid}')">✅ Accept & Save to Events</button>
+      ${d.clientPhone?`<button class="abtn abtn-wa" onclick="waOpen('${d.clientPhone}')">📤 WA</button>`:''}
+    </div>`;
+  document.getElementById('rrMo').classList.add('on');
+}
+function closeRR(){document.getElementById('rrMo').classList.remove('on');}
+
+async function acceptRR(rid){
+  const r=requests.find(x=>x.id===rid); if(!r) return;
+  const d=r.data||{};
+  const gn=document.getElementById('rr_groom')?.value.trim()||d.groomName||'';
+  const bn=document.getElementById('rr_bride')?.value.trim()||d.brideName||'';
+  const gv=document.getElementById('rr_gvil')?.value.trim()||d.groomVillage||'';
+  const bv=document.getElementById('rr_bvil')?.value.trim()||d.brideVillage||'';
+  const ph=document.getElementById('rr_phone')?.value.trim()||d.clientPhone||'';
+  const wd=document.getElementById('rr_wdate')?.value||d.weddingDate||'';
+  const wt=document.getElementById('rr_wtime')?.value||d.weddingTime||'';
+  const wv=document.getElementById('rr_wvenue')?.value.trim()||d.weddingVenue||'';
+  const pt=document.getElementById('rr_ptype')?.value||d.photoType||'Regular';
+  const bg=document.getElementById('rr_budget')?.value||d.budget||'';
+  const sh=document.getElementById('rr_sheets')?.value||d.sheets||'';
+  const vh=document.getElementById('rr_vhrs')?.value||d.videoHours||'';
+  const rd=document.getElementById('rr_rdate')?.value||d.reception?.date||'';
+  const rt=document.getElementById('rr_rtime')?.value||d.reception?.time||'';
+  const rv=document.getElementById('rr_rvenue')?.value.trim()||d.reception?.venue||'';
+  // Build sub events
+  const subs=[];
+  (d.groomEvents||[]).forEach((e,i)=>{subs.push({name:`Groom - ${e.name}`,date:document.getElementById(`rr_gev_date_${i}`)?.value||e.date||'',time:document.getElementById(`rr_gev_time_${i}`)?.value||e.time||'',location:'',services:{photo:true,video:true,drone:false}});});
+  (d.brideEvents||[]).forEach((e,i)=>{subs.push({name:`Bride - ${e.name}`,date:document.getElementById(`rr_bev_date_${i}`)?.value||e.date||'',time:document.getElementById(`rr_bev_time_${i}`)?.value||e.time||'',location:'',services:{photo:true,video:true,drone:false}});});
+  if(rd) subs.push({name:'Reception',date:rd,time:rt,location:rv,services:{photo:true,video:true,drone:false}});
+  const evData={
+    id:r.evId||('e'+Date.now()), uid:cu?.id||'',
+    type:'own', cat:'wedding',
+    groom:gn, bride:bn, groomVillage:gv, brideVillage:bv,
+    clientName:gn||bn, clientPhone:ph,
+    name:`${gn} & ${bn} Wedding`,
+    date:wd, mainTime:wt, location:wv,
+    reqGroup1:[pt], reqGroup2:d.deliverables||[], reqGroup3:d.extras||[],
+    budget:bg,
+    sheets:[{type:'Album Sheets',count:sh},{type:'Video Hours',count:vh}].filter(s=>s.count),
+    subEvs:subs, notes:d.notes||'', agrDate:'', spokeWith:'',
+    fromRequest:true, created:Date.now(), updated:Date.now(),
+  };
+  // Add or update event
+  const idx=evs.findIndex(e=>e.id===evData.id);
+  if(idx>-1) evs[idx]=evData; else evs.push(evData);
+  r.status='accepted'; r.seen=true;
+  // Update request data with edited values
+  r.data={...r.data,groomName:gn,brideName:bn,groomVillage:gv,brideVillage:bv,clientPhone:ph,weddingDate:wd,weddingTime:wt,weddingVenue:wv,photoType:pt,budget:bg,sheets:sh,videoHours:vh,reception:{date:rd,time:rt,venue:rv}};
+  saveEvs(); saveReqs();
+  // Save to cloud so client link updates too
+  await dbSet('eventDetails', evData.id, {...evData, studioName:cu?.studio||'', photographerPhone:cu?.ph||''});
+  await dbSet('requests', rid, r);
+  renAll(); renMyEvList(); renReqs(); closeRR(); toast('✅ Event saved!');
+  // WhatsApp confirmation to client
+  if(ph){
+    const ph2=ph.replace(/\D/g,'');
+    const msg=`నమస్కారం! 🙏\n\n*${cu?.studio||'Divine Pixels'}* వారు మీ booking confirm చేశారు! ✅\n\n💍 *${gn} & ${bn}*\n📅 ${wd}\n📍 ${wv}\n📷 ${pt}\n🖼️ Sheets: ${sh}\n\n📷 *${cu?.name||''}*\n📞 ${cu?.ph||''}\n\nThank you! 🙏`;
+    setTimeout(()=>{if(confirm('Client కి WhatsApp confirmation పంపాలా?'))window.open(`https://wa.me/${ph2.startsWith('91')?ph2:'91'+ph2}?text=${encodeURIComponent(msg)}`,'_blank');},400);
+  }
+}
+
+// ════════════════════════════════════
+// REPORTS
+// ════════════════════════════════════
+function togF(k,v,el){rf[k]=v;el.closest('.frow').querySelectorAll('.fchip').forEach(b=>b.classList.remove('on'));el.classList.add('on');renRep();}
+function qkR(r,el){
+  el.closest('.frow').querySelectorAll('.fchip').forEach(b=>b.classList.remove('on'));el.classList.add('on');
+  const t=new Date();
+  if(r==='tm'){document.getElementById('dfr').value=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-01`;document.getElementById('dto').value=fmt(new Date(t.getFullYear(),t.getMonth()+1,0));}
+  else if(r==='lm'){document.getElementById('dfr').value=fmt(new Date(t.getFullYear(),t.getMonth()-1,1));document.getElementById('dto').value=fmt(new Date(t.getFullYear(),t.getMonth(),0));}
+  else if(r==='ty'){document.getElementById('dfr').value=`${t.getFullYear()}-01-01`;document.getElementById('dto').value=`${t.getFullYear()}-12-31`;}
+  else{document.getElementById('dfr').value='';document.getElementById('dto').value='';}
+  renRep();
+}
+function renRep(){
+  let fe=[...evs];
+  if(rf.t!=='all')fe=fe.filter(x=>x.type===rf.t);
+  if(rf.c!=='all')fe=fe.filter(x=>x.cat===rf.c);
+  const fr=document.getElementById('dfr').value,to=document.getElementById('dto').value;
+  if(fr)fe=fe.filter(x=>x.date>=fr);if(to)fe=fe.filter(x=>x.date<=to);
+  fe.sort((a,b)=>a.date.localeCompare(b.date));
+  const oc=fe.filter(e=>e.type==='own').length,sc=fe.filter(e=>e.type==='support').length;
+  const tB=fe.reduce((s,e)=>s+(parseInt(e.budget)||0),0);
+  const tA=fe.reduce((s,e)=>s+(parseInt(e.advance)||0),0);
+  const cc={};fe.forEach(e=>{cc[e.cat]=(cc[e.cat]||0)+1;});
+  const mx=Math.max(...Object.values(cc),1);
+  document.getElementById('repOut').innerHTML=`
+  <div class="rsec"><div class="rtit">📊 Summary</div>
+    <div class="rrow"><span>Total Events</span><span class="rval">${fe.length}</span></div>
+    <div class="rrow"><span>Own</span><span class="rval" style="color:var(--own)">${oc}</span></div>
+    <div class="rrow"><span>Support</span><span class="rval" style="color:var(--sup)">${sc}</span></div>
+    <div class="rrow"><span>Total Budget</span><span class="rval">₹${tB.toLocaleString()}</span></div>
+    <div class="rrow"><span>Total Advance</span><span class="rval">₹${tA.toLocaleString()}</span></div>
+    <div class="rrow"><span>Balance Pending</span><span class="rval" style="color:var(--sup)">₹${(tB-tA).toLocaleString()}</span></div>
+  </div>
+  <div class="rsec"><div class="rtit">📂 Category</div>
+    ${Object.entries(cc).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`<div class="rbi"><div class="rbl"><span>${CATS[c]||c}</span><span class="rval">${n}</span></div><div class="rb"><div class="rbf" style="width:${(n/mx*100).toFixed(1)}%"></div></div></div>`).join('')||'<div style="color:var(--muted);font-size:.78rem">Data లేదు</div>'}
+  </div>
+  <div class="rsec"><div class="rtit">📋 Events జాబితా</div>
+    ${fe.map(e=>`<div class="rrow" onclick="openEvById('${e.id}')" style="cursor:pointer"><div><div style="font-weight:600;font-size:.78rem">${e.name}</div><div style="color:var(--muted);font-size:.63rem">${e.date} · ${e.clientName||''}</div></div><div style="text-align:right"><div class="badge ${e.type==='own'?'own-b':'sup-b'}" style="font-size:.56rem">${e.type==='own'?'Own':'Sup'}</div>${e.budget?`<div style="font-size:.63rem;color:var(--acc)">₹${parseInt(e.budget).toLocaleString()}</div>`:''}</div></div>`).join('')||'<div style="color:var(--muted);font-size:.78rem;padding:8px 0">Data లేదు</div>'}
+  </div>`;
+}
+
+// ════════════════════════════════════
+// PROFILE
+// ════════════════════════════════════
+function openProf(){
+  if(!cu)return;
+  document.getElementById('pfN').value=cu.name||'';
+  document.getElementById('pfS').value=cu.studio||'';
+  document.getElementById('pfPh').value=cu.ph||'';
+  document.getElementById('pfV').value=cu.village||'';
+  const pav=document.getElementById('pfAv');
+  pav.innerHTML=cu.photo?`<img src="${cu.photo}" alt="">`:(cu.name||'P').charAt(0).toUpperCase();
+  const mk=(id,items,sel)=>{document.getElementById(id).innerHTML=items.map(x=>`<label class="eqc"><input type="checkbox" ${sel?.includes(x)?'checked':''} value="${x}"> ${x}</label>`).join('');};
+  mk('pfCams',CAMS,cu.equip?.cams); mk('pfLens',LENS,cu.equip?.lens); mk('pfExtras',EXTRAS,cu.equip?.extras);
+  document.getElementById('pmo').classList.add('on');
+}
+function closeProf(){document.getElementById('pmo').classList.remove('on');}
+function handlePhoto(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{cu.photo=e.target.result;document.getElementById('pfAv').innerHTML=`<img src="${cu.photo}" alt="">`;};r.readAsDataURL(f);}
+function saveProf(){
+  cu.name=document.getElementById('pfN').value.trim()||cu.name;
+  cu.studio=document.getElementById('pfS').value.trim()||cu.studio;
+  cu.village=document.getElementById('pfV').value.trim();
+  cu.equip={cams:Array.from(document.querySelectorAll('#pfCams input:checked')).map(x=>x.value),lens:Array.from(document.querySelectorAll('#pfLens input:checked')).map(x=>x.value),extras:Array.from(document.querySelectorAll('#pfExtras input:checked')).map(x=>x.value)};
+  const ui=users.findIndex(u=>u.id===cu.id); if(ui>-1) users[ui]=cu;
+  saveUsers(); saveCu(); closeProf(); updCover(); toast('✅ Profile saved!');
+}
+
+// ════════════════════════════════════
+// TOAST
+// ════════════════════════════════════
+function toast(msg,d=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),d);}
+
+// ════════════════════════════════════
+// CLIENT FORM MODE  (?mode=clientform)
+// ════════════════════════════════════
+async function checkClientMode(){
+  const p=new URLSearchParams(location.search);
+  const mode=p.get('mode');
+  const uid=p.get('uid');
+  const evid=p.get('evid');
+  if(mode!=='clientform') return false;
+  // Hide app, show client form
+  document.body.innerHTML='';
+  // Load photographer info
+  let phName='Divine Pixels', phStudio='Divine Pixels', phPhone='', phVillage='';
+  const phUser=users.find(u=>u.id===uid);
+  if(phUser){phName=phUser.name;phStudio=phUser.studio;phPhone=phUser.ph;phVillage=phUser.village;}
+  // Load event info if evid given (for pre-filling or showing confirmed status)
+  let evData=null;
+  if(evid){
+    evData=evs.find(e=>e.id===evid);
+    if(!evData && fbOk){try{const doc=await db.collection('eventDetails').doc(evid).get();if(doc.exists)evData=doc.data();}catch(e){}}
+  }
+  renderClientForm(uid, evid, phStudio, phPhone, phVillage, evData);
+  return true;
+}
+
+function renderClientForm(uid, evid, studio, phone, village, evData){
+  // Apply theme
+  const theme=localStorage.getItem('ppTheme')||'dark';
+  document.documentElement.setAttribute('data-theme',theme);
+  let groomEvCount=2, brideEvCount=2;
+  document.body.innerHTML=`
+  <div style="min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text)">
+    <div style="background:linear-gradient(135deg,#0b0b0d,#1c1c20);padding:24px 20px 18px;text-align:center;border-bottom:1px solid #28282e">
+      <div style="font-size:2.2rem;margin-bottom:6px">📷</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.4rem;background:linear-gradient(135deg,#f5c842,#ff9a3c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:2px">${studio}</div>
+      <div style="color:#666;font-size:.75rem">${village?village+' · ':''}${phone}</div>
+      <div style="margin-top:8px;font-size:.78rem;color:#aaa">Wedding Photography Booking Form</div>
+    </div>
+    <div style="padding:16px;max-width:500px;margin:0 auto">
+
+      <div class="cf-sec">
+        <h3>👤 మీ వివరాలు</h3>
+        <div class="fg"><label>పెళ్ళికొడుకు పేరు *</label><input type="text" id="cf_groom" value="${evData?.groom||''}"></div>
+        <div class="fg"><label>పెళ్ళికొడుకు గ్రామం *</label><input type="text" id="cf_gvil" value="${evData?.groomVillage||''}"></div>
+        <div class="fg"><label>పెళ్ళికూతురు పేరు *</label><input type="text" id="cf_bride" value="${evData?.bride||''}"></div>
+        <div class="fg"><label>పెళ్ళికూతురు గ్రామం *</label><input type="text" id="cf_bvil" value="${evData?.brideVillage||''}"></div>
+        <div class="fg"><label>మీ Phone Number *</label><input type="tel" id="cf_phone" value="${evData?.clientPhone||''}" maxlength="10"></div>
+      </div>
+
+      <div class="cf-sec">
+        <h3>💍 పెళ్ళి వివరాలు</h3>
+        <div class="g2">
+          <div class="fg"><label>పెళ్ళి తేదీ *</label><input type="date" id="cf_wdate" value="${evData?.date||''}"></div>
+          <div class="fg"><label>సమయం</label><input type="time" id="cf_wtime" value="${evData?.mainTime||''}"></div>
+        </div>
+        <div class="fg"><label>పెళ్ళి వేదిక *</label><input type="text" id="cf_wvenue" value="${evData?.location||''}" placeholder="Kalyana Mandapam..."></div>
+      </div>
+
+      <div class="cf-sec">
+        <h3>📷 Photography Type</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div id="lt_reg" onclick="selType('Regular')" style="border:2px solid #28282e;border-radius:12px;padding:14px;cursor:pointer;text-align:center;background:var(--surf);transition:all .2s">
+            <div style="font-size:1.8rem">📸</div>
+            <div style="font-weight:700;font-size:.88rem;margin:4px 0 2px">Regular</div>
+            <div style="font-size:.68rem;color:var(--muted)">Min 40 sheets</div>
+          </div>
+          <div id="lt_can" onclick="selType('Candid')" style="border:2px solid #28282e;border-radius:12px;padding:14px;cursor:pointer;text-align:center;background:var(--surf);transition:all .2s">
+            <div style="font-size:1.8rem">🎭</div>
+            <div style="font-weight:700;font-size:.88rem;margin:4px 0 2px">Candid</div>
+            <div style="font-size:.68rem;color:var(--muted)">Min 60 sheets</div>
+          </div>
+        </div>
+        <input type="hidden" id="cf_ptype" value="${evData?.reqGroup1?.[0]||''}">
+      </div>
+
+      <div class="cf-sec">
+        <h3>🤵 పెళ్ళికొడుకు Events</h3>
+        <div id="groomEvs">
+          ${cfEvItem('groom',0,'Haldi')}
+          ${cfEvItem('groom',1,'కాళ్ళ గోళ్ళు తీయడం')}
+        </div>
+        <button onclick="addCfEv('groom')" style="width:100%;border:1px dashed var(--bdr);background:none;color:var(--muted);border-radius:8px;padding:8px;cursor:pointer;font-size:.78rem;margin-top:2px;font-family:'DM Sans',sans-serif">+ Event Add చేయండి</button>
+      </div>
+
+      <div class="cf-sec">
+        <h3>👰 పెళ్ళికూతురు Events</h3>
+        <div id="brideEvs">
+          ${cfEvItem('bride',0,'Haldi')}
+          ${cfEvItem('bride',1,'కాళ్ళ గోళ్ళు తీయడం')}
+        </div>
+        <button onclick="addCfEv('bride')" style="width:100%;border:1px dashed var(--bdr);background:none;color:var(--muted);border-radius:8px;padding:8px;cursor:pointer;font-size:.78rem;margin-top:2px;font-family:'DM Sans',sans-serif">+ Event Add చేయండి</button>
+      </div>
+
+      <div class="cf-sec">
+        <h3>🎉 Reception</h3>
+        <div class="g2">
+          <div class="fg"><label>తేదీ</label><input type="date" id="cf_rdate"></div>
+          <div class="fg"><label>సమయం</label><input type="time" id="cf_rtime"></div>
+        </div>
+        <div class="fg"><label>వేదిక</label><input type="text" id="cf_rvenue" placeholder="Reception venue..."></div>
+      </div>
+
+      <div class="cf-sec">
+        <h3>📦 మీకు కావలసినవి (Deliverables)</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+          ${DELIVERABLES.map(r=>`<label style="display:flex;align-items:center;gap:5px;background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.78rem;transition:all .15s" class="chip-lbl"><input type="checkbox" name="cfDel" value="${r}" style="display:none"> ${r}</label>`).join('')}
+        </div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:.9rem;color:var(--acc);margin-bottom:8px">🛠️ Extra Services</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${EXTRAS_SVC.map(r=>`<label style="display:flex;align-items:center;gap:5px;background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.78rem;transition:all .15s" class="chip-lbl"><input type="checkbox" name="cfExt" value="${r}" style="display:none"> ${r}</label>`).join('')}
+        </div>
+      </div>
+
+      <div class="cf-sec">
+        <h3>💰 Budget వివరాలు</h3>
+        <div class="fg"><label>మీ Budget (₹)</label><input type="number" id="cf_budget" placeholder="50000"></div>
+        <div class="fg"><label>Album Sheets (min: <span id="cf_minsh">40</span>)</label><input type="number" id="cf_sheets" placeholder="40" min="40"><div style="font-size:.68rem;color:var(--muted);margin-top:3px" id="cf_shNote">Regular కి minimum 40 sheets</div></div>
+        <div class="fg"><label>Video Hours</label><input type="number" id="cf_vhrs" placeholder="2" min="1"></div>
+      </div>
+
+      <div class="cf-sec">
+        <h3>📝 Additional Notes</h3>
+        <textarea id="cf_notes" rows="3" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:9px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none" placeholder="మీకు మరేమైనా అవసరమైతే..."></textarea>
+      </div>
+
+      <button style="width:100%;background:linear-gradient(135deg,#f5c842,#ff9a3c);color:#000;border:none;padding:15px;border-radius:13px;font-weight:700;font-size:1rem;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:30px" onclick="submitCF('${uid}','${evid||''}')">📤 Submit Booking Request</button>
+    </div>
+  </div>
+  <style>
+  [data-theme="dark"]{--bg:#0b0b0d;--surf:#161618;--card:#1c1c20;--bdr:#28282e;--text:#f0ede8;--muted:#666;}
+  [data-theme="light"]{--bg:#f0efe9;--surf:#fff;--card:#faf9f6;--bdr:#e4e0d6;--text:#1a1a1a;--muted:#888;}
+  :root{--acc:#f5c842;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);}
+  .cf-sec{background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:14px;margin-bottom:12px;}
+  .cf-sec h3{font-family:'Playfair Display',serif;font-size:.95rem;color:var(--acc);margin-bottom:12px;}
+  .fg{margin-bottom:10px;}.fg label{display:block;font-size:.63rem;font-weight:700;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em;}
+  .fg input,.fg select,.fg textarea{width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none;}
+  .fg input:focus{border-color:var(--acc);}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .chip-lbl:has(input:checked){border-color:var(--acc)!important;color:var(--acc);background:rgba(245,200,66,.07)!important;}
+  .chip-lbl:has(input:checked)::before{content:'✓ ';font-weight:700;}
+  </style>`;
+  // JS for client form
+  window.selType=function(t){
+    const min=t==='Candid'?60:40;
+    document.getElementById('cf_ptype').value=t;
+    document.getElementById('lt_reg').style.borderColor=t==='Regular'?'var(--acc)':'var(--bdr)';
+    document.getElementById('lt_can').style.borderColor=t==='Candid'?'var(--acc)':'var(--bdr)';
+    document.getElementById('cf_minsh').textContent=min;
+    document.getElementById('cf_shNote').textContent=`${t} కి minimum ${min} sheets`;
+    const si=document.getElementById('cf_sheets'); if(si)si.min=min;
+  };
+  window.cfEvItem=function(side,i,name){
+    return`<div style="background:var(--surf);border:1px solid var(--bdr);border-radius:9px;padding:10px;margin-bottom:7px" id="${side}ev${i}">
+      <div style="display:flex;align-items:center;margin-bottom:8px">
+        <input type="checkbox" id="${side}evchk${i}" style="margin-right:8px;accent-color:var(--acc);width:16px;height:16px;cursor:pointer">
+        <span style="font-size:.84rem;font-weight:600;flex:1">${name}</span>
+      </div>
+      <div class="g2">
+        <div class="fg"><label>తేదీ</label><input type="date" id="${side}evdate${i}"></div>
+        <div class="fg"><label>సమయం</label><input type="time" id="${side}evtime${i}"></div>
+      </div>
+    </div>`;
+  };
+  let _gc=2, _bc=2;
+  window.addCfEv=function(side){
+    const cnt=side==='groom'?_gc:_bc;
+    const name=prompt(side==='groom'?'Groom event పేరు:':'Bride event పేరు:')||'Custom Event';
+    const div=document.createElement('div'); div.innerHTML=cfEvItem(side,cnt,name);
+    document.getElementById(side==='groom'?'groomEvs':'brideEvs').appendChild(div.firstElementChild);
+    if(side==='groom')_gc++;else _bc++;
+  };
+}
+
+async function submitCF(uid, evid){
+  const gn=document.getElementById('cf_groom')?.value.trim()||'';
+  const bn=document.getElementById('cf_bride')?.value.trim()||'';
+  const wd=document.getElementById('cf_wdate')?.value||'';
+  const ph=document.getElementById('cf_phone')?.value.trim()||'';
+  if(!gn||!bn){alert('పెళ్ళికొడుకు మరియు పెళ్ళికూతురు పేర్లు తప్పనిసరి!');return;}
+  if(!wd){alert('పెళ్ళి తేదీ తప్పనిసరి!');return;}
+  if(!ph||ph.length!==10){alert('Valid phone number ఇవ్వండి!');return;}
+  const pt=document.getElementById('cf_ptype')?.value||'Regular';
+  const min=pt==='Candid'?60:40;
+  const sh=parseInt(document.getElementById('cf_sheets')?.value)||0;
+  if(sh>0&&sh<min){alert(`${pt} కి minimum ${min} sheets ఉండాలి!`);return;}
+  // Collect events
+  const gEvs=[], bEvs=[];
+  document.querySelectorAll('[id^=groomevchk]').forEach((c,i)=>{if(c.checked)gEvs.push({name:document.querySelector(`#groomev${i} span`)?.textContent||'Event',date:document.getElementById(`groomevdate${i}`)?.value||'',time:document.getElementById(`groomevtime${i}`)?.value||''});});
+  document.querySelectorAll('[id^=brideevchk]').forEach((c,i)=>{if(c.checked)bEvs.push({name:document.querySelector(`#brideev${i} span`)?.textContent||'Event',date:document.getElementById(`brideevdate${i}`)?.value||'',time:document.getElementById(`brideevtime${i}`)?.value||''});});
+  const data={
+    groomName:gn, brideName:bn,
+    groomVillage:document.getElementById('cf_gvil')?.value.trim()||'',
+    brideVillage:document.getElementById('cf_bvil')?.value.trim()||'',
+    clientPhone:ph, weddingDate:wd,
+    weddingTime:document.getElementById('cf_wtime')?.value||'',
+    weddingVenue:document.getElementById('cf_wvenue')?.value.trim()||'',
+    photoType:pt, groomEvents:gEvs, brideEvents:bEvs,
+    reception:{date:document.getElementById('cf_rdate')?.value||'',time:document.getElementById('cf_rtime')?.value||'',venue:document.getElementById('cf_rvenue')?.value.trim()||''},
+    deliverables:Array.from(document.querySelectorAll('input[name=cfDel]:checked')).map(x=>x.value),
+    extras:Array.from(document.querySelectorAll('input[name=cfExt]:checked')).map(x=>x.value),
+    budget:document.getElementById('cf_budget')?.value||'',
+    sheets:sh||min, videoHours:document.getElementById('cf_vhrs')?.value||'',
+    notes:document.getElementById('cf_notes')?.value.trim()||'',
+  };
+  const req={id:'r'+Date.now(), evId:evid||'', uid, data, status:'pending', seen:false, submittedAt:new Date().toLocaleString('te-IN'), createdAt:Date.now()};
+  // Save to localStorage (same device) AND Firestore (cross device)
+  const lsReqs=JSON.parse(localStorage.getItem('ppReqs')||'[]');
+  lsReqs.push(req); localStorage.setItem('ppReqs',JSON.stringify(lsReqs));
+  await dbSet('requests', req.id, req);
+  // Show success
+  document.body.innerHTML=`
+  <div style="min-height:100vh;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;font-family:'DM Sans',sans-serif">
+    <div style="text-align:center;max-width:380px">
+      <div style="font-size:4rem;margin-bottom:16px">✅</div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.5rem;color:#f5c842;margin-bottom:8px">Booking Request పంపబడింది!</h2>
+      <p style="color:#666;font-size:.85rem;margin-bottom:20px">Photographer మీ request చూసి confirm చేస్తారు. Confirm అయిన తర్వాత WhatsApp message వస్తుంది.</p>
+      <div style="background:#1c1c20;border:1px solid #28282e;border-radius:14px;padding:16px;text-align:left;margin-bottom:20px">
+        <div style="font-size:.7rem;color:#666;margin-bottom:10px;text-transform:uppercase">మీ వివరాలు:</div>
+        <div style="font-size:.82rem;line-height:2;color:#f0ede8">👤 ${data.groomName} & ${data.brideName}<br>📅 ${data.weddingDate}<br>📍 ${data.weddingVenue||'--'}<br>📷 ${data.photoType}</div>
+      </div>
+      <button onclick="cfWaShare()" style="width:100%;background:#25D366;color:#fff;border:none;padding:13px;border-radius:12px;font-weight:700;font-size:.95rem;cursor:pointer;font-family:'DM Sans',sans-serif">📤 WhatsApp లో Share చేయండి</button>
+    </div>
+  </div>
+  <style>[data-theme="dark"]{--bg:#0b0b0d;}</style>`;
+  window.cfWaShare=function(){
+    const msg=`📷 *Photography Booking Request*\n\n💍 *${data.groomName} & ${data.brideName}*\n📅 ${data.weddingDate}\n📍 ${data.weddingVenue||'--'}\n📷 ${data.photoType}\n💰 Budget: ₹${data.budget||'--'}\n🖼️ Sheets: ${data.sheets}\n📞 ${data.clientPhone}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+  };
+}
+
+// ════════════════════════════════════
+// CLOSE MODALS ON BG CLICK
+// ════════════════════════════════════
+document.getElementById('pmo').addEventListener('click',e=>{if(e.target===e.currentTarget)closeProf();});
+document.getElementById('rrMo').addEventListener('click',e=>{if(e.target===e.currentTarget)closeRR();});
+document.getElementById('clMo').addEventListener('click',e=>{if(e.target===e.currentTarget)document.getElementById('clMo').classList.remove('on');});
+
+// ════════════════════════════════════
+// INIT
+// ════════════════════════════════════
+(async function(){
+  if(await checkClientMode()) return; // Client form mode
+  if(cu) launchApp();
+})();
+</script>
+</body>
+</html>
