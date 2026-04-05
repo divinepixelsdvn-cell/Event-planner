@@ -244,6 +244,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .fab{position:fixed;bottom:20px;right:18px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#f5c842,#ff9a3c);border:none;color:#000;font-size:1.35rem;cursor:pointer;box-shadow:0 4px 16px rgba(245,200,66,.45);z-index:100;display:flex;align-items:center;justify-content:center;transition:transform .2s;}
 .fab:hover{transform:scale(1.1);}
 input[type=file]{display:none;}
+/* ── BACKUP MODAL ── */
+.bkup-mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:400;align-items:center;justify-content:center;padding:16px;}
+.bkup-mo.on{display:flex;}
+.bkup-sheet{background:var(--card);border:1px solid var(--bdr);border-radius:20px;width:100%;max-width:400px;padding:20px;animation:suu .25s ease;}
+.bk-btn{width:100%;padding:11px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;border:none;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;}
 </style>
 </head>
 <body>
@@ -253,6 +258,7 @@ input[type=file]{display:none;}
   <div class="logo">📷</div>
   <h1>Event Planner</h1>
   <p>Photographer Event Management App</p>
+  <p style="font-size:.7rem;color:rgba(245,200,66,.7);margin-top:-18px;margin-bottom:18px">☁️ Firebase + Google Drive Backup</p>
   <div class="lcard">
     <div class="ltabs">
       <button class="ltb on" onclick="swL('in')" id="lt1">Login</button>
@@ -386,6 +392,10 @@ input[type=file]{display:none;}
   <div class="page on" id="pg-sched">
     <!-- Next Event -->
     <div id="nextEvBanner"></div>
+    <!-- Schedule Add Button - Center above calendar -->
+    <div style="display:flex;justify-content:center;margin-bottom:10px">
+      <button onclick="openSchedMo()" style="background:linear-gradient(135deg,#f5c842,#ff9a3c);color:#000;border:none;padding:9px 22px;border-radius:12px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;box-shadow:0 3px 12px rgba(245,200,66,.4)">➕ Schedule Add</button>
+    </div>
     <!-- Calendar -->
     <div class="cal-header">
       <div class="cal-title" id="calTitle"></div>
@@ -403,6 +413,7 @@ input[type=file]{display:none;}
       <div class="li"><div class="ld" style="background:var(--sup)"></div>Support</div>
       <div class="li"><div class="ld" style="background:var(--sky)"></div>Sub Event</div>
     </div>
+
     <!-- Upcoming -->
     <div class="sec-title">
       <span>🔜 Upcoming Events</span>
@@ -509,10 +520,32 @@ input[type=file]{display:none;}
     <div id="sOwnExtra">
       <div class="fg"><label>Supporter పేరు</label><input type="text" id="sSupName" placeholder="Supporter పేరు..." style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none"></div>
       <div class="fg">
-        <label>Camera</label>
+        <label>కెమెరా</label>
         <div style="display:flex;gap:8px">
-          <label style="display:flex;align-items:center;gap:5px;background:var(--surf);border:1px solid var(--bdr);border-radius:7px;padding:7px 10px;cursor:pointer;font-size:.8rem;flex:1"><input type="radio" name="sCam" value="with" checked style="accent-color:var(--acc)"> 📷 With</label>
+          <label style="display:flex;align-items:center;gap:5px;background:var(--surf);border:1px solid var(--bdr);border-radius:7px;padding:7px 10px;cursor:pointer;font-size:.8rem;flex:1"><input type="radio" name="sCam" value="with" checked style="accent-color:var(--acc)"> 📷 With Camera</label>
           <label style="display:flex;align-items:center;gap:5px;background:var(--surf);border:1px solid var(--bdr);border-radius:7px;padding:7px 10px;cursor:pointer;font-size:.8rem;flex:1"><input type="radio" name="sCam" value="without" style="accent-color:var(--acc)"> 🚫 Without</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Support event: whom we are supporting -->
+    <div id="sSupExtra" style="display:none">
+      <div class="fg">
+        <label>ఎవరికి Support కి వెళ్తున్నాము</label>
+        <input type="text" id="sSupToName" placeholder="Photographer పేరు..." style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none;margin-bottom:8px">
+      </div>
+      <div class="fg">
+        <label>వారి Phone నెంబర్</label>
+        <div style="display:flex;gap:7px;align-items:center">
+          <input type="tel" id="sSupToPhone" maxlength="10" placeholder="9876543210" style="flex:1;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none">
+          <button type="button" onclick="callSupport()" style="background:var(--own);color:#fff;border:none;padding:8px 12px;border-radius:7px;cursor:pointer;font-size:1rem;flex-shrink:0;display:flex;align-items:center;justify-content:center" title="Call చేయండి">📞</button>
+        </div>
+      </div>
+      <div class="fg">
+        <label>కెమెరా</label>
+        <div style="display:flex;gap:8px">
+          <label style="display:flex;align-items:center;gap:5px;background:var(--surf);border:1px solid var(--bdr);border-radius:7px;padding:7px 10px;cursor:pointer;font-size:.8rem;flex:1"><input type="radio" name="sCam2" value="with" checked style="accent-color:var(--acc)"> 📷 With Camera</label>
+          <label style="display:flex;align-items:center;gap:5px;background:var(--surf);border:1px solid var(--bdr);border-radius:7px;padding:7px 10px;cursor:pointer;font-size:.8rem;flex:1"><input type="radio" name="sCam2" value="without" style="accent-color:var(--acc)"> 🚫 Without</label>
         </div>
       </div>
     </div>
@@ -543,6 +576,18 @@ input[type=file]{display:none;}
     <div class="eq-grid" id="pfLens"></div>
     <div class="pf-sec-t">🚁 Extras</div>
     <div class="eq-grid" id="pfExtras"></div>
+    <div style="margin:10px 0 0;padding-top:10px;border-top:1px solid var(--bdr)">
+      <div style="font-size:.63rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">☁️ Backup & Restore</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        <button onclick="backupToGDrive()" style="flex:1;min-width:120px;background:rgba(66,133,244,.15);border:1px solid rgba(66,133,244,.4);color:#4285f4;padding:8px;border-radius:8px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">☁️ Drive Backup</button>
+        <button onclick="backupDownload()" style="flex:1;min-width:120px;background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.35);color:var(--acc);padding:8px;border-radius:8px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">💾 Download Backup</button>
+      </div>
+      <div style="display:flex;gap:7px;margin-top:7px;flex-wrap:wrap">
+        <button onclick="document.getElementById('restoreInp').click()" style="flex:1;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);color:var(--own);padding:8px;border-radius:8px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">📂 Restore Backup</button>
+        <button onclick="shareBackupWA()" style="flex:1;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.35);color:#25D366;padding:8px;border-radius:8px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">📱 WhatsApp Backup</button>
+      </div>
+      <input type="file" id="restoreInp" accept=".json" onchange="restoreBackup(this)">
+    </div>
     <div class="pf-actions">
       <button class="pf-save" onclick="saveProf()">💾 Save చేయండి</button>
       <button class="pf-logout" onclick="doLogout()">🚪 Logout</button>
@@ -914,6 +959,14 @@ function buildForm(ev){
   const isWedding=curCat==='wedding';
 
   return`
+  <div style="background:linear-gradient(135deg,rgba(37,211,102,.15),rgba(37,211,102,.05));border:1.5px solid rgba(37,211,102,.4);border-radius:14px;padding:13px 14px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
+    <div style="font-size:1.8rem">📲</div>
+    <div style="flex:1">
+      <div style="font-weight:700;font-size:.88rem;color:#25D366;margin-bottom:2px">Send Application for Client</div>
+      <div style="font-size:.7rem;color:var(--muted)">Client కి WhatsApp లో Booking Form link పంపండి</div>
+    </div>
+    <button onclick="sendAppToClient()" style="background:#25D366;color:#fff;border:none;padding:8px 14px;border-radius:10px;font-weight:700;font-size:.78rem;cursor:pointer;font-family:\'DM Sans\',sans-serif;display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">📤 Send</button>
+  </div>
   <div class="form-card" style="border-top:3px solid var(--acc)">
     <div class="fc-title">📋 Step 1: ఈవెంట్ వివరాలు</div>
     <div class="fg">
@@ -980,7 +1033,7 @@ function buildForm(ev){
     <div class="fc-title">💰 Step 4: Budget & Advance</div>
     <div class="inline2">
       <div class="fg"><label>Package Amount (₹)</label><input type="number" id="fBudget" value="${ev?.budget||''}" placeholder="50000" oninput="onBudgetInput()"></div>
-      <div class="fg"><label>Advance Paid (₹)</label><input type="number" id="fAdvance" value="${ev?.advance||''}" placeholder="10000"></div>
+      <div class="fg"><label>Advance Paid (₹) <span style="color:var(--acc);font-size:.72rem;font-weight:700">(40%)</span></label><input type="number" id="fAdvance" value="${ev?.advance||''}" placeholder="10000"></div>
     </div>
     <div id="budgetTypeWrap" style="display:${ev?.budget?'block':'none'}">
       <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
@@ -1072,13 +1125,19 @@ function saveForm(){
 }
 
 // ══ CLIENT LINK ══
+function getBaseUrl(){
+  // Works on GitHub Pages, local, and any static host
+  const loc=window.location;
+  const base=loc.origin+loc.pathname;
+  return base.endsWith('/')?base.slice(0,-1):base;
+}
 function genClientLink(){
   const d=getFormData();
   if(!d.date){toast('⚠️ ముందు date ఇవ్వండి');return;}
   if(!editEvId){evs.push(d);editEvId=d.id;saveEvs();}
   else{const i=evs.findIndex(e=>e.id===editEvId);if(i>-1)evs[i]=d;else{evs.push(d);}saveEvs();}
-  const base=location.href.split('?')[0];
-  const link=`${base}?mode=clientform&uid=${cu?.id||''}&evid=${editEvId}`;
+  const base=getBaseUrl();
+  const link=`${base}?mode=clientform&uid=${encodeURIComponent(cu?.id||'')}&evid=${encodeURIComponent(editEvId)}`;
   const box=document.getElementById('fLinkBox');
   box.style.display='block';
   box.innerHTML=`<div style="background:var(--surf);border:1px solid rgba(56,189,248,.3);border-radius:9px;padding:9px 11px">
@@ -1158,8 +1217,8 @@ function buildDetail(ev){
   </div>`;
 }
 function cpDetLink(id){
-  const base=location.href.split('?')[0];
-  const link=`${base}?mode=clientform&uid=${cu?.id||''}&evid=${id}`;
+  const base=getBaseUrl();
+  const link=`${base}?mode=clientform&uid=${encodeURIComponent(cu?.id||'')}&evid=${encodeURIComponent(id)}`;
   cpTxt(link);
   const ev=evs.find(e=>e.id===id);
   if(ev?.clientPhone){setTimeout(()=>{if(confirm('WhatsApp లో link పంపాలా?'))waLink(link,ev.clientPhone);},300);}
@@ -1171,69 +1230,224 @@ function genPDF(){const d=getFormData();genPDFData(d);}
 function genPDFById(id){const ev=evs.find(e=>e.id===id);if(ev)genPDFData(ev);}
 function genPDFData(ev){
   const html=buildPDFHTML(ev);
-  const win=window.open('','_blank');
-  if(!win){toast('⚠️ Popup blocked! Browser settings లో allow చేయండి');return;}
-  win.document.write(html);win.document.close();win.onload=()=>win.print();
-  toast('📄 PDF window తెరుచుకుంటోంది...');
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=(ev.name||'Event').replace(/[^a-zA-Z0-9ఀ-౿ ]/g,'_')+'_Booking.html';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+  toast('📄 PDF Download అవుతోంది...');
 }
 function buildPDFHTML(ev){
   const studio=cu?.studio||'My Studio',myName=cu?.name||'',myPhone=cu?.ph||'',coverImg=cu?.cover||'',myPhoto=cu?.photo||'';
-  const subs=ev.subEvs?.length?ev.subEvs.map(s=>{const svcs=Object.entries(s.services||{}).filter(([,v])=>v).map(([k])=>({photo:'Photo',video:'Video',drone:'Drone',others:'Others'}[k]||k)).join(', ');return`<tr><td class="td" style="font-weight:600">${s.name}</td><td class="td">${s.date||'--'}</td><td class="td">${s.time||'--'}</td><td class="td">${s.location||'--'}</td><td class="td" style="color:#7c3aed">${svcs||'--'}</td></tr>`;}).join(''):'<tr><td colspan="5" style="padding:8px;color:#aaa;text-align:center;font-style:italic">Sub events లేవు</td></tr>';
-  const bal=ev.budget&&ev.advance?`₹${(parseInt(ev.budget)-parseInt(ev.advance)).toLocaleString()}`:'--';
-  const shts=ev.sheets?.length?ev.sheets.map(s=>`<tr><td class="td">${s.type}</td><td class="td" style="font-weight:700;color:#b8860b">${s.count||'--'}</td></tr>`).join(''):'';
-  const r1=(ev.reqGroup1||[]).map(r=>`<span class="rchip">${r}</span>`).join('')||'<span style="color:#aaa">--</span>';
-  const r2=(ev.reqGroup2||[]).map(r=>`<span class="rchip">${r}</span>`).join('')||'<span style="color:#aaa">--</span>';
-  const r3=(ev.reqGroup3||[]).map(r=>`<span class="rchip">${r}</span>`).join('')||'<span style="color:#aaa">--</span>';
-  const coverBg=coverImg?`<img style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.28" src="${coverImg}" alt="">`:'';
-  const logoEl=myPhoto?`<img style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2.5px solid #f5c842" src="${myPhoto}" alt="">`:`<div style="width:44px;height:44px;border-radius:50%;background:#f5c842;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:900;color:#000">📷</div>`;
-  const heroNames=(ev.groom||ev.bride)?`${ev.groom||''}<span style="color:#f5c842;margin:0 8px">&</span>${ev.bride||''}`:ev.name;
-  return`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${ev.name}</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Noto Sans Telugu','Segoe UI',Arial,sans-serif;font-size:12px;color:#1a1a1a;background:#fff;}.pg{max-width:680px;margin:0 auto;padding:0 0 30px;}.hdr{position:relative;background:linear-gradient(135deg,#1a0533,#3d1470 40%,#1a2a5e);border-radius:0 0 20px 20px;overflow:hidden;padding:20px 22px 24px;color:#fff;margin-bottom:22px;}.lr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}.ll{display:flex;align-items:center;gap:10px;}.snm{font-size:1.1rem;font-weight:800;color:#f5c842;letter-spacing:.3px;}.ssb{font-size:.62rem;color:rgba(255,255,255,.75);margin-top:2px;}.phb{font-size:.72rem;color:rgba(255,255,255,.9);background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);border-radius:6px;padding:4px 11px;}.evh{text-align:center;padding:10px 0 6px;}.nms{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:900;text-shadow:0 2px 8px rgba(0,0,0,.4);letter-spacing:.5px;}.evt{font-size:.72rem;color:rgba(255,255,255,.8);margin-top:5px;letter-spacing:1px;text-transform:uppercase;}.dpill{display:inline-flex;gap:6px;align-items:center;background:rgba(245,200,66,.2);border:1px solid rgba(245,200,66,.5);border-radius:20px;padding:5px 16px;font-size:.74rem;margin-top:9px;color:#f5c842;font-weight:600;}.body{padding:0 18px;}.sec{margin-bottom:20px;}.st{display:flex;align-items:center;gap:7px;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#6b21a8;margin-bottom:9px;padding-bottom:6px;border-bottom:2.5px solid #f5c842;}.sti{width:19px;height:19px;border-radius:50%;background:#f5c842;color:#000;display:inline-flex;align-items:center;justify-content:center;font-size:.58rem;flex-shrink:0;font-weight:900;}.ig{display:grid;grid-template-columns:1fr 1fr;gap:9px;}.ic{background:#faf5ff;border:1px solid #e9d5ff;border-radius:9px;padding:9px 11px;}.ic label{font-size:.56rem;color:#9333ea;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:3px;font-weight:700;}.ic strong{font-size:.88rem;font-weight:700;}table{width:100%;border-collapse:collapse;border-radius:8px;overflow:hidden;}th{text-align:left;padding:8px 10px;background:linear-gradient(135deg,#6b21a8,#7c3aed);color:#fff;font-size:.6rem;letter-spacing:.04em;font-weight:700;}.td{padding:7px 10px;border-bottom:1px solid #f3e8ff;font-size:.78rem;vertical-align:top;}tr:nth-child(even) .td{background:#fdf8ff;}.rbox{display:flex;flex-wrap:wrap;gap:5px;}.rchip{background:#f3e8ff;border:1px solid #c084fc;color:#7c3aed;border-radius:20px;padding:3px 10px;font-size:.68rem;font-weight:600;}.brow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;}.bc{border-radius:11px;padding:13px 8px;text-align:center;}.bc label{font-size:.58rem;text-transform:uppercase;letter-spacing:.05em;color:#555;display:block;margin-bottom:4px;font-weight:700;}.bc strong{font-size:1rem;font-weight:800;display:block;}.bc.t{background:linear-gradient(135deg,#fef9c3,#fef08a);border:1px solid #fde047;}.bc.a{background:linear-gradient(135deg,#dcfce7,#bbf7d0);border:1px solid #86efac;}.bc.b{background:linear-gradient(135deg,#fee2e2,#fecaca);border:1px solid #fca5a5;}.bc.t strong{color:#854d0e;}.bc.a strong{color:#166534;}.bc.b strong{color:#991b1b;}.terms{background:linear-gradient(135deg,#faf5ff,#fff);border:1px solid #e9d5ff;border-left:4px solid #a855f7;border-radius:9px;padding:13px 14px;font-size:.75rem;color:#333;line-height:2;}.ft{text-align:center;font-size:.65rem;color:#777;margin-top:24px;padding:13px 20px;border-top:2px solid #f5c842;background:#faf5ff;}.ft strong{color:#7c3aed;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.pg{max-width:100%;}}</style></head><body><div class="pg">
-<div class="hdr">${coverBg}<div style="position:relative;z-index:1"><div class="lr"><div class="ll">${logoEl}<div><div class="snm">${studio}</div><div class="ssb">${myName}${myPhone?' | '+myPhone:''}</div></div></div><div class="phb">📞 ${myPhone||'--'}</div></div><div class="evh"><div class="nms">${heroNames}</div><div class="evt">${CATS[ev.cat]||ev.cat} • ${ev.type==='own'?'Own Event':'Support'}</div><div><div class="dpill">📅 ${ev.date||'--'}${ev.mainTime?' • '+ev.mainTime:''} • 📍 ${ev.location||'--'}</div></div></div></div></div>
+  const advPct=ev.budget&&ev.advance?Math.round((parseInt(ev.advance)/parseInt(ev.budget))*100):0;
+  const bal=ev.budget&&ev.advance?parseInt(ev.budget)-parseInt(ev.advance):null;
+  const logoEl=myPhoto?`<img src="${myPhoto}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2.5px solid #f5c842" alt="">`:`<div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#f5c842,#ff9a3c);display:flex;align-items:center;justify-content:center;font-size:1.5rem">📷</div>`;
+  const coverSection=coverImg?`<div style="width:100%;height:130px;overflow:hidden;position:relative"><img src="${coverImg}" style="width:100%;height:100%;object-fit:cover;display:block"><div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(11,11,13,.2),rgba(11,11,13,.85))"></div></div>`:'';
+  const r1=(ev.reqGroup1||[]).map(r=>`<span style="background:rgba(245,200,66,.15);border:1px solid rgba(245,200,66,.4);color:#f5c842;border-radius:20px;padding:3px 10px;font-size:.68rem;font-weight:600;margin:2px;display:inline-block">${r}</span>`).join('');
+  const r2=(ev.reqGroup2||[]).map(r=>`<span style="background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.35);color:#38bdf8;border-radius:20px;padding:3px 10px;font-size:.68rem;font-weight:600;margin:2px;display:inline-block">${r}</span>`).join('');
+  const r3=(ev.reqGroup3||[]).map(r=>`<span style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);color:#22c55e;border-radius:20px;padding:3px 10px;font-size:.68rem;font-weight:600;margin:2px;display:inline-block">${r}</span>`).join('');
+  const subs=ev.subEvs?.length?ev.subEvs.map(s=>{
+    const svcs=Object.entries(s.services||{}).filter(([,v])=>v).map(([k])=>({photo:'📷',video:'🎬',drone:'🚁',others:'📋'}[k]||k)).join(' ');
+    return`<tr><td style="padding:8px 10px;border-bottom:1px solid #28282e;font-weight:700;color:#f5c842;font-size:.8rem">${s.name}</td><td style="padding:8px 10px;border-bottom:1px solid #28282e;font-size:.76rem;color:#f0ede8">${s.date||'—'}</td><td style="padding:8px 10px;border-bottom:1px solid #28282e;font-size:.76rem;color:#f0ede8">${s.time||'—'}</td><td style="padding:8px 10px;border-bottom:1px solid #28282e;font-size:.76rem;color:#f0ede8">${s.location||'—'}</td><td style="padding:8px 10px;border-bottom:1px solid #28282e;font-size:.72rem;color:#38bdf8">${svcs||'—'}</td></tr>`;
+  }).join(''):`<tr><td colspan="5" style="padding:12px;color:#666;text-align:center;font-style:italic">Sub events లేవు</td></tr>`;
+  const shts=ev.sheets?.length?ev.sheets.map(s=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-bottom:1px solid #28282e"><span style="color:#aaa;font-size:.78rem">${s.type}</span><span style="font-weight:800;color:#f5c842;font-size:.9rem">${s.count||'—'}</span></div>`).join(''):'';
+  return`<!DOCTYPE html>
+<html lang="te">
+<head>
+<meta charset="UTF-8">
+<title>${ev.name} — Booking</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;600;700&family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans','Noto Sans Telugu',sans-serif;background:#0b0b0d;color:#f0ede8;font-size:12px;line-height:1.5;}
+.page{max-width:700px;margin:0 auto;background:#0b0b0d;}
+.hdr{background:linear-gradient(135deg,#0b0b0d 0%,#161618 60%,#0b0b0d 100%);padding:0 0 20px;}
+.hdr-bar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 14px;border-bottom:1px solid #28282e;}
+.studio-row{display:flex;align-items:center;gap:10px;}
+.studio-name{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;color:#f5c842;}
+.studio-phone{font-size:.68rem;color:#ff9a3c;margin-top:2px;}
+.doc-label{background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.3);border-radius:20px;padding:4px 12px;font-size:.62rem;color:#f5c842;font-weight:700;letter-spacing:.05em;}
+.hero{text-align:center;padding:16px 20px 4px;position:relative;}
+.hero-names{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:#fff;text-shadow:0 2px 12px rgba(245,200,66,.2);line-height:1.1;}
+.hero-amp{color:#f5c842;margin:0 8px;}
+.hero-cat{font-size:.65rem;color:#888;text-transform:uppercase;letter-spacing:2px;margin-top:5px;}
+.hero-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.3);border-radius:20px;padding:6px 16px;margin-top:10px;font-size:.72rem;color:#f5c842;font-weight:600;}
+.type-chip{position:absolute;top:16px;right:20px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);border-radius:12px;padding:3px 10px;font-size:.6rem;color:#22c55e;font-weight:700;}
+.body{padding:14px 18px;}
+.sec{margin-bottom:14px;}
+.sec-hd{display:flex;align-items:center;gap:7px;padding:6px 10px;background:linear-gradient(90deg,rgba(245,200,66,.12),transparent);border-left:3px solid #f5c842;border-radius:0 8px 8px 0;margin-bottom:8px;}
+.sec-num{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#f5c842,#ff9a3c);color:#000;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:900;flex-shrink:0;}
+.sec-ttl{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#f5c842;}
+.igrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.ic{background:#161618;border:1px solid #28282e;border-radius:9px;padding:8px 10px;}
+.ic label{font-size:.54rem;color:#888;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:3px;font-weight:700;}
+.ic strong{font-size:.82rem;font-weight:700;color:#f0ede8;display:block;}
+.tbl-wrap{border:1px solid #28282e;border-radius:10px;overflow:hidden;}
+table{width:100%;border-collapse:collapse;}
+th{background:linear-gradient(135deg,#1c1c20,#28282e);color:#f5c842;padding:8px 10px;font-size:.58rem;letter-spacing:.06em;font-weight:700;text-align:left;border-bottom:1px solid #f5c842;}
+.bcards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;}
+.bc{border-radius:11px;padding:11px 8px;text-align:center;}
+.bc label{font-size:.54rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px;}
+.bc strong{font-size:1rem;font-weight:900;display:block;}
+.bc small{font-size:.58rem;margin-top:2px;display:block;}
+.bc-t{background:rgba(245,200,66,.1);border:1.5px solid rgba(245,200,66,.35);}
+.bc-t label{color:#f5c842;}.bc-t strong{color:#fef08a;}
+.bc-a{background:rgba(34,197,94,.1);border:1.5px solid rgba(34,197,94,.35);}
+.bc-a label{color:#22c55e;}.bc-a strong{color:#4ade80;}.bc-a small{color:#22c55e;}
+.bc-b{background:rgba(239,68,68,.1);border:1.5px solid rgba(239,68,68,.35);}
+.bc-b label{color:#ef4444;}.bc-b strong{color:#fca5a5;}
+.delv{background:#161618;border:1px solid #28282e;border-radius:9px;overflow:hidden;}
+.terms-box{background:#161618;border:1px solid #28282e;border-left:3px solid #f5c842;border-radius:9px;padding:11px 13px;}
+.terms-box div{font-size:.74rem;color:#aaa;padding:3px 0;line-height:1.7;}
+.terms-box strong{color:#f0ede8;}
+.sig-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;padding-top:14px;border-top:1px dashed #28282e;}
+.sig-box{text-align:center;}
+.sig-line{height:44px;border-bottom:1px solid #f5c842;margin-bottom:5px;}
+.sig-lbl{font-size:.6rem;color:#f5c842;font-weight:700;text-transform:uppercase;}
+.sig-name{font-size:.68rem;color:#888;margin-top:2px;}
+.footer{background:#161618;border-top:1px solid #28282e;text-align:center;padding:12px 16px;}
+.ft-studio{font-family:'Playfair Display',serif;font-size:.9rem;color:#f5c842;font-weight:700;}
+.ft-meta{font-size:.63rem;color:#666;margin-top:3px;}
+@media print{
+  body,html{background:#0b0b0d!important;}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  .page{max-width:100%;}
+  @page{size:A4;margin:8mm 8mm;}
+}
+</style>
+</head>
+<body>
+<div class="page">
+${coverSection}
+<div class="hdr">
+  <div class="hdr-bar">
+    <div class="studio-row">
+      ${logoEl}
+      <div>
+        <div class="studio-name">${studio}</div>
+        <div class="studio-phone">📞 ${myPhone||'—'} • ${myName}</div>
+      </div>
+    </div>
+    <div class="doc-label">📷 BOOKING AGREEMENT</div>
+  </div>
+  <div class="hero">
+    <div class="type-chip">${ev.type==='own'?'✅ Own':'🤝 Support'}</div>
+    <div class="hero-names">${(ev.groom||ev.bride)?`${ev.groom||''}<span class="hero-amp">&</span>${ev.bride||''}`:ev.name}</div>
+    <div class="hero-cat">${CATS[ev.cat]||ev.cat}</div>
+    <div class="hero-pill">📅 ${ev.date||'—'}${ev.mainTime?' &nbsp;⏰ '+ev.mainTime:''}${ev.location?' &nbsp;📍 '+ev.location:''}</div>
+  </div>
+</div>
+
 <div class="body">
-<div class="sec"><div class="st"><span class="sti">1</span> Client వివరాలు</div><div class="ig">
-  ${ev.groom?`<div class="ic"><label>${ev.cat==='wedding'?'పెళ్ళికొడుకు':'Person 1'}</label><strong>${ev.groom}</strong></div>`:''}
-  ${ev.bride?`<div class="ic"><label>${ev.cat==='wedding'?'పెళ్ళికూతురు':'Person 2'}</label><strong>${ev.bride}</strong></div>`:''}
-  ${ev.clientPhone?`<div class="ic"><label>Phone</label><strong>${ev.clientPhone}</strong></div>`:''}
-  <div class="ic"><label>వేదిక</label><strong>${ev.location||'--'}</strong></div>
-  <div class="ic"><label>Main Date</label><strong>${ev.date||'--'}${ev.mainTime?' | '+ev.mainTime:''}</strong></div>
-  <div class="ic"><label>Event Type</label><strong>${ev.type==='own'?'🟢 Own':'🔴 Support'} | ${CATS[ev.cat]||ev.cat}</strong></div>
-  ${ev.spokeWith?`<div class="ic"><label>మాట్లాడింది</label><strong>${ev.spokeWith}</strong></div>`:''}
-  ${ev.agrDate?`<div class="ic"><label>Agreement Date</label><strong>${ev.agrDate}</strong></div>`:''}
-</div></div>
-<div class="sec"><div class="st"><span class="sti">2</span> Sub Events Schedule</div><table><thead><tr><th>Event</th><th>తేదీ</th><th>సమయం</th><th>వేదిక</th><th>Services</th></tr></thead><tbody>${subs}</tbody></table></div>
-<div class="sec"><div class="st"><span class="sti">3</span> Requirements</div>
-  ${ev.reqGroup1?.length?`<div style="margin-bottom:9px"><div style="font-size:.6rem;color:#9333ea;font-weight:700;margin-bottom:5px;text-transform:uppercase">Coverage Type</div><div class="rbox">${r1}</div></div>`:''}
-  ${ev.reqGroup2?.length?`<div style="margin-bottom:9px"><div style="font-size:.6rem;color:#9333ea;font-weight:700;margin-bottom:5px;text-transform:uppercase">Deliverables</div><div class="rbox">${r2}</div></div>`:''}
-  ${ev.reqGroup3?.length?`<div><div style="font-size:.6rem;color:#9333ea;font-weight:700;margin-bottom:5px;text-transform:uppercase">Extra Services</div><div class="rbox">${r3}</div></div>`:''}
-  ${!(ev.reqGroup1?.length||ev.reqGroup2?.length||ev.reqGroup3?.length)?'<div style="color:#aaa;font-style:italic;font-size:.8rem">Requirements enter చేయలేదు</div>':''}
+<div class="sec">
+  <div class="sec-hd"><div class="sec-num">1</div><div class="sec-ttl">Client వివరాలు</div></div>
+  <div class="igrid">
+    ${ev.groom?`<div class="ic"><label>${ev.cat==='wedding'?'పెళ్ళికొడుకు':'Person 1'}</label><strong>${ev.groom}</strong></div>`:''}
+    ${ev.bride?`<div class="ic"><label>${ev.cat==='wedding'?'పెళ్ళికూతురు':'Person 2'}</label><strong>${ev.bride}</strong></div>`:''}
+    <div class="ic"><label>📍 వేదిక</label><strong>${ev.location||'—'}</strong></div>
+    <div class="ic"><label>📅 Date & Time</label><strong>${ev.date||'—'}${ev.mainTime?' · '+ev.mainTime:''}</strong></div>
+    ${ev.clientPhone?`<div class="ic"><label>📞 Phone</label><strong>${ev.clientPhone}</strong></div>`:''}
+    ${ev.spokeWith?`<div class="ic"><label>🗣 మాట్లాడిన వారు</label><strong>${ev.spokeWith}${ev.clientPhone?' · '+ev.clientPhone:''}</strong></div>`:''}
+  </div>
 </div>
-<div class="sec"><div class="st"><span class="sti">4</span> Budget వివరాలు</div>
-  <div class="brow"><div class="bc t"><label>Package Total</label><strong>₹${ev.budget?parseInt(ev.budget).toLocaleString():'--'}</strong></div><div class="bc a"><label>Advance Paid</label><strong>₹${ev.advance?parseInt(ev.advance).toLocaleString():'--'}</strong></div><div class="bc b"><label>Balance</label><strong>${bal}</strong></div></div>
-  ${!ev.budgetFixed&&ev.budget?'<div style="font-size:.68rem;color:#888;font-style:italic;text-align:center;margin-top:6px;padding:5px;background:#fef9c3;border-radius:6px">⚠️ ఈ amount minimum amount — ఇంకా నిర్ణయించలేదు</div>':''}
-  ${shts?`<div style="margin-top:12px"><table><thead><tr><th>Deliverable</th><th>Count</th></tr></thead><tbody>${shts}</tbody></table></div>`:''}
-  <div class="ig" style="margin-top:10px"><div class="ic"><label>Agreement Date</label><strong>${ev.agrDate||'--'}</strong></div><div class="ic"><label>మాట్లాడింది ఎవరు</label><strong>${ev.spokeWith||'--'}</strong></div></div>
+
+<div class="sec">
+  <div class="sec-hd"><div class="sec-num">2</div><div class="sec-ttl">Events Schedule</div></div>
+  <div class="tbl-wrap"><table><thead><tr><th>Event</th><th>తేదీ</th><th>సమయం</th><th>వేదిక</th><th>Services</th></tr></thead><tbody>${subs}</tbody></table></div>
 </div>
-${ev.notes?`<div class="sec"><div class="st"><span class="sti">N</span> Additional Notes</div><div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:9px;padding:11px;font-size:.82rem;line-height:1.7;color:#333">${ev.notes}</div></div>`:''}
-<div class="sec"><div class="st"><span class="sti">T</span> గమనికలు (Terms & Conditions)</div>
-<div class="terms">
-  <div><strong>1.</strong> ఈవెంట్ లో కొత్త అంశం లేదా కార్యక్రమం ఉంటే <strong>ముందుగా చెప్పాలి</strong>.</div>
-  <div><strong>2.</strong> Pre/Post Shoot లో అన్ని ఖర్చులు <strong>మీరే భరించాల్సి ఉంటుంది</strong>.</div>
-  <div><strong>3.</strong> Extra requirements కి <strong>అదనపు Amount ఉంటుంది</strong>.</div>
-  <div><strong>4.</strong> Wedding తర్వాత <strong>3 నెలల లోపు</strong> Photo Selection, <strong>సంవత్సరం లోపు</strong> Delivery తీసుకోవాలి.</div>
-</div></div>
+
+${(ev.reqGroup1?.length||ev.reqGroup2?.length||ev.reqGroup3?.length)?`<div class="sec">
+  <div class="sec-hd"><div class="sec-num">3</div><div class="sec-ttl">Requirements</div></div>
+  ${ev.reqGroup1?.length?`<div style="margin-bottom:7px"><div style="font-size:.58rem;color:#f5c842;font-weight:700;text-transform:uppercase;margin-bottom:4px">▸ Coverage Type</div><div>${r1}</div></div>`:''}
+  ${ev.reqGroup2?.length?`<div style="margin-bottom:7px"><div style="font-size:.58rem;color:#38bdf8;font-weight:700;text-transform:uppercase;margin-bottom:4px">▸ Deliverables</div><div>${r2}</div></div>`:''}
+  ${ev.reqGroup3?.length?`<div><div style="font-size:.58rem;color:#22c55e;font-weight:700;text-transform:uppercase;margin-bottom:4px">▸ Extra Services</div><div>${r3}</div></div>`:''}
+</div>`:''}
+
+<div class="sec">
+  <div class="sec-hd"><div class="sec-num">4</div><div class="sec-ttl">Budget వివరాలు</div></div>
+  <div class="bcards">
+    <div class="bc bc-t"><label>💰 Package</label><strong>${ev.budget?'₹'+parseInt(ev.budget).toLocaleString():'—'}</strong></div>
+    <div class="bc bc-a"><label>✅ Advance</label><strong>${ev.advance?'₹'+parseInt(ev.advance).toLocaleString():'—'}</strong>${advPct?`<small>${advPct}% paid</small>`:''}</div>
+    <div class="bc bc-b"><label>⏳ Balance</label><strong>${bal!==null?'₹'+bal.toLocaleString():'—'}</strong></div>
+  </div>
+  ${!ev.budgetFixed&&ev.budget?'<div style="background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.2);border-radius:7px;padding:6px 10px;font-size:.68rem;color:#f5c842;margin-bottom:8px">⚠️ Minimum estimate — final amount మారవచ్చు</div>':''}
+  ${shts?`<div class="delv"><div style="padding:6px 12px;font-size:.58rem;font-weight:700;color:#f5c842;text-transform:uppercase;background:rgba(245,200,66,.08);border-bottom:1px solid #28282e">Deliverables</div>${shts}</div>`:''}
 </div>
-<div class="ft">📷 <strong>${studio}</strong> | ${myName} | 📞 ${myPhone} | ${new Date().toLocaleDateString('te-IN')}</div>
-</div><script>window.print();<\/script></body></html>`;
+
+${ev.notes?`<div class="sec">
+  <div class="sec-hd"><div class="sec-num">N</div><div class="sec-ttl">Notes</div></div>
+  <div style="background:#161618;border:1px solid #28282e;border-radius:9px;padding:10px 12px;font-size:.78rem;line-height:1.8;color:#aaa">${ev.notes}</div>
+</div>`:''}
+
+<div class="sec">
+  <div class="sec-hd"><div class="sec-num">T</div><div class="sec-ttl">Terms & Conditions</div></div>
+  <div class="terms-box">
+    <div><strong>1.</strong> ఈవెంట్ లో కొత్త కార్యక్రమం ఉంటే <strong>ముందుగా చెప్పాలి</strong>.</div>
+    <div><strong>2.</strong> Pre/Post Shoot ఖర్చులు <strong>మీరే భరించాల్సి ఉంటుంది</strong>.</div>
+    <div><strong>3.</strong> Extra requirements కి <strong>అదనపు Amount ఉంటుంది</strong>.</div>
+    <div><strong>4.</strong> Wedding తర్వాత <strong>3 నెలల లోపు</strong> Selection, <strong>సంవత్సరం లోపు</strong> Delivery.</div>
+    <div><strong>5.</strong> Advance amount refundable కాదు.</div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-hd"><div class="sec-num">★</div><div class="sec-ttl">అగ్రిమెంట్ వివరాలు</div></div>
+  <div class="igrid">
+    ${ev.agrDate?`<div class="ic"><label>📝 Agreement Date</label><strong>${ev.agrDate}</strong></div>`:''}
+    ${ev.spokeWith?`<div class="ic"><label>🗣 మాట్లాడిన వారు</label><strong>${ev.spokeWith}</strong></div>`:''}
+    ${ev.clientPhone?`<div class="ic"><label>📞 Phone</label><strong>${ev.clientPhone}</strong></div>`:''}
+    <div class="ic"><label>📷 Camera</label><strong>${ev.camera==='with'?'📷 With Camera':'🚫 Without Camera'}</strong></div>
+  </div>
+  <div class="sig-row">
+    <div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Photographer</div><div class="sig-name">${myName} · ${myPhone}</div></div>
+    <div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Client</div><div class="sig-name">${ev.spokeWith||ev.clientName||'Client'}${ev.clientPhone?' · '+ev.clientPhone:''}</div></div>
+  </div>
+</div>
+</div>
+
+<div class="footer">
+  <div class="ft-studio">📷 ${studio}</div>
+  <div class="ft-meta">${myName} • 📞 ${myPhone||'—'} • ${new Date().toLocaleDateString('te-IN',{year:'numeric',month:'long',day:'numeric'})}</div>
+</div>
+</div>
+<script>setTimeout(()=>window.print(),600);<\/script>
+</body></html>`
+}
+
+// ══ SEND APPLICATION TO CLIENT ══
+function sendAppToClient(){
+  const d=getFormData();
+  if(!d.date){toast('⚠️ ముందు event details save చేయండి');return;}
+  // Save event first if new
+  if(!editEvId){evs.push(d);editEvId=d.id;saveEvs();}
+  else{const i=evs.findIndex(e=>e.id===editEvId);if(i>-1)evs[i]=d;else{evs.push(d);}saveEvs();}
+  const base=getBaseUrl();
+  const link=`${base}?mode=clientform&uid=${encodeURIComponent(cu?.id||'')}&evid=${encodeURIComponent(editEvId)}`;
+  const ph=(d.clientPhone||'').replace(/\D/g,'');
+  const msg=`నమస్కారం! 🙏
+
+*${cu?.studio||'Event Planner'}* Photography Booking Form
+
+📋 మీ Booking వివరాలు fill చేయండి:
+${link}
+
+💍 Event: ${d.name||'--'}
+📅 Date: ${d.date||'--'}
+📍 Venue: ${d.location||'--'}
+
+📷 ${cu?.name||''} | 📞 ${cu?.ph||''}`;
+  if(ph)window.open(`https://wa.me/${ph.startsWith('91')?ph:'91'+ph}?text=${encodeURIComponent(msg)}`,'_blank');
+  else window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+  toast('✅ WhatsApp open అవుతోంది!');
 }
 
 // ══ WHATSAPP SHARE ══
 function shareWA(){const d=getFormData();shareWAData(d);}
 function shareWAById(id){const ev=evs.find(e=>e.id===id);if(ev)shareWAData(ev);}
 function shareWAData(ev){
-  const subs=(ev.subEvs||[]).map(s=>`  • ${s.name}: ${s.date||'--'} ${s.time||''} ${s.location||''}`).join('
-');
+  const subs=(ev.subEvs||[]).map(s=>`  • ${s.name}: ${s.date||'--'} ${s.time||''} ${s.location||''}`).join('\n');
   const text=`📷 *${cu?.studio||'Event Planner'}* - Booking Confirmation
 
 💍 *${ev.name}*
@@ -1306,11 +1520,19 @@ function saveProf(){
 // ══ SCHEDULE MODAL (from pp01) ══
 function openSchedMo(dateStr){
   if(dateStr){document.getElementById('sDt').value=dateStr;}
+  // Reset type to 'own'
+  document.getElementById('sTyp').value='own';
+  document.getElementById('sbown').className='tb2x oa';
+  document.getElementById('sbsup').className='tb2x';
+  document.getElementById('sOwnExtra').style.display='block';
+  document.getElementById('sSupExtra').style.display='none';
   updSSubOpts();
   document.getElementById('schedMo').classList.add('on');
 }
 function closeSchedMo(){document.getElementById('schedMo').classList.remove('on');}
-function setSTyp(t){document.getElementById('sTyp').value=t;document.getElementById('sbown').className='tb2x'+(t==='own'?' oa':'');document.getElementById('sbsup').className='tb2x'+(t==='support'?' sa':'');document.getElementById('sOwnExtra').style.display=t==='own'?'block':'none';}
+function setSTyp(t){document.getElementById('sTyp').value=t;document.getElementById('sbown').className='tb2x'+(t==='own'?' oa':'');document.getElementById('sbsup').className='tb2x'+(t==='support'?' sa':'');document.getElementById('sOwnExtra').style.display=t==='own'?'block':'none';document.getElementById('sSupExtra').style.display=t==='support'?'block':'none';}
+function callSupport(){const ph=document.getElementById('sSupToPhone')?.value.trim();if(ph&&ph.length>=10){window.open('tel:'+ph,'_self');}else{toast('⚠️ Phone number ఇవ్వండి');}}
+
 function updSSubOpts(){const c=document.getElementById('sCat').value;const checks=document.getElementById('sSubChecks');checks.innerHTML=(SUB[c]||[]).map(s=>`<label style="display:flex;align-items:center;gap:4px;background:var(--surf);border:1px solid var(--bdr);border-radius:5px;padding:3px 7px;cursor:pointer;font-size:.74rem"><input type="checkbox" value="${s}" style="accent-color:var(--acc)"> ${s}</label>`).join('');}
 function saveSchedEv(){
   const dt=document.getElementById('sDt').value;
@@ -1319,12 +1541,19 @@ function saveSchedEv(){
   const cat=document.getElementById('sCat').value;
   const checks=Array.from(document.querySelectorAll('#sSubChecks input:checked')).map(x=>x.value);
   const loc=document.getElementById('sLoc').value.trim();
-  const supName=document.getElementById('sSupName')?.value.trim()||'';
-  const cam=document.querySelector('input[name=sCam]:checked')?.value||'with';
   const tm=document.getElementById('sTm').value;
   if(!checks.length){toast('⚠️ కనీసం ఒక sub event select చేయండి');return;}
+  let supName='',supPhone='',cam='with';
+  if(typ==='own'){
+    supName=document.getElementById('sSupName')?.value.trim()||'';
+    cam=document.querySelector('input[name=sCam]:checked')?.value||'with';
+  } else {
+    supName=document.getElementById('sSupToName')?.value.trim()||'';
+    supPhone=document.getElementById('sSupToPhone')?.value.trim()||'';
+    cam=document.querySelector('input[name=sCam2]:checked')?.value||'with';
+  }
   const mainSub=checks[0];
-  const ev={id:Date.now().toString(),uid:cu?.id||'',type:typ,cat,name:mainSub+' Event',date:dt,mainTime:tm,location:loc,camera:cam,clientName:supName,clientPhone:'',subEvs:checks.slice(1).map(s=>({name:s,date:'',time:'',location:'',services:{photo:true,video:true,drone:false,others:false}})),reqGroup1:[],reqGroup2:[],reqGroup3:[],budget:'',advance:'',created:Date.now()};
+  const ev={id:Date.now().toString(),uid:cu?.id||'',type:typ,cat,name:mainSub+' Event',date:dt,mainTime:tm,location:loc,camera:cam,clientName:supName,clientPhone:supPhone,supportPhone:supPhone,subEvs:checks.slice(1).map(s=>({name:s,date:'',time:'',location:'',services:{photo:true,video:true,drone:false,others:false}})),reqGroup1:[],reqGroup2:[],reqGroup3:[],budget:'',advance:'',created:Date.now()};
   evs.push(ev);saveEvs();renAll();closeSchedMo();toast('✅ Schedule saved!');
 }
 
@@ -1486,18 +1715,97 @@ async function submitCF(uid,evid){
 document.getElementById('pmo').addEventListener('click',e=>{if(e.target===e.currentTarget)closeProf();});
 document.getElementById('schedMo').addEventListener('click',e=>{if(e.target===e.currentTarget)closeSchedMo();});
 
+// ══ BACKUP & RESTORE ══
+function getBackupData(){
+  return JSON.stringify({
+    version:2,
+    exportedAt:new Date().toISOString(),
+    cu,users,evs,requests,
+    settings:{theme:localStorage.getItem('ppTheme')||'dark'}
+  },null,2);
+}
+function backupDownload(){
+  const data=getBackupData();
+  const blob=new Blob([data],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const dt=new Date().toISOString().slice(0,10);
+  a.download=`EventPlanner_Backup_${dt}.json`;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+  toast('💾 Backup downloaded!');
+}
+function shareBackupWA(){
+  const dt=new Date().toISOString().slice(0,10);
+  const summary=`📷 *Event Planner Backup*\n\n📅 Date: ${dt}\n👤 User: ${cu?.name||''}\n📊 Events: ${evs.length}\n\n⚠️ Backup file is downloading — share manually via WhatsApp Files.`;
+  backupDownload();
+  setTimeout(()=>{
+    const msg=encodeURIComponent(summary);
+    window.open(`https://wa.me/?text=${msg}`,'_blank');
+  },1200);
+}
+function backupToGDrive(){
+  const data=getBackupData();
+  const blob=new Blob([data],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const dt=new Date().toISOString().slice(0,10);
+  a.download=`EventPlanner_Backup_${dt}.json`;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},500);
+  setTimeout(()=>{
+    if(confirm('Google Drive లో save చేయాలా?\n\n(File download అయిన తర్వాత Google Drive కి upload చేయండి)'))
+      window.open('https://drive.google.com/drive/my-drive','_blank');
+  },1000);
+  toast('☁️ File downloading — Drive కి upload చేయండి!',3500);
+}
+function restoreBackup(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      if(!d.version){alert('❌ Valid backup file కాదు');return;}
+      if(!confirm(`Restore చేయాలా?\n\nEvents: ${d.evs?.length||0}\nUsers: ${d.users?.length||0}\n\n⚠️ Current data replace అవుతుంది!`))return;
+      if(d.evs){evs=d.evs;localStorage.setItem('ppEvs',JSON.stringify(evs));}
+      if(d.users){users=d.users;localStorage.setItem('ppUsers',JSON.stringify(users));}
+      if(d.cu){cu=d.cu;localStorage.setItem('ppCu',JSON.stringify(cu));}
+      if(d.settings?.theme){localStorage.setItem('ppTheme',d.settings.theme);document.documentElement.setAttribute('data-theme',d.settings.theme);}
+      if(fbOk&&db&&cu){
+        db.collection('events').doc(cu.id).set({evs,uid:cu.id,updatedAt:Date.now()},{merge:true}).catch(()=>{});
+        db.collection('users').doc(cu.id).set(cu,{merge:true}).catch(()=>{});
+      }
+      toast('✅ Restore అయింది! Reloading...',2000);
+      setTimeout(()=>location.reload(),2000);
+    }catch(err){alert('❌ Backup file corrupt: '+err.message);}
+  };
+  r.readAsText(f);
+  inp.value='';
+}
+
+// ══ DEMO AUTO-LOGIN ══
+(function(){
+  if(!cu){
+    cu={id:'demo001',name:'Ravi Kumar',studio:'Ravi Photography',ph:'9876543210',email:'ravi@demo.com',pw:'demo123',village:'Bhimavaram',photo:'',cover:'',secQ:'cam',secA:'sony',equip:{cams:['Sony A7 IV','Canon R6'],lights:['LED Panel','Softbox'],lens:['24-70mm f/2.8','85mm f/1.8'],extras:['Drone DJI Mini 3','Gimbal']}};
+    users=[cu];
+    evs=[
+      {id:'ev001',uid:'demo001',type:'own',cat:'wedding',name:'Ravi & Priya Wedding',groom:'Ravi',bride:'Priya',clientName:'Ravi',clientPhone:'9876543210',date:'2026-04-20',mainTime:'09:00',location:'Sri Kalyana Mandapam, Bhimavaram',camera:'with',subEvs:[{name:'Pellikuturu',date:'2026-04-19',time:'18:00',location:'Bride Home',services:{photo:true,video:true,drone:false,others:false}},{name:'Wedding',date:'2026-04-20',time:'09:00',location:'Sri Kalyana Mandapam',services:{photo:true,video:true,drone:true,others:false}},{name:'Reception',date:'2026-04-21',time:'19:00',location:'Grand Hotel Bhimavaram',services:{photo:true,video:true,drone:false,others:true}}],reqGroup1:['Candid'],reqGroup2:['Photos','Videos','Wedding Promo','Songs'],reqGroup3:['LED Screen','Live Streaming'],budget:'85000',advance:'30000',budgetFixed:true,sheets:[{type:'Album Sheets',count:'60'},{type:'Video',count:'2'},{type:'Reels',count:'5'}],agrDate:'2026-03-15',spokeWith:'Ravi\'s Father',notes:'Drone permission తీసుకోవాలి. Extra lights కావాలి.',created:Date.now()-86400000},
+      {id:'ev002',uid:'demo001',type:'support',cat:'birthday',name:'Chandu Birthday',groom:'Chandu',bride:'',clientName:'Chandu',clientPhone:'9988776655',date:'2026-04-10',mainTime:'18:00',location:'Party Hall, Tanuku',camera:'with',subEvs:[{name:'Birthday',date:'2026-04-10',time:'18:00',location:'Party Hall',services:{photo:true,video:true,drone:false,others:false}},{name:'Song',date:'2026-04-10',time:'19:00',location:'Party Hall',services:{photo:false,video:true,drone:false,others:false}}],reqGroup1:['Regular'],reqGroup2:['Photos','Videos'],reqGroup3:[],budget:'15000',advance:'5000',budgetFixed:true,sheets:[{type:'Album Sheets',count:'40'}],agrDate:'2026-03-20',spokeWith:'Chandu',notes:'',created:Date.now()-172800000},
+      {id:'ev003',uid:'demo001',type:'own',cat:'halfsaree',name:'Siri Half Saree Function',groom:'Siri',bride:'',clientName:'Siri\'s Father',clientPhone:'9123456789',date:'2026-05-05',mainTime:'10:00',location:'Rajahmundry',camera:'with',subEvs:[{name:'Photo Shoot',date:'2026-05-04',time:'16:00',location:'Outdoor Location',services:{photo:true,video:false,drone:false,others:false}},{name:'Function',date:'2026-05-05',time:'10:00',location:'Function Hall',services:{photo:true,video:true,drone:true,others:false}}],reqGroup1:['Candid'],reqGroup2:['Photos','Videos','Pre Shoot'],reqGroup3:['Photo Booth'],budget:'40000',advance:'15000',budgetFixed:false,sheets:[],agrDate:'2026-04-01',spokeWith:'Father',notes:'Outdoor location confirm చేయాలి.',created:Date.now()-259200000}
+    ];
+    localStorage.setItem('ppCu',JSON.stringify(cu));
+    localStorage.setItem('ppUsers',JSON.stringify(users));
+    localStorage.setItem('ppEvs',JSON.stringify(evs));
+  }
+})();
+
 // ══ INIT ══
 cleanup();
 (async function(){
   if(await checkClientMode())return;
-  if(fbOk&&auth){
-    auth.onAuthStateChanged(async user=>{
-      if(user){
-        try{const doc=await db.collection('users').doc(user.uid).get();if(doc.exists){cu={...doc.data(),id:user.uid};saveCu();}const evDoc=await db.collection('events').doc(user.uid).get();if(evDoc.exists&&evDoc.data().evs){evs=evDoc.data().evs;localStorage.setItem('ppEvs',JSON.stringify(evs));}}catch(e){}
-        if(cu)launchApp();
-      } else {if(cu)launchApp();}
-    });
-  } else {if(cu)launchApp();}
+  if(cu)launchApp();
 })();
 </script>
 </body>
