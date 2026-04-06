@@ -703,17 +703,16 @@ async function doLogin(){
   const email=isPhone?inp+'@eventplanner.app':inp;
   if(fbOk&&auth){
     try{
-      const cred=await auth.signInWithEmailAndPassword(email,pw);
+      const cred=await Promise.race([auth.signInWithEmailAndPassword(email,pw),new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),7000))]);
       const uid=cred.user.uid;
-      const doc=await db.collection('users').doc(uid).get();
-      if(doc.exists){cu={...doc.data(),id:uid};saveCu();}
-      else{cu={id:uid,name:'User',studio:'Studio',ph:isPhone?inp:'',email,photo:'',cover:'',village:'',equip:{cams:[],lights:[],lens:[],extras:[]}};saveCu();}
-      const evDoc=await db.collection('events').doc(uid).get();
-      if(evDoc.exists&&evDoc.data().evs){evs=evDoc.data().evs;localStorage.setItem('ppEvs',JSON.stringify(evs));}
+      try{const doc=await db.collection('users').doc(uid).get();if(doc.exists){cu={...doc.data(),id:uid};saveCu();}else{cu={id:uid,name:'User',studio:'Studio',ph:isPhone?inp:'',email,photo:'',cover:'',village:'',equip:{cams:[],lights:[],lens:[],extras:[]}};saveCu();}}catch(e){if(!cu)cu={id:uid,name:'User',studio:'Studio',ph:isPhone?inp:'',email,photo:'',cover:'',village:'',equip:{cams:[],lights:[],lens:[],extras:[]}};saveCu();}
+      try{const evDoc=await db.collection('events').doc(uid).get();if(evDoc.exists&&evDoc.data().evs){evs=evDoc.data().evs;localStorage.setItem('ppEvs',JSON.stringify(evs));}}catch(e){}
       launchApp();return;
     }catch(e){
-      if(e.code==='auth/invalid-credential'||e.code==='auth/wrong-password'||e.code==='auth/user-not-found'){setErr('le','❌ Login info తప్పు');}
-      else{setErr('le','❌ '+e.message);}return;
+      if(e.code==='auth/invalid-credential'||e.code==='auth/wrong-password'||e.code==='auth/user-not-found'){setErr('le','❌ Login info తప్పు');return;}
+      else if(e.code==='auth/network-request-failed'||e.message==='timeout'||e.message.includes('offline')){
+        // Firebase offline - try local
+      } else {setErr('le','❌ '+e.message);return;}
     }
   }
   const u=isPhone?users.find(x=>x.ph===inp&&x.pw===pw):users.find(x=>x.email===inp&&x.pw===pw);
@@ -740,22 +739,33 @@ async function doReg(){
   if(!sqKey){setErr('re','❌ Security question select చేయండి');return;}
   if(!sa){setErr('re','❌ Security answer ఇవ్వండి');return;}
   setErr('re','⏳ Register అవుతున్నాం...');
+
+  // Try Firebase first, fallback to local on any error
   if(fbOk&&auth){
     try{
-      const chk=await db.collection('phoneIndex').doc(ph).get();
-      if(chk.exists){setErr('re','❌ ఈ phone already registered');return;}
-      const cred=await auth.createUserWithEmailAndPassword(em,pw);
-      const uid=cred.user.uid;
-      const userData={id:uid,name:n,studio:s||n+' Photography',ph,email:em,pw,village:vil,photo:regPhData,cover:'',secQ:sqKey,secA:sa,equip:{cams:[],lights:[],lens:[],extras:[]},createdAt:Date.now()};
-      await db.collection('users').doc(uid).set(userData);
-      await db.collection('phoneIndex').doc(ph).set({uid,email:em,createdAt:Date.now()});
-      cu=userData;saveCu();users.push(userData);saveUsers();launchApp();return;
-    }catch(e){
-      if(e.code==='auth/email-already-in-use'){setErr('re','❌ ఈ email already registered');}
-      else{setErr('re','❌ '+e.message);}return;
-    }
+      let phoneExists=false;
+      try{const chk=await Promise.race([db.collection('phoneIndex').doc(ph).get(),new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),5000))]);phoneExists=chk.exists;}catch(e){/* offline - check local only */}
+      if(phoneExists){setErr('re','❌ ఈ phone already registered');return;}
+      if(users.find(x=>x.ph===ph)){setErr('re','❌ ఈ phone already registered (local)');return;}
+      try{
+        const cred=await auth.createUserWithEmailAndPassword(em,pw);
+        const uid=cred.user.uid;
+        const userData={id:uid,name:n,studio:s||n+' Photography',ph,email:em,pw,village:vil,photo:regPhData,cover:'',secQ:sqKey,secA:sa,equip:{cams:[],lights:[],lens:[],extras:[]},createdAt:Date.now()};
+        try{await db.collection('users').doc(uid).set(userData);}catch(e){}
+        try{await db.collection('phoneIndex').doc(ph).set({uid,email:em,createdAt:Date.now()});}catch(e){}
+        cu=userData;saveCu();users.push(userData);saveUsers();launchApp();return;
+      }catch(e){
+        if(e.code==='auth/email-already-in-use'){setErr('re','❌ ఈ email already registered');return;}
+        else if(e.code==='auth/network-request-failed'||e.message.includes('offline')||e.message.includes('client is offline')){
+          // Firebase offline - fall through to local
+        } else {setErr('re','❌ '+e.message);return;}
+      }
+    }catch(e){/* fall through to local */}
   }
+
+  // Local mode register
   if(users.find(x=>x.ph===ph)){setErr('re','❌ ఈ phone already registered');return;}
+  if(users.find(x=>x.email===em)){setErr('re','❌ ఈ email already registered');return;}
   const u={id:'u'+Date.now(),name:n,studio:s||n+' Photography',ph,email:em,pw,village:vil,photo:regPhData,cover:'',secQ:sqKey,secA:sa,equip:{cams:[],lights:[],lens:[],extras:[]}};
   users.push(u);saveUsers();cu=u;saveCu();launchApp();
 }
