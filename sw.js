@@ -54,6 +54,7 @@ self.addEventListener('push', e => {
       badge: '/icon-192.png',
       vibrate: [200, 100, 200],
       data: data.url || '/'
+      // version 1.1
     })
   );
 });
