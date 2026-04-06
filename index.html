@@ -24,8 +24,8 @@
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
 
 /* ── LOGIN ── */
-.lscr{position:fixed;inset:0;background:var(--bg);z-index:900;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
-.lscr .logo{font-size:3.2rem;margin-bottom:6px;}
+.lscr{position:fixed;inset:0;background:var(--bg);z-index:900;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.lscr .logo{font-size:3.2rem;margin-bottom:6px;margin-top:30px;}
 .lscr h1{font-family:'Playfair Display',serif;font-size:1.8rem;background:linear-gradient(135deg,#f5c842,#ff9a3c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:4px;}
 .lscr p{color:var(--muted);font-size:.82rem;margin-bottom:24px;text-align:center;}
 .lcard{background:var(--card);border:1px solid var(--bdr);border-radius:20px;padding:22px;width:100%;max-width:350px;}
@@ -283,9 +283,9 @@ input[type=file]{display:none;}
 
     <!-- REGISTER -->
     <div id="lf-reg" style="display:none">
-      <div class="lf"><label>పేరు *</label><input type="text" id="rn" placeholder="మీ పూర్తి పేరు..." autocomplete="name" inputmode="text" autocorrect="off" autocapitalize="words" spellcheck="false"></div>
+      <div class="lf"><label>పేరు *</label><input type="text" id="rn" placeholder="మీ పూర్తి పేరు..." autocomplete="name" inputmode="text" autocorrect="off" autocapitalize="words" spellcheck="false" oninput="this.value=this.value.replace(/[^a-zA-Z\u0C00-\u0C7F\s]/g,'')"></div>
       <div class="lf"><label>Studio పేరు *</label><input type="text" id="rs" placeholder="Studio పేరు..." autocomplete="organization" inputmode="text" autocorrect="off" autocapitalize="words" spellcheck="false"></div>
-      <div class="lf"><label>గ్రామం / నగరం</label><input type="text" id="rvil" placeholder="మీ ఊరు..." autocomplete="address-level2" inputmode="text" autocorrect="off" autocapitalize="words" spellcheck="false"></div>
+      <div class="lf"><label>గ్రామం / నగరం</label><input type="text" id="rvil" placeholder="మీ ఊరు..." autocomplete="address-level2" inputmode="text" autocorrect="off" autocapitalize="words" spellcheck="false" oninput="this.value=this.value.replace(/[^a-zA-Z\u0C00-\u0C7F\s]/g,'')"></div>
       <div class="lf"><label>Phone Number * (10 digits)</label>
         <input type="tel" id="rph" placeholder="9876543210" maxlength="10">
       </div>
@@ -564,10 +564,10 @@ input[type=file]{display:none;}
     <div class="pf-title">👤 Profile</div>
     <div class="pf-av" id="pfAv" onclick="document.getElementById('photoInp').click()">📷</div>
     <input type="file" id="photoInp" accept="image/*" onchange="handlePhoto(this)">
-    <div class="lf"><label>పేరు</label><input type="text" id="pfN" placeholder="మీ పేరు"></div>
-    <div class="lf"><label>Studio పేరు</label><input type="text" id="pfS" placeholder="Studio పేరు"></div>
+    <div class="lf"><label>పేరు</label><input type="text" id="pfN" placeholder="మీ పేరు" autocorrect="off" autocapitalize="words" spellcheck="false" oninput="this.value=this.value.replace(/[^a-zA-Z\u0C00-\u0C7F\s]/g,'')"></div>
+    <div class="lf"><label>Studio పేరు</label><input type="text" id="pfS" placeholder="Studio పేరు" autocorrect="off" autocapitalize="words" spellcheck="false"></div>
     <div class="lf"><label>Phone</label><input type="tel" id="pfPh" placeholder="9876543210"></div>
-    <div class="lf"><label>గ్రామం</label><input type="text" id="pfV" placeholder="మీ ఊరు"></div>
+    <div class="lf"><label>గ్రామం</label><input type="text" id="pfV" placeholder="మీ ఊరు" autocorrect="off" autocapitalize="words" spellcheck="false" oninput="this.value=this.value.replace(/[^a-zA-Z\u0C00-\u0C7F\s]/g,'')"></div>
     <div class="pf-sec-t">📷 Cameras</div>
     <div class="eq-grid" id="pfCams"></div>
     <div class="pf-sec-t">🔦 Lights & Flash</div>
