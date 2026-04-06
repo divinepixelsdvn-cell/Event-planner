@@ -258,7 +258,45 @@ input[type=file]{display:none;}
   sessionStorage.clear();
   console.log("All cache cleared!");
 </script>
+<script>
+// పేజీలు మారడానికి (Login, Register, Password మధ్య)
+function swL(type) {
+    // అన్ని సెక్షన్లను ముందుగా దాచిపెట్టండి
+    document.getElementById('lscr').style.display = 'none'; // Login section
+    document.getElementById('lf-reg').style.display = 'none'; // Register section
+    // మీకు పాస్‌వర్డ్ రీసెట్ ఐడి ఉంటే అది కూడా ఇక్కడ ఇవ్వండి
 
+    if (type === 'in') {
+        document.getElementById('lscr').style.display = 'block';
+    } else if (type === 'reg') {
+        document.getElementById('lf-reg').style.display = 'block';
+    }
+    
+    // ఆక్టివ్ బటన్ రంగు మార్చడానికి
+    document.querySelectorAll('.ltb').forEach(btn => btn.classList.remove('on'));
+    if(type === 'in') document.getElementById('lt1').classList.add('on');
+    if(type === 'reg') document.getElementById('lt2').classList.add('on');
+    if(type === 'fp') document.getElementById('lt3').classList.add('on');
+}
+
+// రిజిస్ట్రేషన్ బటన్ నొక్కినప్పుడు
+function doReg() {
+    alert("రిజిస్ట్రేషన్ ప్రాసెస్ ప్రారంభమైంది...");
+    // ఇక్కడ మీ Firebase లేదా డేటాబేస్ సేవ్ చేసే కోడ్ రాయాలి
+}
+
+// పాస్‌వర్డ్ చూపించడానికి (Eye icon కోసం)
+function togPw(id, btn) {
+    const x = document.getElementById(id);
+    if (x.type === "password") {
+        x.type = "text";
+        btn.innerHTML = "👁️‍🗨️"; // చూపిస్తున్నప్పుడు గుర్తు
+    } else {
+        x.type = "password";
+        btn.innerHTML = "👁️";
+    }
+}
+</script>
 <!-- ══ LOGIN ══ -->
 <div class="lscr" id="lscr">
   <div class="logo">📷</div>
