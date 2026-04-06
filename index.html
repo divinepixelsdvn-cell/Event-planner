@@ -252,53 +252,9 @@ input[type=file]{display:none;}
 </style>
 </head>
 <body>
-  <script>
-  // పాత డేటా మొత్తం క్లియర్ చేయడానికి
-  localStorage.clear();
-  sessionStorage.clear();
-  console.log("All cache cleared!");
-</script>
-<script>
-// పేజీలు మారడానికి (Login, Register, Password మధ్య)
-function swL(type) {
-    // అన్ని సెక్షన్లను ముందుగా దాచిపెట్టండి
-    document.getElementById('lscr').style.display = 'none'; // Login section
-    document.getElementById('lf-reg').style.display = 'none'; // Register section
-    // మీకు పాస్‌వర్డ్ రీసెట్ ఐడి ఉంటే అది కూడా ఇక్కడ ఇవ్వండి
 
-    if (type === 'in') {
-        document.getElementById('lscr').style.display = 'block';
-    } else if (type === 'reg') {
-        document.getElementById('lf-reg').style.display = 'block';
-    }
-    
-    // ఆక్టివ్ బటన్ రంగు మార్చడానికి
-    document.querySelectorAll('.ltb').forEach(btn => btn.classList.remove('on'));
-    if(type === 'in') document.getElementById('lt1').classList.add('on');
-    if(type === 'reg') document.getElementById('lt2').classList.add('on');
-    if(type === 'fp') document.getElementById('lt3').classList.add('on');
-}
-
-// రిజిస్ట్రేషన్ బటన్ నొక్కినప్పుడు
-function doReg() {
-    alert("రిజిస్ట్రేషన్ ప్రాసెస్ ప్రారంభమైంది...");
-    // ఇక్కడ మీ Firebase లేదా డేటాబేస్ సేవ్ చేసే కోడ్ రాయాలి
-}
-
-// పాస్‌వర్డ్ చూపించడానికి (Eye icon కోసం)
-function togPw(id, btn) {
-    const x = document.getElementById(id);
-    if (x.type === "password") {
-        x.type = "text";
-        btn.innerHTML = "👁️‍🗨️"; // చూపిస్తున్నప్పుడు గుర్తు
-    } else {
-        x.type = "password";
-        btn.innerHTML = "👁️";
-    }
-}
-</script>
 <!-- ══ LOGIN ══ -->
-<div class="lscr" id="lscr">
+<div class="lscr" id="lscr" style="display:flex">
   <div class="logo">📷</div>
   <h1>Event Planner</h1>
   <p>Photographer Event Management App</p>
@@ -829,9 +785,19 @@ async function doResetPw(){
 }
 
 function doLogout(){
-  if(!confirm('Logout?'))return;
-  if(fbOk&&auth)auth.signOut().catch(()=>{});
-  cu=null;localStorage.removeItem('ppCu');location.reload();
+  if(!confirm('Logout చేయాలా?'))return;
+  const signOutAndClear=()=>{
+    cu=null;
+    evs=[];
+    users=[];
+    localStorage.removeItem('ppCu');
+    localStorage.removeItem('ppEvs');
+    localStorage.removeItem('ppUsers');
+    localStorage.removeItem('ppReqs');
+    location.reload();
+  };
+  if(fbOk&&auth){auth.signOut().then(signOutAndClear).catch(signOutAndClear);}
+  else{signOutAndClear();}
 }
 function doDelAcc(){
   const r=prompt('Account delete కారణం:\n1.అవసరం లేదు\n2.వేరే app\n3.Privacy\n4.Technical\n5.Others\n(number ఇవ్వండి)');
@@ -1829,27 +1795,38 @@ function restoreBackup(inp){
   inp.value='';
 }
 
-// ══ DEMO AUTO-LOGIN ══
+// ══ DEMO AUTO-LOGIN REMOVED ══
+// No demo account. Every user must register or login.
+
+// ══ CLEAR STALE DEMO DATA ══
 (function(){
-  if(!cu){
-    cu={id:'demo001',name:'Ravi Kumar',studio:'Ravi Photography',ph:'9876543210',email:'ravi@demo.com',pw:'demo123',village:'Bhimavaram',photo:'',cover:'',secQ:'cam',secA:'sony',equip:{cams:['Sony A7 IV','Canon R6'],lights:['LED Panel','Softbox'],lens:['24-70mm f/2.8','85mm f/1.8'],extras:['Drone DJI Mini 3','Gimbal']}};
-    users=[cu];
-    evs=[
-      {id:'ev001',uid:'demo001',type:'own',cat:'wedding',name:'Ravi & Priya Wedding',groom:'Ravi',bride:'Priya',clientName:'Ravi',clientPhone:'9876543210',date:'2026-04-20',mainTime:'09:00',location:'Sri Kalyana Mandapam, Bhimavaram',camera:'with',subEvs:[{name:'Pellikuturu',date:'2026-04-19',time:'18:00',location:'Bride Home',services:{photo:true,video:true,drone:false,others:false}},{name:'Wedding',date:'2026-04-20',time:'09:00',location:'Sri Kalyana Mandapam',services:{photo:true,video:true,drone:true,others:false}},{name:'Reception',date:'2026-04-21',time:'19:00',location:'Grand Hotel Bhimavaram',services:{photo:true,video:true,drone:false,others:true}}],reqGroup1:['Candid'],reqGroup2:['Photos','Videos','Wedding Promo','Songs'],reqGroup3:['LED Screen','Live Streaming'],budget:'85000',advance:'30000',budgetFixed:true,sheets:[{type:'Album Sheets',count:'60'},{type:'Video',count:'2'},{type:'Reels',count:'5'}],agrDate:'2026-03-15',spokeWith:'Ravi\'s Father',notes:'Drone permission తీసుకోవాలి. Extra lights కావాలి.',created:Date.now()-86400000},
-      {id:'ev002',uid:'demo001',type:'support',cat:'birthday',name:'Chandu Birthday',groom:'Chandu',bride:'',clientName:'Chandu',clientPhone:'9988776655',date:'2026-04-10',mainTime:'18:00',location:'Party Hall, Tanuku',camera:'with',subEvs:[{name:'Birthday',date:'2026-04-10',time:'18:00',location:'Party Hall',services:{photo:true,video:true,drone:false,others:false}},{name:'Song',date:'2026-04-10',time:'19:00',location:'Party Hall',services:{photo:false,video:true,drone:false,others:false}}],reqGroup1:['Regular'],reqGroup2:['Photos','Videos'],reqGroup3:[],budget:'15000',advance:'5000',budgetFixed:true,sheets:[{type:'Album Sheets',count:'40'}],agrDate:'2026-03-20',spokeWith:'Chandu',notes:'',created:Date.now()-172800000},
-      {id:'ev003',uid:'demo001',type:'own',cat:'halfsaree',name:'Siri Half Saree Function',groom:'Siri',bride:'',clientName:'Siri\'s Father',clientPhone:'9123456789',date:'2026-05-05',mainTime:'10:00',location:'Rajahmundry',camera:'with',subEvs:[{name:'Photo Shoot',date:'2026-05-04',time:'16:00',location:'Outdoor Location',services:{photo:true,video:false,drone:false,others:false}},{name:'Function',date:'2026-05-05',time:'10:00',location:'Function Hall',services:{photo:true,video:true,drone:true,others:false}}],reqGroup1:['Candid'],reqGroup2:['Photos','Videos','Pre Shoot'],reqGroup3:['Photo Booth'],budget:'40000',advance:'15000',budgetFixed:false,sheets:[],agrDate:'2026-04-01',spokeWith:'Father',notes:'Outdoor location confirm చేయాలి.',created:Date.now()-259200000}
-    ];
-    localStorage.setItem('ppCu',JSON.stringify(cu));
-    localStorage.setItem('ppUsers',JSON.stringify(users));
-    localStorage.setItem('ppEvs',JSON.stringify(evs));
-  }
+  const stored=localStorage.getItem('ppCu');
+  if(stored){try{const p=JSON.parse(stored);if(p&&(p.id==='demo001'||p.email==='ravi@demo.com')){localStorage.removeItem('ppCu');localStorage.removeItem('ppUsers');localStorage.removeItem('ppEvs');cu=null;users=[];evs=[];}}catch(e){}}
 })();
 
 // ══ INIT ══
 cleanup();
 (async function(){
   if(await checkClientMode())return;
-  if(cu)launchApp();
+  if(fbOk&&auth){
+    auth.onAuthStateChanged(async function(user){
+      if(user){
+        const doc=await db.collection('users').doc(user.uid).get().catch(()=>null);
+        if(doc&&doc.exists){cu={...doc.data(),id:user.uid};saveCu();}
+        else if(!cu||cu.id!==user.uid){cu={id:user.uid,name:'User',studio:'My Studio',ph:'',email:user.email||'',photo:'',cover:'',village:'',equip:{cams:[],lights:[],lens:[],extras:[]}};saveCu();}
+        const evDoc=await db.collection('events').doc(user.uid).get().catch(()=>null);
+        if(evDoc&&evDoc.exists&&evDoc.data().evs){evs=evDoc.data().evs;localStorage.setItem('ppEvs',JSON.stringify(evs));}
+        launchApp();
+      }else{
+        cu=null;localStorage.removeItem('ppCu');
+        document.getElementById('lscr').style.display='flex';
+        document.getElementById('app').style.display='none';
+      }
+    });
+  }else{
+    if(cu)launchApp();
+    else{document.getElementById('lscr').style.display='flex';document.getElementById('app').style.display='none';}
+  }
 })();
 </script>
 </body>
