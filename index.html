@@ -283,9 +283,9 @@ input[type=file]{display:none;}
 
     <!-- REGISTER -->
     <div id="lf-reg" style="display:none">
-      <div class="lf"><label>పేరు *</label><input type="text" id="rn" placeholder="మీ పూర్తి పేరు..."></div>
-      <div class="lf"><label>Studio పేరు *</label><input type="text" id="rs" placeholder="Studio పేరు..."></div>
-      <div class="lf"><label>గ్రామం / నగరం</label><input type="text" id="rvil" placeholder="మీ ఊరు..."></div>
+      <div class="lf"><label>పేరు *</label><input type="text" id="rn" placeholder="మీ పూర్తి పేరు..." autocomplete="name" inputmode="text" autocorrect="off" autocapitalize="words" spellcheck="false"></div>
+      <div class="lf"><label>Studio పేరు *</label><input type="text" id="rs" placeholder="Studio పేరు..." autocomplete="organization" inputmode="text" autocorrect="off" autocapitalize="words" spellcheck="false"></div>
+      <div class="lf"><label>గ్రామం / నగరం</label><input type="text" id="rvil" placeholder="మీ ఊరు..." autocomplete="address-level2" inputmode="text" autocorrect="off" autocapitalize="words" spellcheck="false"></div>
       <div class="lf"><label>Phone Number * (10 digits)</label>
         <input type="tel" id="rph" placeholder="9876543210" maxlength="10">
       </div>
@@ -710,8 +710,8 @@ async function doReg(){
   const pw2=document.getElementById('rpw2').value;
   const sqKey=document.getElementById('rsq').value;
   const sa=document.getElementById('rsa').value.trim().toLowerCase();
-  if(!n){setErr('re','❌ పేరు తప్పనిసరి');return;}
-  if(!s){setErr('re','❌ Studio పేరు తప్పనిసరి');return;}
+  if(!n||n.length<2){setErr('re','❌ పేరు కనీసం 2 అక్షరాలు ఉండాలి');return;}
+  if(!s||s.length<2){setErr('re','❌ Studio పేరు కనీసం 2 అక్షరాలు ఉండాలి');return;}
   if(ph.length!==10||!/^\d+$/.test(ph)){setErr('re','❌ Valid 10-digit phone ఇవ్వండి');return;}
   if(!em||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){setErr('re','❌ Valid email ఇవ్వండి');return;}
   const pwErr=valPw(pw);if(pwErr){setErr('re','❌ '+pwErr);return;}
