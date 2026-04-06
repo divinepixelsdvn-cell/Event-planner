@@ -580,6 +580,7 @@ input[type=file]{display:none;}
     <div class="lf"><label>Studio పేరు</label><input type="text" id="pfS" placeholder="Studio పేరు" autocorrect="off" autocapitalize="words" spellcheck="false"></div>
     <div class="lf"><label>Phone</label><input type="tel" id="pfPh" placeholder="9876543210"></div>
     <div class="lf"><label>గ్రామం</label><input type="text" id="pfV" placeholder="మీ ఊరు" autocorrect="off" autocapitalize="words" spellcheck="false" oninput="this.value=this.value.replace(/[^a-zA-Z\u0C00-\u0C7F\s]/g,'')"></div>
+    <div class="lf"><label>🪪 Union / License Card Number</label><input type="text" id="pfUnion" placeholder="Photography Union ID / License No..." autocorrect="off" spellcheck="false"></div>
     <div class="pf-sec-t">📷 Cameras</div>
     <div class="eq-grid" id="pfCams"></div>
     <div class="pf-sec-t">🔦 Lights & Flash</div>
@@ -1035,6 +1036,10 @@ function buildForm(ev){
       <div class="fg"><label>${isWedding?'పెళ్ళికొడుకు పేరు':'Person 1 పేరు'}</label><input type="text" id="fGroom" value="${ev?.groom||''}" placeholder="${isWedding?'పెళ్ళికొడుకు పేరు...':'పేరు...'}" oninput="autoEvName()"></div>
       <div class="fg"><label>${isWedding?'పెళ్ళికూతురు పేరు':'Person 2 పేరు'}</label><input type="text" id="fBride" value="${ev?.bride||''}" placeholder="${isWedding?'పెళ్ళికూతురు పేరు...':'పేరు...'}" oninput="autoEvName()"></div>
     </div>
+    ${isWedding?`<div class="inline2">
+      <div class="fg"><label>పెళ్ళికొడుకు గ్రామం</label><input type="text" id="fGroom_vil" value="${ev?.groomVil||''}" placeholder="గ్రామం పేరు..." oninput="refreshSubList()"></div>
+      <div class="fg"><label>పెళ్ళికూతురు గ్రామం</label><input type="text" id="fBride_vil" value="${ev?.brideVil||''}" placeholder="గ్రామం పేరు..." oninput="refreshSubList()"></div>
+    </div>`:''}
     <div class="fg" id="evNameRow" style="background:rgba(245,200,66,.06);border:1px solid rgba(245,200,66,.2);border-radius:8px;padding:8px 10px">
       <label style="color:var(--acc)">📝 Event Name (Auto)</label>
       <div id="evNameDisplay" style="font-weight:700;font-size:.9rem;color:var(--text)">${ev?.name||(ev?.groom&&ev?.bride?ev.groom+' & '+ev.bride:ev?.groom||ev?.bride||'—')}</div>
@@ -1116,7 +1121,8 @@ function buildForm(ev){
       <div style="margin-bottom:5px">1. ఈవెంట్ లో కొత్త అంశం లేదా కార్యక్రమం మీరు నిర్ణయించుకుని ఉంటే <strong style="color:var(--text)">ముందుగా చెప్పాలి</strong>.</div>
       <div style="margin-bottom:5px">2. Pre / Post Shoot లో అన్ని ఖర్చులు <strong style="color:var(--text)">మీరే భరించాల్సి ఉంటుంది</strong>.</div>
       <div style="margin-bottom:5px">3. Extra requirements కి <strong style="color:var(--text)">అదనపు Amount ఉంటుంది</strong>.</div>
-      <div>4. Wedding తర్వాత <strong style="color:var(--text)">3 నెలల లోపు</strong> Photo Selection, <strong style="color:var(--text)">సంవత్సరం లోపు</strong> Delivery తీసుకోవాలి.</div>
+      <div style="margin-bottom:5px">4. Wedding తర్వాత <strong style="color:var(--text)">3 నెలల లోపు</strong> Photo Selection, <strong style="color:var(--text)">సంవత్సరం లోపు</strong> Delivery తీసుకోవాలి.</div>
+      <div>5. పెళ్లికి ముందు <strong style="color:var(--acc)">40% Advance</strong> ఇవ్వాల్సి ఉంటుంది.</div>
     </div>
     <div class="fg"><label>Additional Notes</label><textarea id="fNotes" rows="2" placeholder="మరిన్ని గమనికలు...">${ev?.notes||''}</textarea></div>
   </div>
@@ -1163,7 +1169,7 @@ function renReqList(){
       <div style="font-weight:700;font-size:.88rem;color:var(--acc);margin-bottom:4px">💍 ${d.groomName||'?'} & ${d.brideName||'?'}</div>
       <div style="font-size:.72rem;color:var(--muted);margin-bottom:5px">📅 ${d.weddingDate||'--'} &nbsp;📞 ${d.clientPhone||'--'}</div>
       <div style="display:flex;gap:5px;flex-wrap:wrap">
-        ${d.photoType?`<span style="background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.3);color:var(--acc);border-radius:10px;padding:2px 8px;font-size:.62rem;font-weight:600">${d.photoType}</span>`:''}
+        ${d.selectedEvents?.length?`<span style="background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.3);color:var(--acc);border-radius:10px;padding:2px 8px;font-size:.62rem;font-weight:600">${d.selectedEvents.slice(0,3).join(', ')}${d.selectedEvents.length>3?'...':''}</span>`:(d.photoType?`<span style="background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.3);color:var(--acc);border-radius:10px;padding:2px 8px;font-size:.62rem;font-weight:600">${d.photoType}</span>`:'')}
         ${d.budget?`<span style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--own);border-radius:10px;padding:2px 8px;font-size:.62rem;font-weight:600">₹${d.budget}</span>`:''}
         <span style="background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.3);color:var(--sky);border-radius:10px;padding:2px 8px;font-size:.62rem">${r.submittedAt||''}</span>
       </div>
@@ -1252,13 +1258,37 @@ function pickCat(c){document.getElementById('fCat').value=c;highlightCat(c);cons
 function highlightCat(c){document.querySelectorAll('.catb').forEach(b=>b.classList.toggle('on',b.dataset.cat===c));}
 function addSub(){let name=document.getElementById('subSel').value;if(name==='__custom'){name=prompt('Sub Event పేరు:');if(!name)return;}formSubEvs.push({name,date:'',time:'',location:'',services:{photo:false,video:false,drone:false,others:false}});refreshSubList();}
 function rmSub(i){formSubEvs.splice(i,1);refreshSubList();}
+function fmt12(t){if(!t)return'';const[h,m]=t.split(':').map(Number);const ampm=h>=12?'PM':'AM';const hr=h%12||12;return`${hr}:${String(m).padStart(2,'0')} ${ampm}`;}
+function getGroomVillage(){return document.getElementById('fGroom')?.closest('.form-card')?.querySelector('#fGroom')?.value.trim()||'';}
+function autoVillage(i){
+  const s=formSubEvs[i];
+  const groomVil=cu?.groomVil||'';
+  const brideVil=cu?.brideVil||'';
+  const n=s.name||'';
+  const groomSide=['Pellikoduku','Haldi','Pasupu Paaya','పుష్పాయ'];
+  const brideSide=['Pellikuturu'];
+  if(groomSide.some(x=>n.includes(x)))return groomVil;
+  if(brideSide.some(x=>n.includes(x)))return brideVil;
+  return '';
+}
 function renderSubList(){
   if(!formSubEvs.length)return'';
   const last=formSubEvs.length-1;
+  const groomVil=document.getElementById('fGroom_vil')?.value||'';
+  const brideVil=document.getElementById('fBride_vil')?.value||'';
   return formSubEvs.map((s,i)=>{
     const isActive=i===last;
-    if(isActive){return`<div class="sub-ev-item" id="sei${i}" style="border-color:var(--acc)"><div class="sub-ev-header"><span class="sub-ev-name" style="color:var(--acc)">📌 ${s.name}</span><button class="sub-remove" onclick="rmSub(${i})">✕</button></div><div class="inline2"><div class="fg"><label>తేదీ</label><input type="date" value="${s.date||''}" onchange="formSubEvs[${i}].date=this.value"></div><div class="fg"><label>సమయం</label><input type="time" value="${s.time||''}" onchange="formSubEvs[${i}].time=this.value"></div></div><div class="fg"><label>స్థలం</label><input type="text" value="${s.location||''}" placeholder="వేదిక..." onchange="formSubEvs[${i}].location=this.value"></div><div class="fg"><label>Services</label><div style="display:flex;gap:6px;flex-wrap:wrap">${['📷 Photo','🎬 Video','🚁 Drone','📋 Others'].map((lbl,si)=>{const key=['photo','video','drone','others'][si];return`<label style="display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--bdr);border-radius:5px;padding:4px 8px;cursor:pointer;font-size:.75rem"><input type="checkbox" ${s.services?.[key]?'checked':''} onchange="formSubEvs[${i}].services['${key}']=this.checked" style="accent-color:var(--acc)"> ${lbl}</label>`;}).join('')}</div></div></div>`;}
-    else{const svcs=Object.entries(s.services||{}).filter(([k,v])=>v).map(([k])=>({photo:'📷',video:'🎬',drone:'🚁',others:'📋'}[k]||k)).join(' ');return`<div style="background:var(--surf);border:1px solid var(--bdr);border-radius:7px;padding:7px 10px;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:.76rem" id="sei${i}"><div style="flex:1;min-width:0"><span style="font-weight:600;color:var(--acc)">📌 ${s.name}</span><span style="color:var(--muted);margin-left:8px">${s.date||'--'} ${s.time?'· '+s.time:''} ${s.location?'· '+s.location:''} ${svcs?'· '+svcs:''}</span></div><button onclick="expandSub(${i})" style="background:none;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;font-size:.65rem;cursor:pointer;color:var(--muted)">✏️</button><button onclick="rmSub(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.85rem">✕</button></div>`;}
+    // Determine auto village
+    const groomSideNames=['Pellikoduku','Haldi','Pasupu Paaya','పుష్పాయ','పెళ్ళికొడుకు'];
+    const brideSideNames=['Pellikuturu','పెళ్ళికూతురు'];
+    let autoVil='';
+    if(groomSideNames.some(x=>s.name?.includes(x)))autoVil=groomVil;
+    else if(brideSideNames.some(x=>s.name?.includes(x)))autoVil=brideVil;
+    // Haldi/Pushpaya count checkbox
+    const isHaldiOrPushpaya=s.name&&(s.name.toLowerCase().includes('haldi')||s.name.includes('పుష్పాయ')||s.name.includes('Pasupu'));
+    const countHtml=isHaldiOrPushpaya?`<div class="fg" style="margin-top:6px"><label>ఎన్ని కావాలి?</label><div style="display:flex;gap:8px"><label style="display:flex;align-items:center;gap:4px;background:var(--surf);border:1px solid var(--bdr);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:.78rem"><input type="radio" name="hc${i}" value="1" ${(s.count||1)===1?'checked':''} onchange="formSubEvs[${i}].count=1" style="accent-color:var(--acc)"> 1 మాత్రమే</label><label style="display:flex;align-items:center;gap:4px;background:var(--surf);border:1px solid var(--bdr);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:.78rem"><input type="radio" name="hc${i}" value="2" ${(s.count||1)===2?'checked':''} onchange="formSubEvs[${i}].count=2" style="accent-color:var(--acc)"> 2 కావాలి</label></div></div>`:'';
+    if(isActive){return`<div class="sub-ev-item" id="sei${i}" style="border-color:var(--acc)"><div class="sub-ev-header"><span class="sub-ev-name" style="color:var(--acc)">📌 ${s.name}</span><button class="sub-remove" onclick="rmSub(${i})">✕</button></div><div class="inline2"><div class="fg"><label>తేదీ</label><input type="date" value="${s.date||''}" onchange="formSubEvs[${i}].date=this.value"></div><div class="fg"><label>సమయం (12hr)</label><input type="time" value="${s.time||''}" onchange="formSubEvs[${i}].time=this.value"></div></div>${s.time?`<div style="font-size:.7rem;color:var(--acc);padding:2px 0">🕐 ${fmt12(s.time)}</div>`:''}<div class="fg"><label>స్థలం ${autoVil?'(Auto: '+autoVil+')':''}</label><input type="text" value="${s.location||autoVil}" placeholder="${autoVil||'వేదిక...'}" onchange="formSubEvs[${i}].location=this.value" id="subloc${i}"></div><div class="fg"><label>Services</label><div style="display:flex;gap:6px;flex-wrap:wrap">${['📷 Photo','🎬 Video','🚁 Drone','📋 Others'].map((lbl,si)=>{const key=['photo','video','drone','others'][si];return`<label style="display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--bdr);border-radius:5px;padding:4px 8px;cursor:pointer;font-size:.75rem"><input type="checkbox" ${s.services?.[key]?'checked':''} onchange="formSubEvs[${i}].services['${key}']=this.checked" style="accent-color:var(--acc)"> ${lbl}</label>`;}).join('')}</div></div>${countHtml}</div>`;}
+    else{const svcs=Object.entries(s.services||{}).filter(([k,v])=>v).map(([k])=>({photo:'📷',video:'🎬',drone:'🚁',others:'📋'}[k]||k)).join(' ');const t12=fmt12(s.time);return`<div style="background:var(--surf);border:1px solid var(--bdr);border-radius:7px;padding:7px 10px;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:.76rem" id="sei${i}"><div style="flex:1;min-width:0"><span style="font-weight:600;color:var(--acc)">📌 ${s.name}</span><span style="color:var(--muted);margin-left:8px">${s.date||'--'} ${t12?'· '+t12:''} ${s.location?'· '+s.location:''} ${svcs?'· '+svcs:''}</span></div><button onclick="expandSub(${i})" style="background:none;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;font-size:.65rem;cursor:pointer;color:var(--muted)">✏️</button><button onclick="rmSub(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.85rem">✕</button></div>`;}
   }).join('');
 }
 function refreshSubList(){document.getElementById('subEvList').innerHTML=renderSubList();}
@@ -1274,7 +1304,7 @@ function getFormData(){
   const bride=document.getElementById('fBride')?.value.trim()||'';
   const cat=document.getElementById('fCat').value||'wedding';
   const evName=document.getElementById('fEvName')?.value.trim()||(groom&&bride?`${groom} & ${bride}`:groom||bride||'Event');
-  return{id:editEvId||Date.now().toString(),uid:cu?.id||'',type:document.getElementById('fType').value||'own',groom,bride,clientName:groom||bride||'',clientPhone:document.getElementById('fCPhone')?.value.trim()||'',name:evName,date:document.getElementById('fDate').value,mainTime:document.getElementById('fMainTime')?.value||'',location:document.getElementById('fLoc').value.trim(),cat,camera:document.querySelector('input[name=fcam]:checked')?.value||'with',subEvs:formSubEvs.filter(s=>s.name),reqGroup1:formReqG[1]||[],reqGroup2:formReqG[2]||[],reqGroup3:formReqG[3]||[],budget:document.getElementById('fBudget').value,advance:document.getElementById('fAdvance').value,budgetFixed,sheets:budgetFixed?formSheets:[],agrDate:document.getElementById('fAgrDate').value,spokeWith:document.getElementById('fSpoke').value.trim(),notes:document.getElementById('fNotes').value.trim(),created:Date.now()};
+  return{id:editEvId||Date.now().toString(),uid:cu?.id||'',type:document.getElementById('fType').value||'own',groom,bride,groomVil:document.getElementById('fGroom_vil')?.value.trim()||'',brideVil:document.getElementById('fBride_vil')?.value.trim()||'',clientName:groom||bride||'',clientPhone:document.getElementById('fCPhone')?.value.trim()||'',name:evName,date:document.getElementById('fDate').value,mainTime:document.getElementById('fMainTime')?.value||'',location:document.getElementById('fLoc').value.trim(),cat,camera:document.querySelector('input[name=fcam]:checked')?.value||'with',subEvs:formSubEvs.filter(s=>s.name),reqGroup1:formReqG[1]||[],reqGroup2:formReqG[2]||[],reqGroup3:formReqG[3]||[],budget:document.getElementById('fBudget').value,advance:document.getElementById('fAdvance').value,budgetFixed,sheets:budgetFixed?formSheets:[],agrDate:document.getElementById('fAgrDate').value,spokeWith:document.getElementById('fSpoke').value.trim(),notes:document.getElementById('fNotes').value.trim(),created:Date.now()};
 }
 function saveForm(){
   const d=getFormData();
@@ -1382,13 +1412,21 @@ function cpDetLink(id){
   const ev=evs.find(e=>e.id===id);
   if(ev?.clientPhone){setTimeout(()=>{if(confirm('WhatsApp లో link పంపాలా?'))waLink(link,ev.clientPhone);},300);}
 }
-function delEv(id){if(!confirm('Delete చేయాలా?'))return;evs=evs.filter(e=>e.id!==id);saveEvs();renAll();showListView();toast('🗑 Deleted');}
+function delEv(id){
+  const reasons=['1. Client Cancel చేసారు','2. Date Conflict','3. Payment రాలేదు','4. Client మారారు','5. తప్పుగా Add అయింది','6. ఇతర కారణం'];
+  const r=prompt('Delete కారణం select చేయండి:\n\n'+reasons.join('\n')+'\n\n(number టైప్ చేయండి: 1-6)');
+  if(!r)return;
+  const num=parseInt(r);
+  if(!num||num<1||num>6){alert('Valid number (1-6) ఇవ్వండి');return;}
+  if(!confirm(`కారణం: ${reasons[num-1]}\n\nDelete చేయాలా? ఇది తిరిగి రాదు!`))return;
+  evs=evs.filter(e=>e.id!==id);saveEvs();renAll();showListView();toast('🗑 Deleted — '+reasons[num-1].split('. ')[1]);
+}
 
 // ══ PDF (exact from pp01.html) ══
 function genPDF(){const d=getFormData();genPDFData(d);}
 function genPDFById(id){const ev=evs.find(e=>e.id===id);if(ev)genPDFData(ev);}
 function genPDFData(ev){
-  const html=buildPDFHTML(ev);
+  const html=buildPDFData(ev);
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -1398,8 +1436,8 @@ function genPDFData(ev){
   setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
   toast('📄 PDF Download అవుతోంది...');
 }
-function buildPDFHTML(ev){
-  const studio=cu?.studio||'My Studio',myName=cu?.name||'',myPhone=cu?.ph||'',coverImg=cu?.cover||'',myPhoto=cu?.photo||'';
+function buildPDFData(ev){
+  const studio=cu?.studio||'My Studio',myName=cu?.name||'',myPhone=cu?.ph||'',coverImg=cu?.cover||'',myPhoto=cu?.photo||'',unionId=cu?.unionId||'';
   const advPct=ev.budget&&ev.advance?Math.round((parseInt(ev.advance)/parseInt(ev.budget))*100):0;
   const bal=ev.budget&&ev.advance?parseInt(ev.budget)-parseInt(ev.advance):null;
   const logoEl=myPhoto?`<img src="${myPhoto}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2.5px solid #f5c842" alt="">`:`<div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#f5c842,#ff9a3c);display:flex;align-items:center;justify-content:center;font-size:1.5rem">📷</div>`;
@@ -1547,7 +1585,7 @@ ${ev.notes?`<div class="sec">
     <div><strong>2.</strong> Pre/Post Shoot ఖర్చులు <strong>మీరే భరించాల్సి ఉంటుంది</strong>.</div>
     <div><strong>3.</strong> Extra requirements కి <strong>అదనపు Amount ఉంటుంది</strong>.</div>
     <div><strong>4.</strong> Wedding తర్వాత <strong>3 నెలల లోపు</strong> Selection, <strong>సంవత్సరం లోపు</strong> Delivery.</div>
-    <div><strong>5.</strong> Advance amount refundable కాదు.</div>
+    <div><strong>5.</strong> పెళ్లికి ముందు <strong style="color:#f5c842">40% Advance</strong> ఇవ్వాల్సి ఉంటుంది.</div>
   </div>
 </div>
 
@@ -1560,7 +1598,7 @@ ${ev.notes?`<div class="sec">
     <div class="ic"><label>📷 Camera</label><strong>${ev.camera==='with'?'📷 With Camera':'🚫 Without Camera'}</strong></div>
   </div>
   <div class="sig-row">
-    <div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Photographer</div><div class="sig-name">${myName} · ${myPhone}</div></div>
+    <div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Photographer</div><div class="sig-name">${myName} · ${myPhone}${unionId?'<br>🪪 '+unionId:''}</div></div>
     <div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Client</div><div class="sig-name">${ev.spokeWith||ev.clientName||'Client'}${ev.clientPhone?' · '+ev.clientPhone:''}</div></div>
   </div>
 </div>
@@ -1568,7 +1606,7 @@ ${ev.notes?`<div class="sec">
 
 <div class="footer">
   <div class="ft-studio">📷 ${studio}</div>
-  <div class="ft-meta">${myName} • 📞 ${myPhone||'—'} • ${new Date().toLocaleDateString('te-IN',{year:'numeric',month:'long',day:'numeric'})}</div>
+  <div class="ft-meta">${myName} • 📞 ${myPhone||'—'}${unionId?' • 🪪 '+unionId:''} • ${new Date().toLocaleDateString('te-IN',{year:'numeric',month:'long',day:'numeric'})}</div>
 </div>
 </div>
 <script>setTimeout(()=>window.print(),600);<\/script>
@@ -1659,7 +1697,7 @@ function renRep(){
 // ══ PROFILE ══
 function openProf(){
   if(!cu)return;
-  document.getElementById('pfN').value=cu.name||'';document.getElementById('pfS').value=cu.studio||'';document.getElementById('pfPh').value=cu.ph||'';document.getElementById('pfV').value=cu.village||'';
+  document.getElementById('pfN').value=cu.name||'';document.getElementById('pfS').value=cu.studio||'';document.getElementById('pfPh').value=cu.ph||'';document.getElementById('pfV').value=cu.village||'';document.getElementById('pfUnion').value=cu.unionId||'';
   const pav=document.getElementById('pfAv');pav.innerHTML=cu.photo?`<img src="${cu.photo}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:(cu.name||'P').charAt(0).toUpperCase();
   const mk=(id,items,sel)=>{document.getElementById(id).innerHTML=items.map(x=>`<label class="eqc"><input type="checkbox" ${sel?.includes(x)?'checked':''} value="${x}"> ${x}</label>`).join('');};
   mk('pfCams',CAMS,cu.equip?.cams);mk('pfLights',LIGHTS,cu.equip?.lights);mk('pfLens',LENS,cu.equip?.lens);mk('pfExtras',EXTRAS,cu.equip?.extras);
@@ -1668,7 +1706,7 @@ function openProf(){
 function closeProf(){document.getElementById('pmo').classList.remove('on');}
 function handlePhoto(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{cu.photo=e.target.result;document.getElementById('pfAv').innerHTML=`<img src="${cu.photo}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;};r.readAsDataURL(f);}
 function saveProf(){
-  cu.name=document.getElementById('pfN').value.trim()||cu.name;cu.studio=document.getElementById('pfS').value.trim()||cu.studio;cu.ph=document.getElementById('pfPh').value.trim()||cu.ph;cu.village=document.getElementById('pfV').value.trim();
+  cu.name=document.getElementById('pfN').value.trim()||cu.name;cu.studio=document.getElementById('pfS').value.trim()||cu.studio;cu.ph=document.getElementById('pfPh').value.trim()||cu.ph;cu.village=document.getElementById('pfV').value.trim();cu.unionId=document.getElementById('pfUnion').value.trim();
   cu.equip={cams:Array.from(document.querySelectorAll('#pfCams input:checked')).map(x=>x.value),lights:Array.from(document.querySelectorAll('#pfLights input:checked')).map(x=>x.value),lens:Array.from(document.querySelectorAll('#pfLens input:checked')).map(x=>x.value),extras:Array.from(document.querySelectorAll('#pfExtras input:checked')).map(x=>x.value)};
   const ui=users.findIndex(u=>u.id===cu.id);if(ui>-1)users[ui]=cu;
   saveUsers();saveCu();
@@ -1742,87 +1780,128 @@ async function checkClientMode(){
 function renderClientForm(uid,evid,studio,phone,village){
   const theme=localStorage.getItem('ppTheme')||'dark';
   document.documentElement.setAttribute('data-theme',theme);
-  let gc=2,bc=2;
-  const cfEvItem=(side,i,name)=>`<div style="background:var(--surf);border:1px solid var(--bdr);border-radius:9px;padding:10px;margin-bottom:7px" id="${side}ev${i}"><div style="display:flex;align-items:center;margin-bottom:8px"><input type="checkbox" id="${side}evchk${i}" style="margin-right:8px;accent-color:var(--acc);width:16px;height:16px;cursor:pointer"><span style="font-size:.84rem;font-weight:600;flex:1">${name}</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><label style="font-size:.62rem;color:var(--muted);display:block;margin-bottom:2px;text-transform:uppercase">తేదీ</label><input type="date" id="${side}evdate${i}" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px 8px;font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none"></div><div><label style="font-size:.62rem;color:var(--muted);display:block;margin-bottom:2px;text-transform:uppercase">సమయం</label><input type="time" id="${side}evtime${i}" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px 8px;font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none"></div></div></div>`;
+  const today=new Date().toISOString().slice(0,10);
+  const inp=(id,lbl,type,ph,extra='')=>`<div style="margin-bottom:10px"><label style="font-size:.63rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em">${lbl}</label><input type="${type}" id="${id}" ${type==='tel'?'maxlength="10"':''} ${extra} style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:8px;padding:9px 11px;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;transition:border .2s" placeholder="${ph}" onfocus="this.style.borderColor='var(--acc)'" onblur="this.style.borderColor='var(--bdr)'"></div>`;
+  const chk=(name,val,lbl)=>`<label style="display:flex;align-items:center;gap:7px;background:var(--surf);border:1.5px solid var(--bdr);border-radius:9px;padding:9px 12px;cursor:pointer;font-size:.82rem;font-weight:500;transition:all .15s" onclick="this.style.borderColor=this.querySelector('input').checked?'var(--bdr)':'var(--acc)';this.style.background=this.querySelector('input').checked?'var(--surf)':'rgba(245,200,66,.07)'"><input type="checkbox" name="${name}" value="${val}" style="accent-color:var(--acc);width:16px;height:16px"> ${lbl}</label>`;
 
   document.body.innerHTML=`
-  <div style="min-height:100vh;background:var(--bg)">
-  <div style="background:linear-gradient(135deg,#1a0533,#3d1470 40%,#1a2a5e);padding:24px 20px 18px;text-align:center;border-bottom:1px solid #28282e">
-    <div style="font-size:2.2rem;margin-bottom:6px">📷</div>
-    <div style="font-family:'Playfair Display',serif;font-size:1.4rem;background:linear-gradient(135deg,#f5c842,#ff9a3c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:2px">${studio}</div>
-    <div style="color:rgba(255,255,255,.6);font-size:.75rem">${village?village+' · ':''}${phone}</div>
-    <div style="margin-top:8px;font-size:.78rem;color:rgba(255,255,255,.7)">Wedding Photography Booking Form</div>
+  <div style="min-height:100vh;background:var(--bg);padding-bottom:40px">
+  <div style="background:linear-gradient(135deg,#0d0520,#3d1470 50%,#1a2a5e);padding:28px 20px 20px;text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:8px">📷</div>
+    <div style="font-family:'Playfair Display',serif;font-size:1.5rem;background:linear-gradient(135deg,#f5c842,#ff9a3c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900;margin-bottom:3px">${studio}</div>
+    <div style="color:rgba(255,255,255,.55);font-size:.73rem">${village?village+' · ':''}${phone}</div>
+    <div style="display:inline-block;margin-top:10px;background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.3);border-radius:20px;padding:5px 16px;font-size:.73rem;color:#f5c842;font-weight:600">💍 Wedding Booking Form</div>
   </div>
-  <div style="padding:16px;max-width:500px;margin:0 auto">
-  <div style="background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:14px;margin-bottom:12px">
-    <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;color:var(--acc);margin-bottom:12px">👤 మీ వివరాలు</h3>
-    ${[['cf_groom','పెళ్ళికొడుకు పేరు *','text','పేరు...'],['cf_gvil','పెళ్ళికొడుకు గ్రామం *','text','గ్రామం...'],['cf_bride','పెళ్ళికూతురు పేరు *','text','పేరు...'],['cf_bvil','పెళ్ళికూతురు గ్రామం *','text','గ్రామం...'],['cf_phone','మీ Phone Number *','tel','9876543210']].map(([id,lbl,type,ph])=>`<div style="margin-bottom:9px"><label style="font-size:.63rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;text-transform:uppercase">${lbl}</label><input type="${type}" id="${id}" ${type==='tel'?'maxlength="10"':''} style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none" placeholder="${ph}"></div>`).join('')}
-  </div>
-  <div style="background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:14px;margin-bottom:12px">
-    <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;color:var(--acc);margin-bottom:12px">💍 పెళ్ళి వివరాలు</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px">
-      <div><label style="font-size:.63rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;text-transform:uppercase">పెళ్ళి తేదీ *</label><input type="date" id="cf_wdate" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none"></div>
-      <div><label style="font-size:.63rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;text-transform:uppercase">సమయం</label><input type="time" id="cf_wtime" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none"></div>
+
+  <div style="padding:14px 14px 0;max-width:500px;margin:0 auto">
+
+  <!-- Step 1: Basic Details -->
+  <div style="background:var(--card);border:1px solid var(--bdr);border-radius:15px;padding:15px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:13px">
+      <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#f5c842,#ff9a3c);color:#000;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:900">1</div>
+      <div style="font-family:'Playfair Display',serif;font-size:.95rem;color:var(--acc)">పెళ్ళి వివరాలు</div>
     </div>
-    <div><label style="font-size:.63rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;text-transform:uppercase">పెళ్ళి వేదిక *</label><input type="text" id="cf_wvenue" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none" placeholder="Kalyana Mandapam..."></div>
-  </div>
-  <div style="background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:14px;margin-bottom:12px">
-    <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;color:var(--acc);margin-bottom:12px">📷 Photography Type</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div id="lt_reg" onclick="selType('Regular')" style="border:2px solid var(--bdr);border-radius:12px;padding:14px;cursor:pointer;text-align:center;background:var(--surf);transition:all .2s"><div style="font-size:1.8rem">📸</div><div style="font-weight:700;font-size:.88rem;margin:4px 0 2px">Regular</div><div style="font-size:.68rem;color:var(--muted)">Min 40 sheets</div></div>
-      <div id="lt_can" onclick="selType('Candid')" style="border:2px solid var(--bdr);border-radius:12px;padding:14px;cursor:pointer;text-align:center;background:var(--surf);transition:all .2s"><div style="font-size:1.8rem">🎭</div><div style="font-weight:700;font-size:.88rem;margin:4px 0 2px">Candid</div><div style="font-size:.68rem;color:var(--muted)">Min 60 sheets</div></div>
+    ${inp('cf_groom','పెళ్ళికొడుకు పేరు *','text','పేరు రాయండి...')}
+    ${inp('cf_bride','పెళ్ళికూతురు పేరు *','text','పేరు రాయండి...')}
+    <div style="margin-bottom:10px">
+      <label style="font-size:.63rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;text-transform:uppercase">పెళ్ళి తేదీ *</label>
+      <input type="date" id="cf_wdate" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:8px;padding:9px 11px;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none">
     </div>
-    <input type="hidden" id="cf_ptype" value="">
-  </div>
-  <div style="background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:14px;margin-bottom:12px">
-    <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;color:var(--acc);margin-bottom:12px">🤵 పెళ్ళికొడుకు Events</h3>
-    <div id="groomEvs">${cfEvItem('groom',0,'Haldi')}${cfEvItem('groom',1,'కాళ్ళ గోళ్ళు తీయడం')}</div>
-    <button onclick="addCfEv('groom')" style="width:100%;border:1px dashed var(--bdr);background:none;color:var(--muted);border-radius:8px;padding:8px;cursor:pointer;font-size:.78rem;margin-top:2px;font-family:'DM Sans',sans-serif">+ Event Add చేయండి</button>
-  </div>
-  <div style="background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:14px;margin-bottom:12px">
-    <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;color:var(--acc);margin-bottom:12px">👰 పెళ్ళికూతురు Events</h3>
-    <div id="brideEvs">${cfEvItem('bride',0,'Haldi')}${cfEvItem('bride',1,'కాళ్ళ గోళ్ళు తీయడం')}</div>
-    <button onclick="addCfEv('bride')" style="width:100%;border:1px dashed var(--bdr);background:none;color:var(--muted);border-radius:8px;padding:8px;cursor:pointer;font-size:.78rem;margin-top:2px;font-family:'DM Sans',sans-serif">+ Event Add చేయండి</button>
-  </div>
-  <div style="background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:14px;margin-bottom:12px">
-    <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;color:var(--acc);margin-bottom:12px">🎉 Reception</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px">
-      <div><label style="font-size:.63rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;text-transform:uppercase">తేదీ</label><input type="date" id="cf_rdate" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none"></div>
-      <div><label style="font-size:.63rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;text-transform:uppercase">సమయం</label><input type="time" id="cf_rtime" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div><label style="font-size:.63rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;text-transform:uppercase">సమయం</label><input type="time" id="cf_wtime" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:8px;padding:9px 8px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none"></div>
+      <div id="cf_wtime_disp" style="display:flex;align-items:flex-end;padding-bottom:9px;font-size:.8rem;color:var(--acc);font-weight:600"></div>
     </div>
-    <div><label style="font-size:.63rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;text-transform:uppercase">వేదిక</label><input type="text" id="cf_rvenue" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none" placeholder="Reception venue..."></div>
+    ${inp('cf_wvenue','పెళ్ళి స్థలం *','text','Kalyana Mandapam...')}
   </div>
-  <div style="background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:14px;margin-bottom:12px">
-    <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;color:var(--acc);margin-bottom:10px">📦 Requirements</h3>
-    <div style="font-size:.7rem;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase">Deliverables:</div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
-      ${['Photos','Videos','Pre Shoot','Save The Date Promo','Haldi Promos','Wedding Promo','Songs','Post Wedding Shoot'].map(r=>`<label style="display:flex;align-items:center;gap:5px;background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.78rem" id="dl_${r.replace(/\s/g,'_')}"><input type="checkbox" name="cfDel" value="${r}" style="accent-color:var(--acc)"> ${r}</label>`).join('')}
+
+  <!-- Step 2: Events Checkboxes -->
+  <div style="background:var(--card);border:1px solid var(--bdr);border-radius:15px;padding:15px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:13px">
+      <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#f5c842,#ff9a3c);color:#000;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:900">2</div>
+      <div style="font-family:'Playfair Display',serif;font-size:.95rem;color:var(--acc)">ఏ Events కావాలి?</div>
     </div>
-    <div style="font-size:.7rem;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase">Extra Services:</div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px">
-      ${['Flex/Banners','LED Screen','Live Streaming','Photo Booth','Instant Photo Delivery (QR)','Entry'].map(r=>`<label style="display:flex;align-items:center;gap:5px;background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.78rem"><input type="checkbox" name="cfExt" value="${r}" style="accent-color:var(--acc)"> ${r}</label>`).join('')}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+      ${chk('cfEvt','Engagement','💍 Engagement')}
+      ${chk('cfEvt','Pasupu Paaya','🌿 పసుపు పాయ')}
+      ${chk('cfEvt','Pellikoduku','🤵 పెళ్ళికొడుకు')}
+      ${chk('cfEvt','Pellikuturu','👰 పెళ్ళికూతురు')}
+      ${chk('cfEvt','Haldi','💛 హల్దీ')}
+      ${chk('cfEvt','Reception','🎉 Reception')}
+      ${chk('cfEvt','Wedding','💒 Wedding')}
+      ${chk('cfEvt','PrePostShoot','📸 Pre/Post Shoot')}
     </div>
   </div>
-  <div style="background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:14px;margin-bottom:12px">
-    <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;color:var(--acc);margin-bottom:12px">💰 Budget వివరాలు</h3>
-    <div style="margin-bottom:9px"><label style="font-size:.63rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;text-transform:uppercase">మీ Budget (₹)</label><input type="number" id="cf_budget" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none" placeholder="50000"></div>
-    <div style="margin-bottom:9px"><label style="font-size:.63rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;text-transform:uppercase">Album Sheets (min: <span id="cf_minsh">40</span>)</label><input type="number" id="cf_sheets" min="40" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none" placeholder="40"><div style="font-size:.68rem;color:var(--muted);margin-top:3px" id="cf_shNote">Regular కి minimum 40 sheets</div></div>
-    <div><label style="font-size:.63rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;text-transform:uppercase">Video Hours</label><input type="number" id="cf_vhrs" min="1" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none" placeholder="2"></div>
+
+  <!-- Step 3: Requirements -->
+  <div style="background:var(--card);border:1px solid var(--bdr);border-radius:15px;padding:15px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:13px">
+      <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#f5c842,#ff9a3c);color:#000;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:900">3</div>
+      <div style="font-family:'Playfair Display',serif;font-size:.95rem;color:var(--acc)">Requirements</div>
+    </div>
+    <div style="font-size:.63rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:7px">📷 Coverage Type</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px">
+      ${chk('cfCov','Candid','🎭 Candid')}
+      ${chk('cfCov','Regular','📸 Regular')}
+    </div>
+    <div style="font-size:.63rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:7px">📦 Deliverables</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px">
+      ${['Photos','Videos','Pre Shoot','Save The Date Promo','Haldi Promos','Wedding Promo','Songs','Post Wedding Shoot'].map(r=>chk('cfDel',r,r)).join('')}
+    </div>
+    <div style="font-size:.63rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:7px">➕ Extra Services</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+      ${['Flex/Banners','LED Screen','Live Streaming','Photo Booth','Instant Photo Delivery (QR)','Entry','Other Events'].map(r=>chk('cfExt',r,r)).join('')}
+    </div>
   </div>
-  <div style="background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:14px;margin-bottom:12px">
-    <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;color:var(--acc);margin-bottom:10px">📝 Additional Notes</h3>
-    <textarea id="cf_notes" rows="3" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:9px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none" placeholder="మీకు మరేమైనా అవసరమైతే..."></textarea>
+
+  <!-- Step 4: Budget -->
+  <div style="background:var(--card);border:1px solid var(--bdr);border-radius:15px;padding:15px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:13px">
+      <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#f5c842,#ff9a3c);color:#000;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:900">4</div>
+      <div style="font-family:'Playfair Display',serif;font-size:.95rem;color:var(--acc)">Budget</div>
+    </div>
+    ${inp('cf_budget','మీ Budget (₹) *','number','50000')}
   </div>
-  <button style="width:100%;background:linear-gradient(135deg,#f5c842,#ff9a3c);color:#000;border:none;padding:15px;border-radius:13px;font-weight:700;font-size:1rem;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:30px" onclick="submitCF('${uid}','${evid||''}')">📤 Submit Booking Request</button>
+
+  <!-- Step 5: Contact -->
+  <div style="background:var(--card);border:1px solid var(--bdr);border-radius:15px;padding:15px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:13px">
+      <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#f5c842,#ff9a3c);color:#000;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:900">5</div>
+      <div style="font-family:'Playfair Display',serif;font-size:.95rem;color:var(--acc)">మీ వివరాలు</div>
+    </div>
+    ${inp('cf_cname','మీ పేరు *','text','పేరు రాయండి...')}
+    ${inp('cf_phone','Phone Number *','tel','9876543210','maxlength="10"')}
+    <div style="margin-bottom:10px"><label style="font-size:.63rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;text-transform:uppercase">నేటి తేదీ</label><input type="text" id="cf_today" value="${today}" readonly style="width:100%;background:var(--bdr);border:1px solid var(--bdr);color:var(--muted);border-radius:8px;padding:9px 11px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none"></div>
+    <div style="margin-bottom:5px"><label style="font-size:.63rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;text-transform:uppercase">గమనికలు</label><textarea id="cf_notes" rows="3" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:8px;padding:9px 11px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none;resize:none" placeholder="మరేమైనా అవసరమైతే..."></textarea></div>
+  </div>
+
+  <!-- Terms -->
+  <div style="background:rgba(245,200,66,.06);border:1px solid rgba(245,200,66,.2);border-radius:14px;padding:13px;margin-bottom:14px">
+    <div style="font-size:.65rem;font-weight:700;color:var(--acc);text-transform:uppercase;margin-bottom:8px">📋 గమనికలు</div>
+    <div style="font-size:.75rem;color:var(--muted);line-height:1.9">
+      <div>1. ఈవెంట్ లో కొత్త కార్యక్రమం ఉంటే <strong style="color:var(--text)">ముందుగా చెప్పాలి</strong>.</div>
+      <div>2. Pre/Post Shoot ఖర్చులు <strong style="color:var(--text)">మీరే భరించాల్సి ఉంటుంది</strong>.</div>
+      <div>3. Extra requirements కి <strong style="color:var(--text)">అదనపు Amount ఉంటుంది</strong>.</div>
+      <div>4. Wedding తర్వాత <strong style="color:var(--text)">3 నెలల లోపు</strong> Photo Selection, <strong style="color:var(--text)">సంవత్సరం లోపు</strong> Delivery.</div>
+      <div>5. పెళ్లికి ముందు <strong style="color:#f5c842">40% Advance</strong> ఇవ్వాల్సి ఉంటుంది.</div>
+    </div>
+  </div>
+
+  <button onclick="submitCF('${uid}','${evid||''}')" style="width:100%;background:linear-gradient(135deg,#f5c842,#ff9a3c);color:#000;border:none;padding:16px;border-radius:14px;font-weight:700;font-size:1rem;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 4px 16px rgba(245,200,66,.4)">📤 Booking Request Submit చేయండి</button>
   </div></div>
+
   <style>
   [data-theme="dark"]{--bg:#0b0b0d;--surf:#161618;--card:#1c1c20;--bdr:#28282e;--text:#f0ede8;--muted:#666;}
   [data-theme="light"]{--bg:#f0efe9;--surf:#fff;--card:#faf9f6;--bdr:#e4e0d6;--text:#1a1a1a;--muted:#888;}
-  :root{--acc:#f5c842;}*{margin:0;padding:0;box-sizing:border-box;}body{background:var(--bg);color:var(--text);}
+  :root{--acc:#f5c842;}*{margin:0;padding:0;box-sizing:border-box;}body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;}
   </style>`;
 
-  window.selType=function(t){const min=t==='Candid'?60:40;document.getElementById('cf_ptype').value=t;document.getElementById('lt_reg').style.borderColor=t==='Regular'?'var(--acc)':'var(--bdr)';document.getElementById('lt_can').style.borderColor=t==='Candid'?'var(--acc)':'var(--bdr)';document.getElementById('cf_minsh').textContent=min;document.getElementById('cf_shNote').textContent=`${t} కి minimum ${min} sheets`;const si=document.getElementById('cf_sheets');if(si)si.min=min;};
-  window.addCfEv=function(side){const cnt=side==='groom'?gc:bc;const name=prompt(side==='groom'?'Groom event పేరు:':'Bride event పేరు:')||'Event';const div=document.createElement('div');div.innerHTML=cfEvItem(side,cnt,name);document.getElementById(side==='groom'?'groomEvs':'brideEvs').appendChild(div.firstElementChild);if(side==='groom')gc++;else bc++;};
+  // 12hr time display
+  document.getElementById('cf_wtime').addEventListener('change',function(){
+    const[h,m]=this.value.split(':').map(Number);
+    if(isNaN(h))return;
+    const ap=h>=12?'PM':'AM';const hr=h%12||12;
+    document.getElementById('cf_wtime_disp').textContent=`🕐 ${hr}:${String(m).padStart(2,'0')} ${ap}`;
+  });
 }
 
 async function submitCF(uid,evid){
@@ -1830,17 +1909,15 @@ async function submitCF(uid,evid){
   const bn=document.getElementById('cf_bride')?.value.trim();
   const wd=document.getElementById('cf_wdate')?.value;
   const ph=document.getElementById('cf_phone')?.value.trim();
+  const cname=document.getElementById('cf_cname')?.value.trim();
   if(!gn||!bn){alert('పెళ్ళికొడుకు మరియు పెళ్ళికూతురు పేర్లు తప్పనిసరి!');return;}
   if(!wd){alert('పెళ్ళి తేదీ తప్పనిసరి!');return;}
   if(!ph||ph.length!==10){alert('Valid 10-digit phone number ఇవ్వండి!');return;}
-  const pt=document.getElementById('cf_ptype')?.value||'Regular';
-  const min=pt==='Candid'?60:40;
-  const sh=parseInt(document.getElementById('cf_sheets')?.value)||0;
-  if(sh>0&&sh<min){alert(`${pt} కి minimum ${min} sheets ఉండాలి!`);return;}
-  const gEvs=[],bEvs=[];
-  document.querySelectorAll('[id^=groomevchk]').forEach((c,i)=>{if(c.checked)gEvs.push({name:document.querySelector(`#groomev${i} span`)?.textContent||'Event',date:document.getElementById(`groomevdate${i}`)?.value||'',time:document.getElementById(`groomevtime${i}`)?.value||''});});
-  document.querySelectorAll('[id^=brideevchk]').forEach((c,i)=>{if(c.checked)bEvs.push({name:document.querySelector(`#brideev${i} span`)?.textContent||'Event',date:document.getElementById(`brideevdate${i}`)?.value||'',time:document.getElementById(`brideevtime${i}`)?.value||''});});
-  const data={groomName:gn,brideName:bn,groomVillage:document.getElementById('cf_gvil')?.value.trim()||'',brideVillage:document.getElementById('cf_bvil')?.value.trim()||'',clientPhone:ph,weddingDate:wd,weddingTime:document.getElementById('cf_wtime')?.value||'',weddingVenue:document.getElementById('cf_wvenue')?.value.trim()||'',photoType:pt,groomEvents:gEvs,brideEvents:bEvs,reception:{date:document.getElementById('cf_rdate')?.value||'',time:document.getElementById('cf_rtime')?.value||'',venue:document.getElementById('cf_rvenue')?.value.trim()||''},deliverables:Array.from(document.querySelectorAll('input[name=cfDel]:checked')).map(x=>x.value),extras:Array.from(document.querySelectorAll('input[name=cfExt]:checked')).map(x=>x.value),budget:document.getElementById('cf_budget')?.value||'',sheets:sh||min,videoHours:document.getElementById('cf_vhrs')?.value||'',notes:document.getElementById('cf_notes')?.value.trim()||''};
+  if(!cname){alert('మీ పేరు తప్పనిసరి!');return;}
+  const selEvts=Array.from(document.querySelectorAll('input[name=cfEvt]:checked')).map(x=>x.value);
+  const selCov=Array.from(document.querySelectorAll('input[name=cfCov]:checked')).map(x=>x.value);
+  const wtime=document.getElementById('cf_wtime')?.value||'';
+  const data={groomName:gn,brideName:bn,clientName:cname,clientPhone:ph,weddingDate:wd,weddingTime:wtime,weddingVenue:document.getElementById('cf_wvenue')?.value.trim()||'',selectedEvents:selEvts,coverageType:selCov,deliverables:Array.from(document.querySelectorAll('input[name=cfDel]:checked')).map(x=>x.value),extras:Array.from(document.querySelectorAll('input[name=cfExt]:checked')).map(x=>x.value),budget:document.getElementById('cf_budget')?.value||'',notes:document.getElementById('cf_notes')?.value.trim()||'',submittedDate:document.getElementById('cf_today')?.value||''};
   const req={id:'r'+Date.now(),evId:evid||'',uid,data,status:'pending',seen:false,submittedAt:new Date().toLocaleString('te-IN'),createdAt:Date.now()};
   const lsR=JSON.parse(localStorage.getItem('ppReqs')||'[]');lsR.push(req);localStorage.setItem('ppReqs',JSON.stringify(lsR));
   if(fbOk)try{await db.collection('requests').doc(req.id).set(req);}catch(e){}
@@ -1852,22 +1929,13 @@ async function submitCF(uid,evid){
       <p style="color:#666;font-size:.85rem;margin-bottom:20px">Photographer మీ request చూసి confirm చేస్తారు.</p>
       <div style="background:#1c1c20;border:1px solid #28282e;border-radius:14px;padding:16px;text-align:left;margin-bottom:20px">
         <div style="font-size:.7rem;color:#666;margin-bottom:10px;text-transform:uppercase">మీ వివరాలు:</div>
-        <div style="font-size:.82rem;line-height:2;color:#f0ede8">👤 ${data.groomName} & ${data.brideName}<br>📅 ${data.weddingDate}<br>📍 ${data.weddingVenue||'--'}<br>📷 ${data.photoType}</div>
+        <div style="font-size:.82rem;line-height:2;color:#f0ede8">💍 ${data.groomName} & ${data.brideName}<br>📅 ${data.weddingDate}${wtime?' ⏰ '+wtime:''}<br>📍 ${data.weddingVenue||'--'}<br>📞 ${data.clientPhone}${data.budget?'<br>💰 ₹'+data.budget:''}</div>
       </div>
       <button onclick="cfWaShare()" style="width:100%;background:#25D366;color:#fff;border:none;padding:13px;border-radius:12px;font-weight:700;font-size:.95rem;cursor:pointer;font-family:'DM Sans',sans-serif">📤 WhatsApp లో Share చేయండి</button>
     </div>
   </div>
   <style>[data-theme="dark"]{--bg:#0b0b0d;}</style>`;
-  window.cfWaShare=function(){const msg=`📷 *Photography Booking Request*
-
-💍 *${data.groomName} & ${data.brideName}*
-📅 ${data.weddingDate}
-📍 ${data.weddingVenue||'--'}
-📷 ${data.photoType}
-💰 Budget: ₹${data.budget||'--'}
-🖼️ Sheets: ${data.sheets}
-🎬 Video: ${data.videoHours||'--'} hrs
-📞 ${data.clientPhone}`;window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');};
+  window.cfWaShare=function(){const evList=data.selectedEvents?.length?'\n📌 Events: '+data.selectedEvents.join(', '):'';const msg=`📷 *Photography Booking Request*\n\n💍 *${data.groomName} & ${data.brideName}*\n📅 ${data.weddingDate}${data.weddingTime?' ⏰ '+data.weddingTime:''}\n📍 ${data.weddingVenue||'--'}${evList}\n💰 Budget: ₹${data.budget||'--'}\n📞 ${data.clientPhone}`;window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');};
 }
 
 // ══ CLOSE MODALS ══
