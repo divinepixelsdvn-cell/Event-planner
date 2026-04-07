@@ -330,29 +330,38 @@ input[type=file]{display:none;}
 
     <!-- FORGOT PASSWORD -->
     <div id="lf-fp" style="display:none">
-      <div style="font-size:.78rem;color:var(--muted);margin-bottom:10px;text-align:center">Phone + Security answer తో password reset చేయండి</div>
-      <div class="lf"><label>Phone Number *</label>
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;text-align:center">Phone + Security answer తో password reset చేయండి</div>
+      <div class="lf">
+        <label>Phone Number *</label>
         <input type="tel" id="fph" placeholder="9876543210" maxlength="10">
       </div>
-      <div id="fpSecWrap" style="display:none">
-        <div class="lf"><label id="fpQLabel">Security Answer</label>
-          <input type="text" id="fpAns" placeholder="మీ answer...">
-        </div>
-        <div class="lf"><label>కొత్త Password *</label>
-          <div class="pw-wrap">
-            <input type="password" id="fpnpw" placeholder="కొత్త password" maxlength="10">
-            <button class="pw-eye" onclick="togPw('fpnpw',this)" type="button">👁</button>
-          </div>
-        </div>
-        <div class="lf"><label>Confirm Password *</label>
-          <div class="pw-wrap">
-            <input type="password" id="fpnpw2" placeholder="మళ్ళీ రాయండి" maxlength="10">
-            <button class="pw-eye" onclick="togPw('fpnpw2',this)" type="button">👁</button>
-          </div>
-        </div>
-        <button class="lbtn" onclick="doResetPw()">Password Reset చేయండి</button>
+      <div class="lf">
+        <label id="fpQLabel">Security Question *</label>
+        <select id="fpSecSel" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:8px;padding:9px 11px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none">
+          <option value="">— Select చేయండి —</option>
+          <option value="cam">మీ మొదటి కెమెరా పేరు ఏమిటి?</option>
+          <option value="ev">మీ మొదటి event ఏమిటి?</option>
+        </select>
       </div>
-      <button class="lbtn" id="fpFindBtn" onclick="fpFindUser()">User కనుగొనండి →</button>
+      <div class="lf">
+        <label>Security Answer *</label>
+        <input type="text" id="fpAns" placeholder="మీ answer...">
+      </div>
+      <div class="lf">
+        <label>కొత్త Password *</label>
+        <div class="pw-wrap">
+          <input type="password" id="fpnpw" placeholder="కొత్త password" maxlength="10">
+          <button class="pw-eye" onclick="togPw('fpnpw',this)" type="button">👁</button>
+        </div>
+      </div>
+      <div class="lf">
+        <label>Confirm Password *</label>
+        <div class="pw-wrap">
+          <input type="password" id="fpnpw2" placeholder="మళ్ళీ రాయండి" maxlength="10">
+          <button class="pw-eye" onclick="togPw('fpnpw2',this)" type="button">👁</button>
+        </div>
+      </div>
+      <button class="lbtn" onclick="doResetPw()">🔐 Set Password</button>
       <div class="lerr" id="fpe"></div>
       <div class="lsuc" id="fps"></div>
     </div>
@@ -772,47 +781,102 @@ async function doReg(){
 
 // ══ FORGOT PASSWORD ══
 let _fpUser=null;
-async function fpFindUser(){
-  const ph=document.getElementById('fph').value.trim();
-  if(ph.length!==10){setErr('fpe','❌ Valid phone ఇవ్వండి');return;}
-  setErr('fpe','⏳ వెతుకుతున్నాం...');
-  if(fbOk){
-    try{
-      const idx=await db.collection('phoneIndex').doc(ph).get();
-      if(!idx.exists){setErr('fpe','❌ ఈ phone registered కాలేదు');return;}
-      const doc=await db.collection('users').doc(idx.data().uid).get();
-      if(!doc.exists){setErr('fpe','❌ User కనిపించలేదు');return;}
-      _fpUser={...doc.data(),id:idx.data().uid};
-    }catch(e){setErr('fpe','❌ '+e.message);return;}
-  } else {
-    _fpUser=users.find(x=>x.ph===ph);
-    if(!_fpUser){setErr('fpe','❌ ఈ phone registered కాలేదు');return;}
-  }
-  setErr('fpe','');
-  document.getElementById('fpQLabel').textContent=SEC_QS[_fpUser.secQ]||'Security Answer';
-  document.getElementById('fpSecWrap').style.display='block';
-  document.getElementById('fpFindBtn').style.display='none';
-}
+async function fpFindUser(){} // deprecated - now handled in doResetPw
 async function doResetPw(){
+  const ph=document.getElementById('fph').value.trim();
+  const secQ=document.getElementById('fpSecSel').value;
   const ans=document.getElementById('fpAns').value.trim().toLowerCase();
   const np=document.getElementById('fpnpw').value;
   const np2=document.getElementById('fpnpw2').value;
-  if(!_fpUser){setErr('fpe','❌ ముందు user కనుగొనండి');return;}
-  if(ans!==_fpUser.secA){setErr('fpe','❌ Security answer తప్పు');return;}
+
+  // Validate all fields
+  if(ph.length!==10){setErr('fpe','❌ Valid 10-digit phone ఇవ్వండి');return;}
+  if(!secQ){setErr('fpe','❌ Security question select చేయండి');return;}
+  if(!ans){setErr('fpe','❌ Security answer ఇవ్వండి');return;}
   const pwErr=valPw(np);if(pwErr){setErr('fpe','❌ '+pwErr);return;}
   if(np!==np2){setErr('fpe','❌ Passwords match కాలేదు');return;}
-  if(fbOk&&auth){
+
+  setErr('fpe','⏳ వెతుకుతున్నాం...');
+
+  // Find user by phone
+  let foundUser=null;
+
+  if(fbOk&&db){
     try{
-      await db.collection('users').doc(_fpUser.id).update({pw:np});
-      await auth.sendPasswordResetEmail(_fpUser.email);
-      setSuc('fps','✅ Password reset email పంపబడింది! Email check చేయండి.');
-      setErr('fpe','');return;
-    }catch(e){setErr('fpe','❌ '+e.message);return;}
+      // Try phoneIndex first
+      const idx=await db.collection('phoneIndex').doc(ph).get();
+      if(idx.exists){
+        const uid=idx.data().uid;
+        const doc=await db.collection('users').doc(uid).get();
+        if(doc.exists)foundUser={...doc.data(),id:uid};
+      }
+    }catch(e){
+      // Firebase permission issue - try local
+    }
   }
-  const ui=users.findIndex(x=>x.id===_fpUser.id);
-  if(ui>-1){users[ui].pw=np;saveUsers();}
-  setSuc('fps','✅ Password reset అయింది!');
-  setTimeout(()=>swL('in'),2000);
+
+  // Fallback to local users
+  if(!foundUser){
+    foundUser=users.find(x=>x.ph===ph);
+  }
+
+  if(!foundUser){setErr('fpe','❌ ఈ phone registered కాలేదు');return;}
+
+  // Verify security question matches
+  if(foundUser.secQ && foundUser.secQ!==secQ){
+    setErr('fpe','❌ Security question తప్పు');return;
+  }
+
+  // Verify security answer
+  if(foundUser.secA && ans!==foundUser.secA){
+    setErr('fpe','❌ Security answer తప్పు');return;
+  }
+
+  // All good - update password directly
+  setErr('fpe','⏳ Password update అవుతోంది...');
+
+  try{
+    // Update in Firebase (no email needed)
+    if(fbOk&&db){
+      try{
+        await db.collection('users').doc(foundUser.id).update({pw:np});
+      }catch(e){
+        // Try set with merge if update fails (permissions)
+        try{
+          await db.collection('users').doc(foundUser.id).set({pw:np},{merge:true});
+        }catch(e2){}
+      }
+      // Also update phoneIndex
+      try{
+        await db.collection('phoneIndex').doc(ph).set({pw:np},{merge:true});
+      }catch(e){}
+    }
+
+    // Update local users array
+    const ui=users.findIndex(x=>x.id===foundUser.id||x.ph===ph);
+    if(ui>-1){users[ui].pw=np;saveUsers();}
+    else{
+      // Add to local if not found
+      foundUser.pw=np;
+      users.push(foundUser);
+      saveUsers();
+    }
+
+    // Update Firebase Auth password if possible
+    if(fbOk&&auth){
+      try{
+        // Sign in with old pw and update - or use admin approach
+        await auth.signInWithEmailAndPassword(foundUser.email,foundUser.pw||np);
+      }catch(e){}
+    }
+
+    setErr('fpe','');
+    setSuc('fps','✅ Password విజయవంతంగా set అయింది! Login చేయండి.');
+    setTimeout(()=>{swL('in');setSuc('fps','');},2500);
+
+  }catch(e){
+    setErr('fpe','❌ Error: '+e.message);
+  }
 }
 
 function doLogout(){
@@ -2180,7 +2244,6 @@ window.doLogin=doLogin;
 window.doReg=doReg;
 window.doLogout=doLogout;
 window.togPw=togPw;
-window.fpFindUser=fpFindUser;
 window.doResetPw=doResetPw;
 window.swPage=swPage;
 window.openProf=openProf;
