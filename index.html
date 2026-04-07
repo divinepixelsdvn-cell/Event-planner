@@ -253,121 +253,6 @@ input[type=file]{display:none;}
 </head>
 <body>
 
-<!-- ══ LOGIN ══ -->
-<div class="lscr" id="lscr" style="display:flex">
-  <div class="logo">📷</div>
-  <h1>Event Planner</h1>
-  <p>Photographer Event Management App</p>
-  <p style="font-size:.7rem;color:rgba(245,200,66,.7);margin-top:-18px;margin-bottom:18px">☁️ Firebase + Google Drive Backup</p>
-  <div class="lcard">
-    <div class="ltabs">
-      <button class="ltb on" onclick="typeof swL==='function'&&swL('in')" id="lt1">Login</button>
-      <button class="ltb" onclick="typeof swL==='function'&&swL('reg')" id="lt2">Register</button>
-      <button class="ltb" onclick="typeof swL==='function'&&swL('fp')" id="lt3">Password?</button>
-    </div>
-
-    <!-- LOGIN -->
-    <div id="lf-in">
-      <div class="lf"><label>Phone లేదా Email *</label>
-        <input type="text" id="lph" placeholder="9876543210 లేదా email@gmail.com">
-      </div>
-      <div class="lf"><label>Password *</label>
-        <div class="pw-wrap">
-          <input type="password" id="lpw" placeholder="••••••">
-          <button class="pw-eye" onclick="togPw('lpw',this)" type="button">👁</button>
-        </div>
-      </div>
-      <button class="lbtn" onclick="doLogin()">Login →</button>
-      <div class="lerr" id="le"></div>
-    </div>
-
-    <!-- REGISTER -->
-    <div id="lf-reg" style="display:none">
-      <div class="lf"><label>పేరు *</label><input type="text" id="rn" placeholder="మీ పూర్తి పేరు..." autocomplete="name" inputmode="text" autocorrect="off" autocapitalize="words" spellcheck="false" oninput="this.value=this.value.replace(/[^a-zA-Z\u0C00-\u0C7F\s]/g,'')"></div>
-      <div class="lf"><label>Studio పేరు *</label><input type="text" id="rs" placeholder="Studio పేరు..." autocomplete="organization" inputmode="text" autocorrect="off" autocapitalize="words" spellcheck="false"></div>
-      <div class="lf"><label>గ్రామం / నగరం</label><input type="text" id="rvil" placeholder="మీ ఊరు..." autocomplete="address-level2" inputmode="text" autocorrect="off" autocapitalize="words" spellcheck="false" oninput="this.value=this.value.replace(/[^a-zA-Z\u0C00-\u0C7F\s]/g,'')"></div>
-      <div class="lf"><label>Phone Number * (10 digits)</label>
-        <input type="tel" id="rph" placeholder="9876543210" maxlength="10">
-      </div>
-      <div class="lf"><label>Email * <span style="font-size:.58rem;color:var(--sky)">(మీ Gmail select చేయండి)</span></label>
-        <input type="email" id="rem" placeholder="yourname@gmail.com" autocomplete="email" inputmode="email">
-      </div>
-      <div class="lf"><label>Profile Photo (optional)</label>
-        <div style="display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:8px 11px;cursor:pointer" onclick="document.getElementById('regPhInp').click()">
-          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#f5c842,#ff9a3c);display:flex;align-items:center;justify-content:center;font-size:1rem;overflow:hidden;flex-shrink:0" id="regPhPrev">📷</div>
-          <span style="font-size:.78rem;color:var(--muted)">Photo select చేయండి</span>
-        </div>
-        <input type="file" id="regPhInp" accept="image/*" onchange="prevRegPh(this)">
-      </div>
-      <div class="lf"><label>Password * (6-10 chars)</label>
-        <div class="pw-wrap">
-          <input type="password" id="rpw" placeholder="letters,numbers,symbols" maxlength="10" oninput="chkPwStr(this)">
-          <button class="pw-eye" onclick="togPw('rpw',this)" type="button">👁</button>
-        </div>
-        <div class="pw-str" id="pwStr"></div>
-        <div style="font-size:.58rem;color:var(--muted);margin-top:2px">A-Z a-z 0-9 !@#$%^&amp;*().,;?[]{}+-=_~/ వాడవచ్చు</div>
-      </div>
-      <div class="lf"><label>Confirm Password *</label>
-        <div class="pw-wrap">
-          <input type="password" id="rpw2" placeholder="మళ్ళీ రాయండి" maxlength="10">
-          <button class="pw-eye" onclick="togPw('rpw2',this)" type="button">👁</button>
-        </div>
-      </div>
-      <div class="lf"><label>🔐 Security Question *</label>
-        <select id="rsq" onchange="document.getElementById('rsaWrap').style.display=this.value?'block':'none'">
-          <option value="">— Select చేయండి —</option>
-          <option value="cam">మీ మొదటి కెమెరా పేరు ఏమిటి?</option>
-          <option value="ev">మీ మొదటి event ఏమిటి?</option>
-        </select>
-      </div>
-      <div class="lf" id="rsaWrap" style="display:none">
-        <label>Security Answer *</label>
-        <input type="text" id="rsa" placeholder="మీ answer...">
-      </div>
-      <button class="lbtn" onclick="doReg()">Register →</button>
-      <div class="lerr" id="re"></div>
-    </div>
-
-    <!-- FORGOT PASSWORD -->
-    <div id="lf-fp" style="display:none">
-      <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;text-align:center">Phone + Security answer తో password reset చేయండి</div>
-      <div class="lf">
-        <label>Phone Number *</label>
-        <input type="tel" id="fph" placeholder="9876543210" maxlength="10">
-      </div>
-      <div class="lf">
-        <label id="fpQLabel">Security Question *</label>
-        <select id="fpSecSel" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:8px;padding:9px 11px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none">
-          <option value="">— Select చేయండి —</option>
-          <option value="cam">మీ మొదటి కెమెరా పేరు ఏమిటి?</option>
-          <option value="ev">మీ మొదటి event ఏమిటి?</option>
-        </select>
-      </div>
-      <div class="lf">
-        <label>Security Answer *</label>
-        <input type="text" id="fpAns" placeholder="మీ answer...">
-      </div>
-      <div class="lf">
-        <label>కొత్త Password *</label>
-        <div class="pw-wrap">
-          <input type="password" id="fpnpw" placeholder="కొత్త password" maxlength="10">
-          <button class="pw-eye" onclick="togPw('fpnpw',this)" type="button">👁</button>
-        </div>
-      </div>
-      <div class="lf">
-        <label>Confirm Password *</label>
-        <div class="pw-wrap">
-          <input type="password" id="fpnpw2" placeholder="మళ్ళీ రాయండి" maxlength="10">
-          <button class="pw-eye" onclick="togPw('fpnpw2',this)" type="button">👁</button>
-        </div>
-      </div>
-      <button class="lbtn" onclick="doResetPw()">🔐 Set Password</button>
-      <div class="lerr" id="fpe"></div>
-      <div class="lsuc" id="fps"></div>
-    </div>
-  </div>
-</div>
-
 <!-- ══ APP ══ -->
 <div id="app">
   <!-- COVER -->
@@ -612,7 +497,7 @@ input[type=file]{display:none;}
     </div>
     <div class="pf-actions">
       <button class="pf-save" onclick="saveProf()">💾 Save చేయండి</button>
-      <button class="pf-logout" onclick="doLogout()">🚪 Logout</button>
+      <button class="pf-logout" onclick="doLogout()" style="display:none">🚪 Logout</button>
       <button class="pf-del" onclick="doDelAcc()">Account Delete చేయండి</button>
     </div>
   </div>
@@ -681,230 +566,23 @@ function saveReqs(){localStorage.setItem('ppReqs',JSON.stringify(requests));}
 function togTheme(){const h=document.documentElement,cur=h.getAttribute('data-theme');h.setAttribute('data-theme',cur==='dark'?'light':'dark');document.getElementById('themeBtn').textContent=cur==='dark'?'🌞':'🌙';localStorage.setItem('ppTheme',cur==='dark'?'light':'dark');}
 (function(){const t=localStorage.getItem('ppTheme')||'dark';document.documentElement.setAttribute('data-theme',t);const b=document.getElementById('themeBtn');if(b)b.textContent=t==='dark'?'🌙':'🌞';})();
 
-// ══ PASSWORD HELPERS ══
-function togPw(id,btn){const i=document.getElementById(id);if(!i)return;i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁':'🙈';}
-function chkPwStr(inp){
-  const v=inp.value,el=document.getElementById('pwStr');if(!el)return;
-  let s=0;if(v.length>=6)s++;if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
-  el.style.background=['transparent','#ef4444','#f97316','#eab308','#22c55e'][s]||'transparent';
-  el.style.width=['0%','25%','50%','75%','100%'][s]||'0%';
-}
-function valPw(pw){if(pw.length<6||pw.length>10)return'Password 6-10 characters ఉండాలి';return null;}
-
-// ══ REG PHOTO ══
-let regPhData='';
-function prevRegPh(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{regPhData=e.target.result;document.getElementById('regPhPrev').innerHTML=`<img src="${regPhData}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;};r.readAsDataURL(f);}
-
-// ══ LOGIN / REGISTER ══
-function swL(t){
-  ['in','reg','fp'].forEach(x=>{const el=document.getElementById('lf-'+x);if(el)el.style.display=x===t?'block':'none';});
-  ['lt1','lt2','lt3'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.className='ltb'+(['in','reg','fp'][i]===t?' on':'');});
-}
-function setErr(id,msg){const el=document.getElementById(id);if(el)el.textContent=msg;}
-function setSuc(id,msg){const el=document.getElementById(id);if(el)el.textContent=msg;}
-
-async function doLogin(){
-  const inp=document.getElementById('lph').value.trim();
-  const pw=document.getElementById('lpw').value;
-  if(!inp||!pw){setErr('le','❌ Login info ఇవ్వండి');return;}
-  setErr('le','⏳ Login అవుతున్నాం...');
-  const isPhone=/^\d{10}$/.test(inp);
-  const email=isPhone?inp+'@eventplanner.app':inp;
-  if(fbOk&&auth){
-    try{
-      const cred=await Promise.race([auth.signInWithEmailAndPassword(email,pw),new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),7000))]);
-      const uid=cred.user.uid;
-      try{const doc=await db.collection('users').doc(uid).get();if(doc.exists){cu={...doc.data(),id:uid};saveCu();}else{cu={id:uid,name:'User',studio:'Studio',ph:isPhone?inp:'',email,photo:'',cover:'',village:'',equip:{cams:[],lights:[],lens:[],extras:[]}};saveCu();}}catch(e){if(!cu)cu={id:uid,name:'User',studio:'Studio',ph:isPhone?inp:'',email,photo:'',cover:'',village:'',equip:{cams:[],lights:[],lens:[],extras:[]}};saveCu();}
-      try{const evDoc=await db.collection('events').doc(uid).get();if(evDoc.exists&&evDoc.data().evs){evs=evDoc.data().evs;localStorage.setItem('ppEvs',JSON.stringify(evs));}}catch(e){}
-      launchApp();return;
-    }catch(e){
-      if(e.code==='auth/invalid-credential'||e.code==='auth/wrong-password'||e.code==='auth/user-not-found'){setErr('le','❌ Login info తప్పు');return;}
-      else if(e.code==='auth/network-request-failed'||e.message==='timeout'||e.message.includes('offline')){
-        // Firebase offline - try local
-      } else {setErr('le','❌ '+e.message);return;}
-    }
-  }
-  const u=isPhone?users.find(x=>x.ph===inp&&x.pw===pw):users.find(x=>x.email===inp&&x.pw===pw);
-  if(!u){setErr('le','❌ Login info తప్పు');return;}
-  cu=u;saveCu();launchApp();
-}
-
-async function doReg(){
-  const n=document.getElementById('rn').value.trim();
-  const s=document.getElementById('rs').value.trim();
-  const vil=document.getElementById('rvil').value.trim();
-  const ph=document.getElementById('rph').value.trim();
-  const em=document.getElementById('rem').value.trim().toLowerCase();
-  const pw=document.getElementById('rpw').value;
-  const pw2=document.getElementById('rpw2').value;
-  const sqKey=document.getElementById('rsq').value;
-  const sa=document.getElementById('rsa').value.trim().toLowerCase();
-  if(!n||n.length<2){setErr('re','❌ పేరు కనీసం 2 అక్షరాలు ఉండాలి');return;}
-  if(!s||s.length<2){setErr('re','❌ Studio పేరు కనీసం 2 అక్షరాలు ఉండాలి');return;}
-  if(ph.length!==10||!/^\d+$/.test(ph)){setErr('re','❌ Valid 10-digit phone ఇవ్వండి');return;}
-  if(!em||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){setErr('re','❌ Valid email ఇవ్వండి');return;}
-  const pwErr=valPw(pw);if(pwErr){setErr('re','❌ '+pwErr);return;}
-  if(pw!==pw2){setErr('re','❌ Passwords match కాలేదు');return;}
-  if(!sqKey){setErr('re','❌ Security question select చేయండి');return;}
-  if(!sa){setErr('re','❌ Security answer ఇవ్వండి');return;}
-  setErr('re','⏳ Register అవుతున్నాం...');
-
-  // Try Firebase first, fallback to local on any error
-  if(fbOk&&auth){
-    try{
-      let phoneExists=false;
-      try{const chk=await Promise.race([db.collection('phoneIndex').doc(ph).get(),new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),5000))]);phoneExists=chk.exists;}catch(e){/* offline - check local only */}
-      if(phoneExists){setErr('re','❌ ఈ phone already registered');return;}
-      if(users.find(x=>x.ph===ph)){setErr('re','❌ ఈ phone already registered (local)');return;}
-      try{
-        const cred=await auth.createUserWithEmailAndPassword(em,pw);
-        const uid=cred.user.uid;
-        const userData={id:uid,name:n,studio:s||n+' Photography',ph,email:em,pw,village:vil,photo:regPhData,cover:'',secQ:sqKey,secA:sa,equip:{cams:[],lights:[],lens:[],extras:[]},createdAt:Date.now()};
-        try{await db.collection('users').doc(uid).set(userData);}catch(e){}
-        try{await db.collection('phoneIndex').doc(ph).set({uid,email:em,createdAt:Date.now()});}catch(e){}
-        cu=userData;saveCu();users.push(userData);saveUsers();launchApp();return;
-      }catch(e){
-        if(e.code==='auth/email-already-in-use'){setErr('re','❌ ఈ email already registered');return;}
-        else if(e.code==='auth/network-request-failed'||e.message.includes('offline')||e.message.includes('client is offline')){
-          // Firebase offline - fall through to local
-        } else {setErr('re','❌ '+e.message);return;}
-      }
-    }catch(e){/* fall through to local */}
-  }
-
-  // Local mode register
-  if(users.find(x=>x.ph===ph)){setErr('re','❌ ఈ phone already registered');return;}
-  if(users.find(x=>x.email===em)){setErr('re','❌ ఈ email already registered');return;}
-  const u={id:'u'+Date.now(),name:n,studio:s||n+' Photography',ph,email:em,pw,village:vil,photo:regPhData,cover:'',secQ:sqKey,secA:sa,equip:{cams:[],lights:[],lens:[],extras:[]}};
-  users.push(u);saveUsers();cu=u;saveCu();launchApp();
-}
-
-// ══ FORGOT PASSWORD ══
-let _fpUser=null;
-async function fpFindUser(){} // deprecated - now handled in doResetPw
-async function doResetPw(){
-  const ph=document.getElementById('fph').value.trim();
-  const secQ=document.getElementById('fpSecSel').value;
-  const ans=document.getElementById('fpAns').value.trim().toLowerCase();
-  const np=document.getElementById('fpnpw').value;
-  const np2=document.getElementById('fpnpw2').value;
-
-  // Validate all fields
-  if(ph.length!==10){setErr('fpe','❌ Valid 10-digit phone ఇవ్వండి');return;}
-  if(!secQ){setErr('fpe','❌ Security question select చేయండి');return;}
-  if(!ans){setErr('fpe','❌ Security answer ఇవ్వండి');return;}
-  const pwErr=valPw(np);if(pwErr){setErr('fpe','❌ '+pwErr);return;}
-  if(np!==np2){setErr('fpe','❌ Passwords match కాలేదు');return;}
-
-  setErr('fpe','⏳ వెతుకుతున్నాం...');
-
-  // Find user by phone
-  let foundUser=null;
-
-  if(fbOk&&db){
-    try{
-      // Try phoneIndex first
-      const idx=await db.collection('phoneIndex').doc(ph).get();
-      if(idx.exists){
-        const uid=idx.data().uid;
-        const doc=await db.collection('users').doc(uid).get();
-        if(doc.exists)foundUser={...doc.data(),id:uid};
-      }
-    }catch(e){
-      // Firebase permission issue - try local
-    }
-  }
-
-  // Fallback to local users
-  if(!foundUser){
-    foundUser=users.find(x=>x.ph===ph);
-  }
-
-  if(!foundUser){setErr('fpe','❌ ఈ phone registered కాలేదు');return;}
-
-  // Verify security question matches
-  if(foundUser.secQ && foundUser.secQ!==secQ){
-    setErr('fpe','❌ Security question తప్పు');return;
-  }
-
-  // Verify security answer
-  if(foundUser.secA && ans!==foundUser.secA){
-    setErr('fpe','❌ Security answer తప్పు');return;
-  }
-
-  // All good - update password directly
-  setErr('fpe','⏳ Password update అవుతోంది...');
-
-  try{
-    // Update in Firebase (no email needed)
-    if(fbOk&&db){
-      try{
-        await db.collection('users').doc(foundUser.id).update({pw:np});
-      }catch(e){
-        // Try set with merge if update fails (permissions)
-        try{
-          await db.collection('users').doc(foundUser.id).set({pw:np},{merge:true});
-        }catch(e2){}
-      }
-      // Also update phoneIndex
-      try{
-        await db.collection('phoneIndex').doc(ph).set({pw:np},{merge:true});
-      }catch(e){}
-    }
-
-    // Update local users array
-    const ui=users.findIndex(x=>x.id===foundUser.id||x.ph===ph);
-    if(ui>-1){users[ui].pw=np;saveUsers();}
-    else{
-      // Add to local if not found
-      foundUser.pw=np;
-      users.push(foundUser);
-      saveUsers();
-    }
-
-    // Update Firebase Auth password if possible
-    if(fbOk&&auth){
-      try{
-        // Sign in with old pw and update - or use admin approach
-        await auth.signInWithEmailAndPassword(foundUser.email,foundUser.pw||np);
-      }catch(e){}
-    }
-
-    setErr('fpe','');
-    setSuc('fps','✅ Password విజయవంతంగా set అయింది! Login చేయండి.');
-    setTimeout(()=>{swL('in');setSuc('fps','');},2500);
-
-  }catch(e){
-    setErr('fpe','❌ Error: '+e.message);
-  }
-}
+function setErr(id,msg){} function setSuc(id,msg){}
 
 function doLogout(){
-  if(!confirm('Logout చేయాలా?'))return;
-  const signOutAndClear=()=>{
-    cu=null;
-    evs=[];
-    users=[];
-    localStorage.removeItem('ppCu');
-    localStorage.removeItem('ppEvs');
-    localStorage.removeItem('ppUsers');
-    localStorage.removeItem('ppReqs');
-    location.reload();
-  };
-  if(fbOk&&auth){auth.signOut().then(signOutAndClear).catch(signOutAndClear);}
-  else{signOutAndClear();}
+  // Single user app - no logout needed
+  toast('Single user app - logout అవసరం లేదు');
 }
 function doDelAcc(){
-  const r=prompt('Account delete కారణం:\n1.అవసరం లేదు\n2.వేరే app\n3.Privacy\n4.Technical\n5.Others\n(number ఇవ్వండి)');
-  if(!r)return;
-  users=users.filter(u=>u.id!==cu.id);saveUsers();
-  evs=evs.filter(e=>e.uid!==cu.id);saveEvs();
-  if(fbOk&&db&&auth?.currentUser){db.collection('users').doc(cu.id).delete().catch(()=>{});auth.currentUser.delete().catch(()=>{});}
-  cu=null;localStorage.removeItem('ppCu');location.reload();
+  if(!confirm('అన్ని data delete అవుతుంది. Sure?'))return;
+  evs=[];saveEvs();
+  localStorage.removeItem('ppCu');
+  localStorage.removeItem('ppEvs');
+  localStorage.removeItem('ppUsers');
+  localStorage.removeItem('ppReqs');
+  location.reload();
 }
 
 async function launchApp(){
-  document.getElementById('lscr').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('fab').style.display='flex';
   updCover();renAll();renMyEvList();
@@ -1866,7 +1544,6 @@ function saveProf(){
   cu.equip={cams:Array.from(document.querySelectorAll('#pfCams input:checked')).map(x=>x.value),lights:Array.from(document.querySelectorAll('#pfLights input:checked')).map(x=>x.value),lens:Array.from(document.querySelectorAll('#pfLens input:checked')).map(x=>x.value),extras:Array.from(document.querySelectorAll('#pfExtras input:checked')).map(x=>x.value)};
   const ui=users.findIndex(u=>u.id===cu.id);if(ui>-1)users[ui]=cu;
   saveUsers();saveCu();
-  if(fbOk&&db&&auth?.currentUser)db.collection('users').doc(auth.currentUser.uid).set(cu,{merge:true}).catch(()=>{});
   closeProf();updCover();toast('✅ Profile saved!');
 }
 
@@ -1922,7 +1599,6 @@ async function checkClientMode(){
   if(p.get('mode')!=='clientform')return false;
   const uid=p.get('uid'),evid=p.get('evid');
   document.body.style.cssText='margin:0;padding:0;background:var(--bg);font-family:"DM Sans",sans-serif;color:var(--text)';
-  document.getElementById('lscr').style.display='none';
   document.getElementById('app').style.display='none';
   document.getElementById('fab').style.display='none';
   let phStudio='Event Planner',phPhone='',phVillage='',phName='';
@@ -2239,37 +1915,16 @@ function restoreBackup(inp){
 cleanup();
 
 // Expose critical functions to window so HTML onclick attrs always find them
-window.swL=swL;
-window.doLogin=doLogin;
-window.doReg=doReg;
 window.doLogout=doLogout;
-window.togPw=togPw;
-window.doResetPw=doResetPw;
 window.swPage=swPage;
 window.openProf=openProf;
 window.closeProf=closeProf;
 
 (async function(){
   if(await checkClientMode())return;
-  if(fbOk&&auth){
-    auth.onAuthStateChanged(async function(user){
-      if(user){
-        const doc=await db.collection('users').doc(user.uid).get().catch(()=>null);
-        if(doc&&doc.exists){cu={...doc.data(),id:user.uid};saveCu();}
-        else if(!cu||cu.id!==user.uid){cu={id:user.uid,name:'User',studio:'My Studio',ph:'',email:user.email||'',photo:'',cover:'',village:'',equip:{cams:[],lights:[],lens:[],extras:[]}};saveCu();}
-        const evDoc=await db.collection('events').doc(user.uid).get().catch(()=>null);
-        if(evDoc&&evDoc.exists&&evDoc.data().evs){evs=evDoc.data().evs;localStorage.setItem('ppEvs',JSON.stringify(evs));}
-        launchApp();
-      }else{
-        cu=null;localStorage.removeItem('ppCu');
-        document.getElementById('lscr').style.display='flex';
-        document.getElementById('app').style.display='none';
-      }
-    });
-  }else{
-    if(cu)launchApp();
-    else{document.getElementById('lscr').style.display='flex';document.getElementById('app').style.display='none';}
-  }
+  // Login తీసేశాం — directly local user తో app launch
+  if(!cu){cu={id:'local001',name:'User',studio:'My Studio',ph:'',email:'',photo:'',cover:'',village:'',equip:{cams:[],lights:[],lens:[],extras:[]}};saveCu();}
+  launchApp();
 })();
 </script>
 </body>
