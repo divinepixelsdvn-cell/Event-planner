@@ -1610,6 +1610,7 @@ async function checkClientMode(){
 }
 
 function renderClientForm(uid,evid,studio,phone,village){
+  window._cfStudio=studio||'Event Planner';
   const theme=localStorage.getItem('ppTheme')||'dark';
   document.documentElement.setAttribute('data-theme',theme);
   const today=new Date().toISOString().slice(0,10);
@@ -1646,23 +1647,30 @@ function renderClientForm(uid,evid,studio,phone,village){
     ${inp('cf_wvenue','పెళ్ళి స్థలం *','text','Kalyana Mandapam...')}
   </div>
 
-  <!-- Step 2: Events Checkboxes -->
+  <!-- Step 2: Events with Date/Time/Place -->
   <div style="background:var(--card);border:1px solid var(--bdr);border-radius:15px;padding:15px;margin-bottom:12px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:13px">
       <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#f5c842,#ff9a3c);color:#000;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:900">2</div>
-      <div style="font-family:'Playfair Display',serif;font-size:.95rem;color:var(--acc)">ఏ Events కావాలి?</div>
+      <div style="font-family:'Playfair Display',serif;font-size:.95rem;color:var(--acc)">ఏ Events కావాలి? తేదీ, సమయం నమోదు చేయండి</div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
-      ${chk('cfEvt','Engagement','💍 Engagement')}
-      ${chk('cfEvt','Pellikoduku','🤵 పెళ్ళికొడుకు')}
-      ${chk('cfEvt','Pellikuturu','👰 పెళ్ళికూతురు')}
-      ${chk('cfEvt','Reception','🎉 Reception')}
-      ${chk('cfEvt','Wedding','💒 Wedding')}
-      ${chk('cfEvt','PrePostShoot','📸 Pre/Post Shoot')}
+
+    <!-- 1. Engagement -->
+    <div style="background:rgba(245,200,66,.06);border:1.5px solid rgba(245,200,66,.25);border-radius:10px;padding:10px;margin-bottom:10px">
+      <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:.85rem;font-weight:700;color:var(--acc);margin-bottom:8px">
+        <input type="checkbox" id="ev_engagement_en" style="accent-color:var(--acc);width:16px;height:16px" onchange="togEvSection('engagement')"> 💍 Engagement
+      </label>
+      <div id="ev_engagement_sec" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
+          <div><label style="font-size:.6rem;font-weight:700;color:var(--muted);display:block;margin-bottom:2px">తేదీ</label><input type="date" id="ev_engagement_date" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px;font-size:.82rem;outline:none"></div>
+          <div><label style="font-size:.6rem;font-weight:700;color:var(--muted);display:block;margin-bottom:2px">సమయం</label><input type="time" id="ev_engagement_time" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px;font-size:.82rem;outline:none"></div>
+        </div>
+        <div><label style="font-size:.6rem;font-weight:700;color:var(--muted);display:block;margin-bottom:2px">స్థలం</label><input type="text" id="ev_engagement_place" placeholder="Kalyana Mandapam..." style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px;font-size:.82rem;outline:none"></div>
+      </div>
     </div>
-    <!-- Pasupu Paaya split -->
-    <div style="background:rgba(245,200,66,.07);border:1.5px solid rgba(245,200,66,.3);border-radius:10px;padding:10px;margin-top:8px">
-      <div style="font-size:.7rem;font-weight:700;color:var(--acc);margin-bottom:8px">🌿 పసుపు పాయ (Pasupu Paaya)</div>
+
+    <!-- 2. Pasupu Paaya -->
+    <div style="background:rgba(245,200,66,.07);border:1.5px solid rgba(245,200,66,.3);border-radius:10px;padding:10px;margin-bottom:10px">
+      <div style="font-size:.82rem;font-weight:700;color:var(--acc);margin-bottom:8px">🌿 పసుపాయ (Pasupu Paaya)</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         <div style="background:rgba(34,197,94,.07);border:1.5px solid rgba(34,197,94,.3);border-radius:8px;padding:9px">
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:7px;font-size:.8rem;font-weight:700;color:var(--own)">
@@ -1684,9 +1692,36 @@ function renderClientForm(uid,evid,studio,phone,village){
         </div>
       </div>
     </div>
-    <!-- Haldi split -->
-    <div style="background:rgba(255,215,0,.07);border:1.5px solid rgba(255,200,0,.3);border-radius:10px;padding:10px;margin-top:8px">
-      <div style="font-size:.7rem;font-weight:700;color:#d4a000;margin-bottom:8px">💛 హల్దీ (Haldi)</div>
+
+    <!-- 3. Pellikoduku -->
+    <div style="background:rgba(34,197,94,.06);border:1.5px solid rgba(34,197,94,.25);border-radius:10px;padding:10px;margin-bottom:10px">
+      <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:.85rem;font-weight:700;color:var(--own);margin-bottom:8px">
+        <input type="checkbox" id="ev_pellikoduku_en" style="accent-color:#22c55e;width:16px;height:16px" onchange="togEvSection('pellikoduku')"> 🤵 పెళ్ళికొడుకు (Pellikoduku)
+      </label>
+      <div id="ev_pellikoduku_sec" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><label style="font-size:.6rem;font-weight:700;color:var(--muted);display:block;margin-bottom:2px">తేదీ</label><input type="date" id="ev_pellikoduku_date" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px;font-size:.82rem;outline:none"></div>
+          <div><label style="font-size:.6rem;font-weight:700;color:var(--muted);display:block;margin-bottom:2px">సమయం</label><input type="time" id="ev_pellikoduku_time" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px;font-size:.82rem;outline:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Pellikuturu -->
+    <div style="background:rgba(239,68,68,.06);border:1.5px solid rgba(239,68,68,.25);border-radius:10px;padding:10px;margin-bottom:10px">
+      <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:.85rem;font-weight:700;color:var(--sup);margin-bottom:8px">
+        <input type="checkbox" id="ev_pellikuturu_en" style="accent-color:#ef4444;width:16px;height:16px" onchange="togEvSection('pellikuturu')"> 👰 పెళ్ళికూతురు (Pellikuturu)
+      </label>
+      <div id="ev_pellikuturu_sec" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><label style="font-size:.6rem;font-weight:700;color:var(--muted);display:block;margin-bottom:2px">తేదీ</label><input type="date" id="ev_pellikuturu_date" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px;font-size:.82rem;outline:none"></div>
+          <div><label style="font-size:.6rem;font-weight:700;color:var(--muted);display:block;margin-bottom:2px">సమయం</label><input type="time" id="ev_pellikuturu_time" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px;font-size:.82rem;outline:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Haldi -->
+    <div style="background:rgba(255,215,0,.07);border:1.5px solid rgba(255,200,0,.3);border-radius:10px;padding:10px;margin-bottom:10px">
+      <div style="font-size:.82rem;font-weight:700;color:#d4a000;margin-bottom:8px">💛 హల్దీ (Haldi)</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         <div style="background:rgba(34,197,94,.07);border:1.5px solid rgba(34,197,94,.3);border-radius:8px;padding:9px">
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:7px;font-size:.8rem;font-weight:700;color:var(--own)">
@@ -1708,6 +1743,35 @@ function renderClientForm(uid,evid,studio,phone,village){
         </div>
       </div>
     </div>
+
+    <!-- 6. Reception -->
+    <div style="background:rgba(56,189,248,.06);border:1.5px solid rgba(56,189,248,.25);border-radius:10px;padding:10px;margin-bottom:10px">
+      <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:.85rem;font-weight:700;color:var(--sky);margin-bottom:8px">
+        <input type="checkbox" id="ev_reception_en" style="accent-color:#38bdf8;width:16px;height:16px" onchange="togEvSection('reception')"> 🎉 Reception
+      </label>
+      <div id="ev_reception_sec" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
+          <div><label style="font-size:.6rem;font-weight:700;color:var(--muted);display:block;margin-bottom:2px">తేదీ</label><input type="date" id="ev_reception_date" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px;font-size:.82rem;outline:none"></div>
+          <div><label style="font-size:.6rem;font-weight:700;color:var(--muted);display:block;margin-bottom:2px">సమయం</label><input type="time" id="ev_reception_time" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px;font-size:.82rem;outline:none"></div>
+        </div>
+        <div><label style="font-size:.6rem;font-weight:700;color:var(--muted);display:block;margin-bottom:2px">స్థలం</label><input type="text" id="ev_reception_place" placeholder="Reception Hall..." style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px;font-size:.82rem;outline:none"></div>
+      </div>
+    </div>
+
+    <!-- 7. Wedding -->
+    <div style="background:rgba(192,57,10,.06);border:1.5px solid rgba(192,57,10,.25);border-radius:10px;padding:10px">
+      <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:.85rem;font-weight:700;color:#ff9a3c;margin-bottom:8px">
+        <input type="checkbox" id="ev_wedding_en" style="accent-color:#ff9a3c;width:16px;height:16px" onchange="togEvSection('wedding')"> 💒 Wedding
+      </label>
+      <div id="ev_wedding_sec" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
+          <div><label style="font-size:.6rem;font-weight:700;color:var(--muted);display:block;margin-bottom:2px">తేదీ</label><input type="date" id="ev_wedding_date" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px;font-size:.82rem;outline:none"></div>
+          <div><label style="font-size:.6rem;font-weight:700;color:var(--muted);display:block;margin-bottom:2px">సమయం</label><input type="time" id="ev_wedding_time" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px;font-size:.82rem;outline:none"></div>
+        </div>
+        <div><label style="font-size:.6rem;font-weight:700;color:var(--muted);display:block;margin-bottom:2px">స్థలం</label><input type="text" id="ev_wedding_place" placeholder="Kalyana Mandapam..." style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px;font-size:.82rem;outline:none"></div>
+      </div>
+    </div>
+
     </div>
   </div>
 
@@ -1790,6 +1854,173 @@ function togPPSection(prefix,el){
   const dates=document.getElementById(prefix+'_dates');
   if(dates)dates.style.display=show?'block':'none';
 }
+function togEvSection(name){
+  const chk=document.getElementById('ev_'+name+'_en');
+  if(!chk)return;
+  const sec=document.getElementById('ev_'+name+'_sec');
+  if(sec)sec.style.display=chk.checked?'block':'none';
+}
+function fmt12cf(t){if(!t)return'';const[h,m]=t.split(':').map(Number);if(isNaN(h))return t;const ap=h>=12?'PM':'AM';const hr=h%12||12;return`${hr}:${String(m).padStart(2,'0')} ${ap}`;}
+
+function buildPrintableHtml(data,studio){
+  // Build event rows (plain text, no emoji for PDF compat)
+  const evSections=(data.events||[]).map(e=>{
+    const name=e.name.replace(/[^\u0C00-\u0C7Fa-zA-Z0-9\s\(\)]/g,'').trim();
+    let html=`<div class="ev-block">
+      <div class="ev-title">${e.name}</div>`;
+    if(e.groomDate||e.groomTime){html+=`<div class="ev-row"><span class="ev-lbl">Groom:</span><span class="ev-val">${e.groomDate||''}${e.groomTime?' '+fmt12cf(e.groomTime):''}</span></div>`;}
+    if(e.brideDate||e.brideTime){html+=`<div class="ev-row"><span class="ev-lbl">Bride:</span><span class="ev-val">${e.brideDate||''}${e.brideTime?' '+fmt12cf(e.brideTime):''}</span></div>`;}
+    if(e.date){html+=`<div class="ev-row"><span class="ev-lbl">Date:</span><span class="ev-val">${e.date}</span></div>`;}
+    if(e.time){html+=`<div class="ev-row"><span class="ev-lbl">Time:</span><span class="ev-val">${fmt12cf(e.time)}</span></div>`;}
+    if(e.place){html+=`<div class="ev-row"><span class="ev-lbl">Place:</span><span class="ev-val">${e.place}</span></div>`;}
+    html+=`</div>`;
+    return html;
+  }).join('');
+
+  return`<!DOCTYPE html>
+<html lang="te">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${data.groomName} & ${data.brideName} - Booking</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;600;700&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans Telugu','DM Sans',sans-serif;background:#fff;color:#1a0a00;width:794px;min-height:1123px;}
+.page{width:794px;background:#fff;padding:0;}
+.hdr{background:linear-gradient(135deg,#8B1A00,#C0390A);padding:20px 28px;display:flex;align-items:center;justify-content:space-between;}
+.hdr-studio{font-size:20px;font-weight:700;color:#fff;letter-spacing:.02em;}
+.hdr-sub{font-size:10px;color:rgba(255,255,255,.7);margin-top:3px;}
+.hdr-icon{font-size:32px;}
+.accent{height:5px;background:linear-gradient(90deg,#f5c842,#ff9a3c,#8B1A00);}
+.hero{background:#fff8f0;padding:20px 28px;border-bottom:2px solid #f5c842;text-align:center;}
+.hero-names{font-size:28px;font-weight:700;color:#1a0a00;}
+.hero-amp{color:#C0390A;margin:0 10px;}
+.hero-sub{font-size:11px;color:#8B1A00;text-transform:uppercase;letter-spacing:3px;margin-top:5px;}
+.hero-date{font-size:11px;color:#666;margin-top:4px;}
+.body{padding:18px 28px;}
+.sec{margin-bottom:16px;}
+.sec-hdr{background:#fff0e8;border-left:4px solid #C0390A;padding:6px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#8B1A00;margin-bottom:8px;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.info-cell{background:#fff8f4;border:1px solid #f0d8c0;border-radius:6px;padding:8px 12px;}
+.info-lbl{font-size:9px;color:#8B1A00;text-transform:uppercase;font-weight:700;letter-spacing:.06em;margin-bottom:2px;}
+.info-val{font-size:13px;font-weight:600;color:#1a0a00;}
+.ev-block{background:#fff8f4;border:1px solid #f0d8c0;border-radius:7px;padding:10px 14px;margin-bottom:7px;}
+.ev-title{font-size:13px;font-weight:700;color:#C0390A;margin-bottom:6px;border-bottom:1px solid #f0d8c0;padding-bottom:5px;}
+.ev-row{display:flex;gap:10px;font-size:11px;margin-bottom:3px;}
+.ev-lbl{color:#8B1A00;font-weight:700;min-width:50px;}
+.ev-val{color:#1a0a00;font-weight:600;}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;}
+.tag{background:#fff0e0;border:1px solid #f5c842;border-radius:12px;padding:3px 9px;font-size:10px;font-weight:600;color:#8B1A00;}
+.footer{background:#fff8f0;border-top:2px solid #f5c842;padding:10px 28px;text-align:center;font-size:10px;color:#8B1A00;margin-top:auto;}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <div><div class="hdr-studio">${studio}</div><div class="hdr-sub">Photography Booking Confirmation</div></div>
+    <div class="hdr-icon">📷</div>
+  </div>
+  <div class="accent"></div>
+  <div class="hero">
+    <div class="hero-names">${data.groomName}<span class="hero-amp">&amp;</span>${data.brideName}</div>
+    <div class="hero-sub">Wedding Booking</div>
+    <div class="hero-date">Submitted: ${data.submittedDate||new Date().toLocaleDateString('te-IN')}</div>
+  </div>
+  <div class="body">
+    <div class="sec">
+      <div class="sec-hdr">వ్యక్తిగత వివరాలు (Personal Details)</div>
+      <div class="info-grid">
+        <div class="info-cell"><div class="info-lbl">Phone</div><div class="info-val">${data.clientPhone||'--'}</div></div>
+        <div class="info-cell"><div class="info-lbl">Budget</div><div class="info-val">${data.budget?'Rs.'+data.budget:'--'}</div></div>
+        <div class="info-cell"><div class="info-lbl">పెళ్ళి తేదీ</div><div class="info-val">${data.weddingDate||'--'}</div></div>
+        <div class="info-cell"><div class="info-lbl">సమయం</div><div class="info-val">${data.weddingTime?fmt12cf(data.weddingTime):'--'}</div></div>
+        ${data.weddingVenue?`<div class="info-cell" style="grid-column:1/-1"><div class="info-lbl">పెళ్ళి స్థలం</div><div class="info-val">${data.weddingVenue}</div></div>`:''}
+        ${data.notes?`<div class="info-cell" style="grid-column:1/-1"><div class="info-lbl">గమనికలు</div><div class="info-val">${data.notes}</div></div>`:''}
+      </div>
+    </div>
+    ${evSections?`<div class="sec"><div class="sec-hdr">Events వివరాలు</div>${evSections}</div>`:''}
+    ${(data.coverageType?.length||data.deliverables?.length||data.extras?.length)?`
+    <div class="sec">
+      <div class="sec-hdr">Requirements</div>
+      <div class="tags">
+        ${(data.coverageType||[]).map(t=>`<span class="tag">📷 ${t}</span>`).join('')}
+        ${(data.deliverables||[]).map(t=>`<span class="tag">${t}</span>`).join('')}
+        ${(data.extras||[]).map(t=>`<span class="tag">+ ${t}</span>`).join('')}
+      </div>
+    </div>`:''}
+  </div>
+  <div class="footer">Thank you for choosing ${studio} — We will confirm your booking shortly.</div>
+</div>
+</body>
+</html>`;
+}
+
+async function generateRealPdf(data,studio,filename){
+  // Load jsPDF + html2canvas from CDN
+  const loadScript=src=>new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});
+  try{
+    if(!window.html2canvas)await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    if(!window.jspdf)await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+  }catch(e){console.warn('CDN load failed',e);}
+
+  const htmlStr=buildPrintableHtml(data,studio);
+
+  // Render in hidden iframe
+  const iframe=document.createElement('iframe');
+  iframe.style.cssText='position:fixed;left:-9999px;top:0;width:794px;height:1123px;border:none;z-index:-1;';
+  document.body.appendChild(iframe);
+
+  await new Promise(res=>{
+    iframe.onload=res;
+    iframe.srcdoc=htmlStr;
+  });
+
+  // Wait for fonts
+  await new Promise(r=>setTimeout(r,1200));
+
+  try{
+    const canvas=await window.html2canvas(iframe.contentDocument.body,{
+      scale:2,width:794,height:iframe.contentDocument.body.scrollHeight,
+      useCORS:true,allowTaint:true,logging:false,
+      backgroundColor:'#ffffff'
+    });
+    document.body.removeChild(iframe);
+
+    const imgData=canvas.toDataURL('image/jpeg',0.95);
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'portrait',unit:'px',format:'a4'});
+    const pdfW=pdf.internal.pageSize.getWidth();
+    const pdfH=pdf.internal.pageSize.getHeight();
+    const ratio=canvas.width/canvas.height;
+    const imgH=pdfW/ratio;
+
+    if(imgH<=pdfH){
+      pdf.addImage(imgData,'JPEG',0,0,pdfW,imgH);
+    } else {
+      // Multi-page
+      let yPos=0;
+      const pageImgH=canvas.width*(pdfH/pdfW);
+      while(yPos<canvas.height){
+        const tempCanvas=document.createElement('canvas');
+        tempCanvas.width=canvas.width;
+        tempCanvas.height=Math.min(pageImgH,canvas.height-yPos);
+        const ctx=tempCanvas.getContext('2d');
+        ctx.drawImage(canvas,0,yPos,canvas.width,tempCanvas.height,0,0,canvas.width,tempCanvas.height);
+        const pageImg=tempCanvas.toDataURL('image/jpeg',0.95);
+        if(yPos>0)pdf.addPage();
+        const thisH=(tempCanvas.height/canvas.width)*pdfW;
+        pdf.addImage(pageImg,'JPEG',0,0,pdfW,thisH);
+        yPos+=pageImgH;
+      }
+    }
+    pdf.save(filename);
+    return true;
+  }catch(err){
+    document.body.removeChild(iframe);
+    throw err;
+  }
+}
 async function submitCF(uid,evid){
   const gn=document.getElementById('cf_groom')?.value.trim();
   const bn=document.getElementById('cf_bride')?.value.trim();
@@ -1800,32 +2031,93 @@ async function submitCF(uid,evid){
   if(!wd){alert('పెళ్ళి తేదీ తప్పనిసరి!');return;}
   if(!ph||ph.length!==10){alert('Valid 10-digit phone number ఇవ్వండి!');return;}
   if(!cname){alert('మీ పేరు తప్పనిసరి!');return;}
-  const selEvts=Array.from(document.querySelectorAll('input[name=cfEvt]:checked')).map(x=>x.value);
+
+  // Collect events with date/time/place
+  const eventsData=[];
+  if(document.getElementById('ev_engagement_en')?.checked){
+    eventsData.push({name:'💍 Engagement',date:document.getElementById('ev_engagement_date')?.value||'',time:document.getElementById('ev_engagement_time')?.value||'',place:document.getElementById('ev_engagement_place')?.value||''});
+  }
+  // Pasupu Paaya
+  const ppGroom=document.getElementById('pp_groom_en')?.checked?{date:document.getElementById('pp_groom_date')?.value||'',time:document.getElementById('pp_groom_time')?.value||''}:null;
+  const ppBride=document.getElementById('pp_bride_en')?.checked?{date:document.getElementById('pp_bride_date')?.value||'',time:document.getElementById('pp_bride_time')?.value||''}:null;
+  if(ppGroom||ppBride){
+    eventsData.push({name:'🌿 పసుపాయ (Pasupu Paaya)',groomDate:ppGroom?.date||'',groomTime:ppGroom?.time||'',brideDate:ppBride?.date||'',brideTime:ppBride?.time||''});
+  }
+  if(document.getElementById('ev_pellikoduku_en')?.checked){
+    eventsData.push({name:'🤵 పెళ్ళికొడుకు (Pellikoduku)',date:document.getElementById('ev_pellikoduku_date')?.value||'',time:document.getElementById('ev_pellikoduku_time')?.value||''});
+  }
+  if(document.getElementById('ev_pellikuturu_en')?.checked){
+    eventsData.push({name:'👰 పెళ్ళికూతురు (Pellikuturu)',date:document.getElementById('ev_pellikuturu_date')?.value||'',time:document.getElementById('ev_pellikuturu_time')?.value||''});
+  }
+  // Haldi
+  const hlGroom=document.getElementById('hl_groom_en')?.checked?{date:document.getElementById('hl_groom_date')?.value||'',time:document.getElementById('hl_groom_time')?.value||''}:null;
+  const hlBride=document.getElementById('hl_bride_en')?.checked?{date:document.getElementById('hl_bride_date')?.value||'',time:document.getElementById('hl_bride_time')?.value||''}:null;
+  if(hlGroom||hlBride){
+    eventsData.push({name:'💛 హల్దీ (Haldi)',groomDate:hlGroom?.date||'',groomTime:hlGroom?.time||'',brideDate:hlBride?.date||'',brideTime:hlBride?.time||''});
+  }
+  if(document.getElementById('ev_reception_en')?.checked){
+    eventsData.push({name:'🎉 Reception',date:document.getElementById('ev_reception_date')?.value||'',time:document.getElementById('ev_reception_time')?.value||'',place:document.getElementById('ev_reception_place')?.value||''});
+  }
+  if(document.getElementById('ev_wedding_en')?.checked){
+    eventsData.push({name:'💒 Wedding',date:document.getElementById('ev_wedding_date')?.value||'',time:document.getElementById('ev_wedding_time')?.value||'',place:document.getElementById('ev_wedding_place')?.value||''});
+  }
+
   const selCov=Array.from(document.querySelectorAll('input[name=cfCov]:checked')).map(x=>x.value);
   const wtime=document.getElementById('cf_wtime')?.value||'';
-  const ppGroom=document.getElementById('pp_groom_en')?.checked?{enabled:true,date:document.getElementById('pp_groom_date')?.value||'',time:document.getElementById('pp_groom_time')?.value||''}:null;
-  const ppBride=document.getElementById('pp_bride_en')?.checked?{enabled:true,date:document.getElementById('pp_bride_date')?.value||'',time:document.getElementById('pp_bride_time')?.value||''}:null;
-  const hlGroom=document.getElementById('hl_groom_en')?.checked?{enabled:true,date:document.getElementById('hl_groom_date')?.value||'',time:document.getElementById('hl_groom_time')?.value||''}:null;
-  const hlBride=document.getElementById('hl_bride_en')?.checked?{enabled:true,date:document.getElementById('hl_bride_date')?.value||'',time:document.getElementById('hl_bride_time')?.value||''}:null;
-  const data={groomName:gn,brideName:bn,clientName:cname,clientPhone:ph,weddingDate:wd,weddingTime:wtime,weddingVenue:document.getElementById('cf_wvenue')?.value.trim()||'',selectedEvents:selEvts,coverageType:selCov,pasupuPayaGroom:ppGroom,pasupuPayaBride:ppBride,haldiGroom:hlGroom,haldiBride:hlBride,deliverables:Array.from(document.querySelectorAll('input[name=cfDel]:checked')).map(x=>x.value),extras:Array.from(document.querySelectorAll('input[name=cfExt]:checked')).map(x=>x.value),budget:document.getElementById('cf_budget')?.value||'',notes:document.getElementById('cf_notes')?.value.trim()||'',submittedDate:document.getElementById('cf_today')?.value||''};
+  const data={groomName:gn,brideName:bn,clientName:cname,clientPhone:ph,weddingDate:wd,weddingTime:wtime,weddingVenue:document.getElementById('cf_wvenue')?.value.trim()||'',events:eventsData,coverageType:selCov,deliverables:Array.from(document.querySelectorAll('input[name=cfDel]:checked')).map(x=>x.value),extras:Array.from(document.querySelectorAll('input[name=cfExt]:checked')).map(x=>x.value),budget:document.getElementById('cf_budget')?.value||'',notes:document.getElementById('cf_notes')?.value.trim()||'',submittedDate:document.getElementById('cf_today')?.value||''};
+
   const req={id:'r'+Date.now(),evId:evid||'',uid,data,status:'pending',seen:false,submittedAt:new Date().toLocaleString('te-IN'),createdAt:Date.now()};
   const lsR=JSON.parse(localStorage.getItem('ppReqs')||'[]');lsR.push(req);localStorage.setItem('ppReqs',JSON.stringify(lsR));
   if(fbOk)try{await db.collection('requests').doc(req.id).set(req);}catch(e){}
+
+  // Build WhatsApp message
+  const evLines=eventsData.map(e=>{
+    let line=`\n📌 *${e.name}*`;
+    if(e.groomDate||e.groomTime)line+=`\n  🤵 పెళ్ళికొడుకు: ${e.groomDate||''}${e.groomTime?' '+e.groomTime:''}`;
+    if(e.brideDate||e.brideTime)line+=`\n  👰 పెళ్ళికూతురు: ${e.brideDate||''}${e.brideTime?' '+e.brideTime:''}`;
+    if(e.date)line+=`\n  📅 ${e.date}`;
+    if(e.time)line+=` ⏰ ${e.time}`;
+    if(e.place)line+=`\n  📍 ${e.place}`;
+    return line;
+  }).join('');
+  const waMsg=`📷 *Photography Booking Request*\n\n💍 *${gn} & ${bn}*\n📅 ${wd}${wtime?' ⏰ '+wtime:''}\n📍 ${data.weddingVenue||'--'}\n💰 Budget: ₹${data.budget||'--'}\n📞 ${ph}${evLines?'\n\n📋 *Events:*'+evLines:''}`;
+
+  // PDF blob
+  const pdfHtml=buildPrintableHtml(data, window._cfStudio||'Event Planner');
+  const _data=data;const _studio=window._cfStudio||'Event Planner';const _gn=gn;const _bn=bn;
+
   document.body.innerHTML=`
   <div style="min-height:100vh;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;font-family:'DM Sans',sans-serif">
-    <div style="text-align:center;max-width:380px">
+    <div style="text-align:center;max-width:400px;width:100%">
       <div style="font-size:4rem;margin-bottom:16px">✅</div>
       <h2 style="font-family:'Playfair Display',serif;font-size:1.5rem;color:#f5c842;margin-bottom:8px">Booking Request పంపబడింది!</h2>
       <p style="color:#666;font-size:.85rem;margin-bottom:20px">Photographer మీ request చూసి confirm చేస్తారు.</p>
       <div style="background:#1c1c20;border:1px solid #28282e;border-radius:14px;padding:16px;text-align:left;margin-bottom:20px">
         <div style="font-size:.7rem;color:#666;margin-bottom:10px;text-transform:uppercase">మీ వివరాలు:</div>
-        <div style="font-size:.82rem;line-height:2;color:#f0ede8">💍 ${data.groomName} & ${data.brideName}<br>📅 ${data.weddingDate}${wtime?' ⏰ '+wtime:''}<br>📍 ${data.weddingVenue||'--'}<br>📞 ${data.clientPhone}${data.budget?'<br>💰 ₹'+data.budget:''}</div>
+        <div style="font-size:.82rem;line-height:2;color:#f0ede8">💍 ${gn} & ${bn}<br>📅 ${wd}${wtime?' ⏰ '+wtime:''}<br>📍 ${data.weddingVenue||'--'}<br>📞 ${ph}${data.budget?'<br>💰 ₹'+data.budget:''}</div>
+        ${eventsData.length?`<div style="margin-top:10px;font-size:.78rem;color:#f5c842;font-weight:700">Events: ${eventsData.map(e=>e.name).join(', ')}</div>`:''}
       </div>
+      <button id="pdfBtn" onclick="cfPdfDownload()" style="width:100%;background:#1e40af;color:#fff;border:none;padding:13px;border-radius:12px;font-weight:700;font-size:.95rem;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:10px">📄 PDF Download చేయండి</button>
       <button onclick="cfWaShare()" style="width:100%;background:#25D366;color:#fff;border:none;padding:13px;border-radius:12px;font-weight:700;font-size:.95rem;cursor:pointer;font-family:'DM Sans',sans-serif">📤 WhatsApp లో Share చేయండి</button>
     </div>
   </div>
-  <style>[data-theme="dark"]{--bg:#0b0b0d;}</style>`;
-  window.cfWaShare=function(){const evList=data.selectedEvents?.length?'\n📌 Events: '+data.selectedEvents.join(', '):'';const msg=`📷 *Photography Booking Request*\n\n💍 *${data.groomName} & ${data.brideName}*\n📅 ${data.weddingDate}${data.weddingTime?' ⏰ '+data.weddingTime:''}\n📍 ${data.weddingVenue||'--'}${evList}\n💰 Budget: ₹${data.budget||'--'}\n📞 ${data.clientPhone}`;window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');};
+  <style>[data-theme="dark"]{--bg:#0b0b0d;--acc:#f5c842;}*{box-sizing:border-box;}</style>`;
+  const _waMsg=waMsg;
+  window.cfPdfDownload=async function(){
+    const btn=document.getElementById('pdfBtn');
+    if(btn){btn.disabled=true;btn.textContent='⏳ PDF తయారవుతోంది...';}
+    try{
+      await generateRealPdf(_data,_studio,`${_gn}_${_bn}_Booking.pdf`);
+      if(btn){btn.textContent='✅ PDF Downloaded!';}
+    }catch(err){
+      console.error(err);
+      if(btn){btn.disabled=false;btn.textContent='📄 PDF Download చేయండి';}
+      alert('PDF generation failed. మళ్ళీ try చేయండి.\n'+err.message);
+    }
+  };
+  window.cfWaShare=function(){
+    window.open(`https://wa.me/?text=${encodeURIComponent(_waMsg)}`,'_blank');
+  };
 }
 
 // ══ CLOSE MODALS ══
