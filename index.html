@@ -16,7 +16,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" onerror="window._fbLoadErr=true"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" onerror="window._fbLoadErr=true"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" onerror="window._fbLoadErr=true"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 [data-theme="dark"]{--bg:#0b0b0d;--surf:#161618;--card:#1c1c20;--bdr:#28282e;--text:#f0ede8;--muted:#666;--sh:rgba(0,0,0,.5);--tb:#0a0a0c;}
 [data-theme="light"]{--bg:#f0efe9;--surf:#fff;--card:#faf9f6;--bdr:#e4e0d6;--text:#1a1a1a;--muted:#888;--sh:rgba(0,0,0,.07);--tb:#fff;}
@@ -1213,86 +1212,86 @@ function delEv(id){
 function genPDF(){const d=getFormData();genPDFData(d);}
 function genPDFById(id){const ev=evs.find(e=>e.id===id);if(ev)genPDFData(ev);}
 function genPDFData(ev){
-  toast('📄 PDF తయారవుతోంది...', 4000);
-  // Build a hidden div with the PDF content
-  const container = document.createElement('div');
-  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:210mm;background:#fff;font-family:sans-serif;';
-  const innerHtml = buildPDFData(ev);
-  // Extract body content only (strip full HTML doc wrapper)
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(innerHtml, 'text/html');
-  // Hide action buttons inside the content
-  doc.querySelectorAll('.pdf-actions').forEach(el => el.remove());
-  container.innerHTML = doc.body.innerHTML;
-  document.body.appendChild(container);
+  toast('📄 PDF తయారవుతోంది...', 3000);
+  const htmlContent = buildPDFData(ev);
+  const fname = ((ev.groom||'')+(ev.bride?'_'+ev.bride:'')||ev.name||'Booking').replace(/[^\w]/g,'_')+'_Booking';
 
-  const fileName = (ev.groom||ev.bride ? (ev.groom||'')+(ev.bride?'_&_'+ev.bride:'') : ev.name||'Booking').replace(/[^a-zA-Z0-9_& ]/g,'').trim().replace(/ /g,'_') + '_Booking.pdf';
-
-  const opt = {
-    margin: [6, 8, 6, 8],
-    filename: fileName,
-    image: { type: 'jpeg', quality: 0.95 },
-    html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-  };
-
-  if(typeof html2pdf === 'undefined'){
-    toast('⚠️ PDF library load అవ్వలేదు. Internet connection చెక్ చేయండి.');
-    document.body.removeChild(container);
+  // ── Method: open print window → user saves as PDF ──
+  // Works on ALL mobile browsers (Chrome/Samsung/Safari)
+  const pw = window.open('', '_blank');
+  if(!pw){
+    // popup blocked → fallback: data URI download
+    _pdfFallbackDownload(htmlContent, fname);
     return;
   }
+  pw.document.open();
+  pw.document.write(htmlContent);
+  pw.document.close();
 
-  html2pdf().set(opt).from(container).toPdf().get('pdf').then(function(pdf){
-    // Store blob for WhatsApp share
-    const blob = pdf.output('blob');
-    window._lastPdfBlob = blob;
-    window._lastPdfName = fileName;
-  }).save().then(function(){
-    document.body.removeChild(container);
-    toast('✅ PDF Download అయింది!');
-    // Show WhatsApp share option
+  // Inject auto-print + save blob for WA share
+  pw.onload = function(){
+    // store HTML for WA share
+    window._lastPdfHtml  = htmlContent;
+    window._lastPdfName  = fname + '.pdf';
+    window._lastPdfWin   = pw;
+    // On mobile Chrome/Samsung: print dialog → "Save as PDF"
+    setTimeout(()=>{ try{ pw.print(); }catch(e){} }, 400);
     showPdfWAOption(ev);
-  }).catch(function(err){
-    document.body.removeChild(container);
-    toast('⚠️ PDF error: ' + err.message);
-  });
+  };
+  // fallback if onload doesn't fire
+  setTimeout(()=>{
+    if(!window._lastPdfHtml){
+      window._lastPdfHtml = htmlContent;
+      window._lastPdfName = fname + '.pdf';
+      window._lastPdfWin  = pw;
+      showPdfWAOption(ev);
+    }
+  }, 1200);
+}
+
+function _pdfFallbackDownload(htmlContent, fname){
+  // Encode as data URI and trigger download
+  const blob = new Blob([htmlContent], {type:'text/html'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = fname + '.html';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
+  toast('📄 File download అయింది — PDF గా open చేయండి', 4000);
 }
 function showPdfWAOption(ev){
-  // Show a toast/modal asking if user wants to share on WhatsApp
+  document.getElementById('pdfWaBanner')?.remove();
   const banner = document.createElement('div');
   banner.id = 'pdfWaBanner';
-  banner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid #25D366;border-radius:14px;padding:12px 16px;z-index:9999;display:flex;gap:10px;align-items:center;box-shadow:0 4px 20px rgba(0,0,0,.4);max-width:90vw;font-family:"DM Sans",sans-serif';
-  banner.innerHTML = '<div style="font-size:.82rem;color:var(--text)">PDF download అయింది! WhatsApp లో share చేయాలా?</div><button onclick="sharePdfWA()" style="background:#25D366;color:#fff;border:none;padding:7px 12px;border-radius:8px;font-weight:700;font-size:.78rem;cursor:pointer;white-space:nowrap">📤 Share</button><button onclick="document.getElementById('pdfWaBanner')?.remove()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem">✕</button>';
+  banner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--card);border:1.5px solid #25D366;border-radius:16px;padding:14px 16px;z-index:9999;display:flex;flex-direction:column;gap:10px;box-shadow:0 4px 24px rgba(0,0,0,.5);width:88vw;max-width:380px;font-family:DM Sans,sans-serif';
+  banner.innerHTML = '<div style="font-size:.85rem;color:var(--text);font-weight:600">📄 PDF తయారు!</div><div style="font-size:.75rem;color:var(--muted);line-height:1.6">📱 Print dialog లో <strong style=\"color:var(--text)\">\"Save as PDF\"</strong> select చేయండి → మీ phone లో save అవుతుంది</div><div style="display:flex;gap:8px"><button onclick="sharePdfWA()" style="flex:1;background:#25D366;color:#fff;border:none;padding:10px;border-radius:10px;font-weight:700;font-size:.82rem;cursor:pointer">📤 WhatsApp కి పంపు</button><button onclick="document.getElementById('pdfWaBanner')?.remove()" style="background:var(--surf);border:1px solid var(--bdr);color:var(--muted);padding:10px 12px;border-radius:10px;font-size:.9rem;cursor:pointer">✕</button></div>';
   document.body.appendChild(banner);
-  setTimeout(()=>document.getElementById('pdfWaBanner')?.remove(), 8000);
+  setTimeout(()=>document.getElementById('pdfWaBanner')?.remove(), 15000);
 }
 function sharePdfWA(){
   document.getElementById('pdfWaBanner')?.remove();
-  // On mobile: if Web Share API supports files, share the PDF blob directly
-  if(window._lastPdfBlob && navigator.share && navigator.canShare){
-    const file = new File([window._lastPdfBlob], window._lastPdfName||'Booking.pdf', {type:'application/pdf'});
-    if(navigator.canShare({files:[file]})){
-      navigator.share({files:[file], title:'Booking PDF'}).catch(()=>shareWAFallback());
+  if(window._lastPdfHtml && navigator.share){
+    const blob = new Blob([window._lastPdfHtml],{type:'text/html'});
+    const file = new File([blob], window._lastPdfName||'Booking.pdf',{type:'application/pdf'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      navigator.share({files:[file],title:'Booking PDF'}).then(()=>toast('✅ Shared!')).catch(()=>_waOpenPrintWin());
       return;
     }
   }
-  shareWAFallback();
+  _waOpenPrintWin();
 }
-function shareWAFallback(){
-  // Fallback: open WhatsApp with text message and note to attach PDF
-  if(!window._lastPdfBlob){ toast('PDF download ముందు చేయండి'); return; }
-  // Download again if needed and tell user to share
-  const url = URL.createObjectURL(window._lastPdfBlob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = window._lastPdfName||'Booking.pdf';
-  a.click();
-  setTimeout(()=>{
-    URL.revokeObjectURL(url);
-    window.open('https://wa.me/?text='+encodeURIComponent('📷 Booking PDF attach చేస్తున్నాను — please check the file!'), '_blank');
-  }, 800);
+function _waOpenPrintWin(){
+  if(window._lastPdfHtml){
+    if(!window._lastPdfWin||window._lastPdfWin.closed){
+      window._lastPdfWin=window.open('','_blank');
+      if(window._lastPdfWin){window._lastPdfWin.document.write(window._lastPdfHtml);window._lastPdfWin.document.close();setTimeout(()=>{try{window._lastPdfWin.print();}catch(e){}},400);}
+    } else {try{window._lastPdfWin.print();}catch(e){}}
+    toast('Print dialog లో "Save as PDF" → Files app నుండి WhatsApp కి share చేయండి',5000);
+  } else {toast('ముందు PDF download చేయండి',3000);}
 }
+function shareWAFallback(){_waOpenPrintWin();}
 function showPDFPreview(ev){
   // Keep for compatibility — now triggers download
   genPDFData(ev);
@@ -1423,7 +1422,7 @@ th{background:linear-gradient(135deg,#8B1A00,#C0390A);color:#fff;padding:7px 10p
 </head>
 <body>
 <div class="pdf-actions">
-  <button class="pdf-btn pdf-btn-save" onclick="window.print()">💾 Save / Download PDF</button>
+  <button class="pdf-btn pdf-btn-save" onclick="window.print()">📥 PDF Save చేయండి</button>
   <button class="pdf-btn pdf-btn-wa" onclick="shareWAText()">📤 WhatsApp Share</button>
   <button class="pdf-btn" style="background:#555;color:#fff" onclick="window.close()">✕ Close</button>
 </div>
@@ -1518,8 +1517,8 @@ function shareWAText(){
   window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 }
 window.onload=function(){
-  // Small delay to let fonts load
-  setTimeout(()=>{},300);
+  // Auto-trigger print dialog so user can "Save as PDF"
+  setTimeout(()=>{ window.print(); }, 600);
 };
 <\/script>
 </body></html>`
