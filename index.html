@@ -82,17 +82,23 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .cal-nb{background:var(--surf);border:1px solid var(--bdr);color:var(--text);width:26px;height:26px;border-radius:50%;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
 .cal-nb:hover{background:var(--acc);color:#000;border-color:var(--acc);}
 .cbox{background:var(--card);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;margin-bottom:10px;}
-.ch{display:grid;grid-template-columns:repeat(7,1fr);background:var(--surf);border-bottom:1px solid var(--bdr);}
-.ch span{text-align:center;padding:6px 1px;font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;}
-.cg{display:grid;grid-template-columns:repeat(7,1fr);}
-.cc{border-right:1px solid var(--bdr);border-bottom:1px solid var(--bdr);min-height:72px;padding:3px 2px 2px;cursor:pointer;transition:background .15s;overflow:hidden;vertical-align:top;}
-.cc:nth-child(7n){border-right:none;}
+/* Week-row layout: day labels on left, dates across */
+.cal-table{width:100%;border-collapse:collapse;}
+.cal-table .cal-day-label{background:var(--surf);border-right:1px solid var(--bdr);border-bottom:1px solid var(--bdr);padding:4px 5px;font-size:.58rem;font-weight:700;color:var(--muted);white-space:nowrap;text-align:center;width:32px;vertical-align:top;}
+.cal-table .cal-day-label.sun{color:#ef4444;}
+.cal-table .cal-day-label.sat{color:#38bdf8;}
+/* keep old classes for JS compatibility */
+.ch{display:none;}
+.cg{display:none;}
+.cc{border-right:1px solid var(--bdr);border-bottom:1px solid var(--bdr);padding:2px 2px 2px;cursor:pointer;transition:background .15s;vertical-align:top;}
 .cc:hover:not(.emp){background:rgba(245,200,66,.06);}
 .cc.emp{cursor:default;background:rgba(0,0,0,.04);}
-.cc.tod .dn{background:var(--acc);color:#000;font-weight:700;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;}
+.cc.tod .dn{background:var(--acc);color:#000;font-weight:700;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;}
 .cc.sd2{background:rgba(245,200,66,.1);outline:2px solid rgba(245,200,66,.4);outline-offset:-2px;}
-.dn{font-size:.7rem;font-weight:600;width:20px;height:20px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;}
-.ed{border-radius:3px;padding:1px 3px;font-size:.44rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;margin-bottom:1px;line-height:1.4;}
+.dn{font-size:.68rem;font-weight:600;width:18px;height:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 2px auto;}
+/* events grid: 2 per row */
+.ev-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;}
+.ed{border-radius:3px;padding:1px 2px;font-size:.4rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35;}
 .ed.own{background:rgba(34,197,94,.2);color:var(--own);border-left:2px solid var(--own);}
 .ed.sup{background:rgba(239,68,68,.2);color:var(--sup);border-left:2px solid var(--sup);}
 .ed.sky{background:rgba(56,189,248,.2);color:var(--sky);border-left:2px solid var(--sky);}
@@ -307,8 +313,7 @@ input[type=file]{display:none;}
       </div>
     </div>
     <div class="cbox">
-      <div class="ch"><span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span></div>
-      <div class="cg" id="cg"></div>
+      <table class="cal-table" id="calTable"><tbody id="calBody"></tbody></table>
     </div>
     <div class="lgnd">
       <div class="li"><div class="ld" style="background:var(--own)"></div>Own</div>
@@ -429,9 +434,13 @@ input[type=file]{display:none;}
 
     <div class="fg"><label>స్థలం / వేదిక</label><input type="text" id="sLoc" placeholder="వేదిక..." style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none"></div>
 
-    <!-- Own event: supporter name + camera -->
+    <!-- Own event: title + hidden supporter + camera -->
     <div id="sOwnExtra">
-      <div class="fg"><label>Supporter పేరు</label><input type="text" id="sSupName" placeholder="Supporter పేరు..." style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none"></div>
+      <div class="fg"><label>Event Title / పేరు</label><input type="text" id="sEvTitle" placeholder="Ex: Ravi & Priya Wedding..." style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none"></div>
+      <details style="margin-bottom:8px">
+        <summary style="font-size:.72rem;color:var(--muted);cursor:pointer;padding:4px 0;list-style:none;display:flex;align-items:center;gap:4px">▶ Supporter వివరాలు (ఐచ్చికం)</summary>
+        <div class="fg" style="margin-top:6px"><input type="text" id="sSupName" placeholder="Supporter పేరు..." style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none"></div>
+      </details>
       <div class="fg">
         <label>కెమెరా</label>
         <div style="display:flex;gap:8px">
@@ -543,7 +552,7 @@ const MN=['జనవరి','ఫిబ్రవరి','మార్చి','ఏ
 const SN=['Su','Mo','Tu','We','Th','Fr','Sa'];
 const DAY_TE=['ఆది','సోమ','మంగళ','బుధ','గురు','శుక్ర','శని'];
 const CATS={birthday:'🎂 Birthday',wedding:'💍 Wedding',halfsaree:'👗 Half Saree',outdoor:'🌿 Outdoor',temple:'🛕 Temple',political:'🗳️ Political',others:'📸 Others'};
-const SUB={birthday:['Birthday','Stills','Song','Others'],wedding:['Engagement','Pasupu Paaya','Pellikoduku','Pellikuturu','Haldi','Reception','Wedding'],halfsaree:['Photo Shoot','Song','Function'],outdoor:['Photo/Video'],temple:['Events'],political:['Events'],others:[]};
+const SUB={birthday:['Birthday','Stills','Song','Others'],wedding:['Engagement','Pasupu Paaya','Pellikoduku/Pellikuturu','Haldi','Reception','Wedding','Outdoor Shoot'],halfsaree:['Photo Shoot','Song','Function'],outdoor:['Photo/Video','Outdoor Shoot'],temple:['Events'],political:['Events'],others:[]};
 const CAMS=['Sony A7 IV','Sony A7 III','Canon R6','Canon 5D IV','Nikon Z6','Nikon D850','Fujifilm X-T5'];
 const LIGHTS=['LED Panel','Ring Light','Softbox','Speedlight','Godox AD200','Umbrella'];
 const LENS=['24-70mm f/2.8','70-200mm f/2.8','50mm f/1.4','85mm f/1.8','16-35mm','100mm Macro'];
@@ -656,38 +665,89 @@ function chM(d){cm+=d;if(cm>11){cm=0;cy++;}if(cm<0){cm=11;cy--;}renAll();}
 function renAll(){updCover();renCal();renNextEv();renUpcoming();}
 function renCal(){
   document.getElementById('calTitle').textContent=MN[cm]+' '+cy;
-  var g=document.getElementById('cg');g.innerHTML='';
-  var fd=new Date(cy,cm,1).getDay(),dim=new Date(cy,cm+1,0).getDate(),ts=fmt(now);
-  for(var i=0;i<fd;i++){var ec=document.createElement('div');ec.className='cc emp';g.appendChild(ec);}
-  for(var d=1;d<=dim;d++){
-    (function(day){
-      var ds=cy+'-'+String(cm+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
-      // collect ALL events for this day
-      var dayEvs=[];
-      evs.forEach(function(ev){
-        if(ev.date===ds) dayEvs.push({name:ev.name,type:ev.type==='own'?'own':'sup',id:ev.id,time:ev.mainTime||''});
-        (ev.subEvs||[]).forEach(function(s){
-          if(s.date===ds) dayEvs.push({name:s.name,type:'sky',id:ev.id,time:s.time||''});
-          // split events
-          if(s.groomDate===ds) dayEvs.push({name:s.name+' (పెళ్ళికొడుకు)',type:'own',id:ev.id,time:s.groomTime||''});
-          if(s.brideDate===ds) dayEvs.push({name:s.name+' (పెళ్లికూతురు)',type:'sup',id:ev.id,time:s.brideTime||''});
-        });
-      });
-      var cell=document.createElement('div');
-      cell.className='cc'+(ds===ts?' tod':'')+(ds===sd?' sd2':'');
-      cell.onclick=function(e){e.stopPropagation();showDayPopup(ds,dayEvs,cell);};
-      var dn=document.createElement('div');dn.className='dn';dn.textContent=day;cell.appendChild(dn);
-      // Show ALL events — no truncation with +more
-      dayEvs.forEach(function(ev){
-        var dot=document.createElement('div');
-        dot.className='ed '+ev.type;
-        var t=ev.time?fmt12(ev.time)+' ':'' ;
-        dot.textContent=t+ev.name.slice(0,8);
-        dot.title=ev.name+(ev.time?' · '+fmt12(ev.time):'');
-        cell.appendChild(dot);
-      });
-      g.appendChild(cell);
-    })(d);
+  var tbody=document.getElementById('calBody');
+  tbody.innerHTML='';
+  var DAY_LABELS=[
+    {label:'ఆది',cls:'sun'},
+    {label:'సోమ',cls:''},
+    {label:'మంగళ',cls:''},
+    {label:'బుధ',cls:''},
+    {label:'గురు',cls:''},
+    {label:'శుక్ర',cls:''},
+    {label:'శని',cls:'sat'}
+  ];
+  var fd=new Date(cy,cm,1).getDay(); // 0=Sun
+  var dim=new Date(cy,cm+1,0).getDate();
+  var ts=fmt(now);
+
+  // Build a 7-row table: each row = one day-of-week, columns = weeks
+  // Calculate how many week-columns we need
+  var totalCells=fd+dim;
+  var numWeeks=Math.ceil(totalCells/7);
+
+  // Pre-build dayEvs map: key=dateStr, val=array
+  var evMap={};
+  evs.forEach(function(ev){
+    function addToMap(ds,obj){if(!evMap[ds])evMap[ds]=[];evMap[ds].push(obj);}
+    if(ev.date)addToMap(ev.date,{name:ev.name,type:ev.type==='own'?'own':'sup',id:ev.id,time:ev.mainTime||''});
+    (ev.subEvs||[]).forEach(function(s){
+      if(s.date)addToMap(s.date,{name:s.name,type:'sky',id:ev.id,time:s.time||''});
+      if(s.groomDate)addToMap(s.groomDate,{name:s.name+' (పెళ్ళికొడుకు)',type:'own',id:ev.id,time:s.groomTime||''});
+      if(s.brideDate)addToMap(s.brideDate,{name:s.name+' (పెళ్లికూతురు)',type:'sup',id:ev.id,time:s.brideTime||''});
+    });
+  });
+
+  for(var dow=0;dow<7;dow++){
+    var tr=document.createElement('tr');
+    // Day label cell
+    var th=document.createElement('td');
+    th.className='cal-day-label'+(DAY_LABELS[dow].cls?' '+DAY_LABELS[dow].cls:'');
+    th.textContent=DAY_LABELS[dow].label;
+    tr.appendChild(th);
+
+    // Week columns
+    for(var week=0;week<numWeeks;week++){
+      var cellIndex=week*7+dow; // position in the full 7*numWeeks grid
+      var dayNum=cellIndex-fd+1; // actual date number
+
+      var td=document.createElement('td');
+      if(dayNum<1||dayNum>dim){
+        td.className='cc emp';
+        // no border on last col
+        if(week===numWeeks-1) td.style.borderRight='none';
+        tr.appendChild(td);
+        continue;
+      }
+
+      // Build date string
+      (function(day,tdEl,wk){
+        var ds=cy+'-'+String(cm+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+        var dayEvs=evMap[ds]||[];
+        tdEl.className='cc'+(ds===ts?' tod':'')+(ds===sd?' sd2':'');
+        if(wk===numWeeks-1) tdEl.style.borderRight='none';
+        tdEl.onclick=function(e){e.stopPropagation();showDayPopup(ds,dayEvs,tdEl);};
+        var dn=document.createElement('div');dn.className='dn';dn.textContent=day;tdEl.appendChild(dn);
+        if(dayEvs.length){
+          var grid=document.createElement('div');grid.className='ev-grid';
+          dayEvs.forEach(function(ev){
+            var dot=document.createElement('div');
+            dot.className='ed '+ev.type;
+            var t=ev.time?fmt12(ev.time)+' ':'';
+            dot.textContent=t+ev.name.slice(0,7);
+            dot.title=ev.name+(ev.time?' · '+fmt12(ev.time):'');
+            grid.appendChild(dot);
+          });
+          // if odd count, last item spans 2 cols
+          if(dayEvs.length%2===1){
+            grid.lastChild.style.gridColumn='span 2';
+          }
+          tdEl.appendChild(grid);
+        }
+      })(dayNum,td,week);
+
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
   }
   // close any open popup when clicking outside
   document.onclick=function(){closeDayPopup();};
@@ -1126,84 +1186,109 @@ function autoVillage(i){
   if(brideSide.some(x=>n.includes(x)))return brideVil;
   return '';
 }
-function isSplitEvent(name){return name&&(name.includes('Pasupu Paaya')||name.includes('పసుపు పాయ')||name.toLowerCase().includes('haldi')||name.includes('హల్దీ'));}
+function isSplitEvent(name){return name&&(name.includes('Pasupu Paaya')||name.includes('పసుపు పాయ')||name.toLowerCase().includes('haldi')||name.includes('హల్దీ')||name.includes('Pellikoduku/Pellikuturu'));}
+function setSvc(i,key,val){if(formSubEvs[i]&&formSubEvs[i].services)formSubEvs[i].services[key]=val;}
 function renderSubList(){
   if(!formSubEvs.length)return'';
-  const last=formSubEvs.length-1;
-  return formSubEvs.map((s,i)=>{
-    const isActive=i===last;
-    const isSplit=isSplitEvent(s.name);
-    if(isActive){
-      if(isSplit){
-        if(s.groomEnabled===undefined){s.groomEnabled=false;s.brideEnabled=false;}
-        return`<div class="sub-ev-item" id="sei${i}" style="border-color:var(--acc)">
-          <div class="sub-ev-header"><span class="sub-ev-name" style="color:var(--acc)">📌 ${s.name}</span><button class="sub-remove" onclick="rmSub(${i})">✕</button></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px">
-            <div style="background:rgba(34,197,94,.07);border:1.5px solid rgba(34,197,94,.3);border-radius:10px;padding:10px">
-              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:8px;font-size:.82rem;font-weight:700;color:var(--own)">
-                <input type="checkbox" ${s.groomEnabled?'checked':''} onchange="formSubEvs[${i}].groomEnabled=this.checked;refreshSubList()" style="accent-color:#22c55e;width:16px;height:16px"> పెళ్ళికొడుకు
-              </label>
-              ${s.groomEnabled?`<div class="fg" style="margin-bottom:6px"><label>తేదీ</label><input type="date" value="${s.groomDate||''}" onchange="formSubEvs[${i}].groomDate=this.value"></div><div class="fg"><label>సమయం</label><input type="time" value="${s.groomTime||''}" onchange="formSubEvs[${i}].groomTime=this.value">${s.groomTime?`<div style="font-size:.7rem;color:var(--own);margin-top:2px">🕐 ${fmt12(s.groomTime)}</div>`:""}</div>`:'<div style="font-size:.7rem;color:var(--muted);padding:6px 0">Enable చేయండి</div>'}
-            </div>
-            <div style="background:rgba(239,68,68,.07);border:1.5px solid rgba(239,68,68,.3);border-radius:10px;padding:10px">
-              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:8px;font-size:.82rem;font-weight:700;color:var(--sup)">
-                <input type="checkbox" ${s.brideEnabled?'checked':''} onchange="formSubEvs[${i}].brideEnabled=this.checked;refreshSubList()" style="accent-color:#ef4444;width:16px;height:16px"> పెళ్లికూతురు
-              </label>
-              ${s.brideEnabled?`<div class="fg" style="margin-bottom:6px"><label>తేదీ</label><input type="date" value="${s.brideDate||''}" onchange="formSubEvs[${i}].brideDate=this.value"></div><div class="fg"><label>సమయం</label><input type="time" value="${s.brideTime||''}" onchange="formSubEvs[${i}].brideTime=this.value">${s.brideTime?`<div style="font-size:.7rem;color:var(--sup);margin-top:2px">🕐 ${fmt12(s.brideTime)}</div>`:""}</div>`:'<div style="font-size:.7rem;color:var(--muted);padding:6px 0">Enable చేయండి</div>'}
-            </div>
-          </div>
-          <div class="fg" style="margin-top:8px"><label>Services</label><div style="display:flex;gap:6px;flex-wrap:wrap">${['📷 Photo','🎬 Video','🚁 Drone','📋 Others'].map((lbl,si)=>{const key=['photo','video','drone','others'][si];return`<label style="display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--bdr);border-radius:5px;padding:4px 8px;cursor:pointer;font-size:.75rem"><input type="checkbox" ${s.services?.[key]?'checked':''} onchange="formSubEvs[${i}].services['${key}']=this.checked" style="accent-color:var(--acc)"> ${lbl}</label>`;}).join('')}</div></div>
-        </div>`;
-      } else {
-        const groomSideNames=['Pellikoduku','పెళ్ళికొడుకు'];
-        const brideSideNames=['Pellikuturu','పెళ్ళికూతురు'];
-        const groomVil=document.getElementById('fGroom_vil')?.value||'';
-        const brideVil=document.getElementById('fBride_vil')?.value||'';
-        let autoVil='';
-        if(groomSideNames.some(x=>s.name?.includes(x)))autoVil=groomVil;
-        else if(brideSideNames.some(x=>s.name?.includes(x)))autoVil=brideVil;
-        var isWed=(s.name==='Wedding'||s.name==='వెడ్డింగ్');
-        var showMore=s._showMore||isWed;
-        return`<div class="sub-ev-item" id="sei${i}" style="border-color:var(--acc)">
-          <div class="sub-ev-header">
-            <span class="sub-ev-name" style="color:var(--acc)">📌 ${s.name}</span>
-            <button class="sub-remove" onclick="rmSub(${i})">✕</button>
-          </div>
-          <div class="fg">
-            <label>తేదీ</label>
-            <input type="date" value="${s.date||''}" onchange="formSubEvs[${i}].date=this.value;${isWed?'syncMainFromWedding('+i+')':''}" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px;font-family:DM Sans,sans-serif;font-size:.84rem;outline:none">
-          </div>
-          ${showMore?`
-          <div class="fg" style="margin-top:6px">
-            <label>సమయం</label>
-            <input type="time" value="${s.time||''}" onchange="formSubEvs[${i}].time=this.value;${isWed?'syncMainFromWedding('+i+')':''}" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px;font-family:DM Sans,sans-serif;font-size:.84rem;outline:none">
-            ${s.time?`<div style="font-size:.7rem;color:var(--acc);padding:2px 0">🕐 ${fmt12(s.time)}</div>`:''}
-          </div>
-          <div class="fg" style="margin-top:4px">
-            <label>స్థలం ${autoVil?'(Auto: '+autoVil+')':''}</label>
-            <input type="text" value="${s.location||autoVil}" placeholder="${autoVil||'వేదిక...'}" onchange="formSubEvs[${i}].location=this.value;${isWed?'syncMainFromWedding('+i+')':''}" id="subloc${i}" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px 9px;font-family:DM Sans,sans-serif;font-size:.84rem;outline:none">
-          </div>
-          <div class="fg" style="margin-top:4px">
-            <label>Services</label>
-            <div style="display:flex;gap:6px;flex-wrap:wrap">${['📷 Photo','🎬 Video','🚁 Drone','📋 Others'].map((lbl,si)=>{const key=['photo','video','drone','others'][si];return`<label style="display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--bdr);border-radius:5px;padding:4px 8px;cursor:pointer;font-size:.75rem"><input type="checkbox" ${s.services?.[key]?'checked':''} onchange="formSubEvs[${i}].services['${key}']=this.checked" style="accent-color:var(--acc)"> ${lbl}</label>`;}).join('')}</div>
-          </div>
-          `:`<button onclick="formSubEvs[${i}]._showMore=true;refreshSubList()" style="background:none;border:1px dashed var(--bdr);color:var(--muted);border-radius:6px;padding:4px 10px;font-size:.7rem;cursor:pointer;margin-top:5px;width:100%">+ More (Time, స్థలం, Services)</button>`}
-        </div>`;
-      }
-    } else {
-      const isSpl=isSplitEvent(s.name);
-      let summary='';
+  var last=formSubEvs.length-1;
+  var svcLabels=['📷 Photo','🎬 Video','🚁 Drone','📋 Others'];
+  var svcKeys=['photo','video','drone','others'];
+  return formSubEvs.map(function(s,i){
+    var isActive=(i===last);
+    var isSplit=isSplitEvent(s.name);
+    var isWed=(s.name==='Wedding'||s.name==='వెడ్డింగ్');
+    if(!isActive){
+      // collapsed row
+      var isSpl=isSplitEvent(s.name);
+      var summary='';
       if(isSpl){
-        const gPart=s.groomEnabled?`🟢 ${s.groomDate||'--'} ${s.groomTime?fmt12(s.groomTime):''}`:null;
-        const bPart=s.brideEnabled?`🔴 ${s.brideDate||'--'} ${s.brideTime?fmt12(s.brideTime):''}`:null;
-        summary=[gPart,bPart].filter(Boolean).join(' | ')||'—';
+        var gP=(s.groomDate||s.groomEnabled)?'🤵 '+(s.groomDate||'--')+(s.groomTime?' '+fmt12(s.groomTime):''):null;
+        var bP=(s.brideDate||s.brideEnabled)?'👰 '+(s.brideDate||'--')+(s.brideTime?' '+fmt12(s.brideTime):''):null;
+        summary=[gP,bP].filter(Boolean).join(' | ')||'—';
       } else {
-        const svcs=Object.entries(s.services||{}).filter(([k,v])=>v).map(([k])=>({photo:'📷',video:'🎬',drone:'🚁',others:'📋'}[k]||k)).join(' ');
-        const t12=fmt12(s.time);
-        summary=`${s.date||'--'} ${t12?'· '+t12:''} ${s.location?'· '+s.location:''} ${svcs?'· '+svcs:''}`;
+        summary=(s.date||'--')+(s.time?' · '+fmt12(s.time):'')+(s.location?' · '+s.location:'');
       }
-      return`<div style="background:var(--surf);border:1px solid var(--bdr);border-radius:7px;padding:7px 10px;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:.76rem" id="sei${i}"><div style="flex:1;min-width:0"><span style="font-weight:600;color:var(--acc)">📌 ${s.name}</span><span style="color:var(--muted);margin-left:8px">${summary}</span></div><button onclick="expandSub(${i})" style="background:none;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;font-size:.65rem;cursor:pointer;color:var(--muted)">✏️</button><button onclick="rmSub(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.85rem">✕</button></div>`;
+      return'<div style="background:var(--surf);border:1px solid var(--bdr);border-radius:7px;padding:7px 10px;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:.76rem">'
+        +'<div style="flex:1;min-width:0"><span style="font-weight:600;color:var(--acc)">📌 '+s.name+'</span><span style="color:var(--muted);margin-left:8px;font-size:.7rem">'+summary+'</span></div>'
+        +'<button onclick="expandSub('+i+')" style="background:none;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;font-size:.65rem;cursor:pointer;color:var(--muted)">✏️</button>'
+        +'<button onclick="rmSub('+i+')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.85rem">✕</button>'
+        +'</div>';
     }
+    // ── ACTIVE (expanded) ──
+    if(isSplit){
+      // Split layout: Groom | Bride side by side
+      if(s.groomEnabled===undefined){s.groomEnabled=true;s.brideEnabled=true;}
+      var groomBody='';
+      if(s.groomEnabled){
+        groomBody+='<div style="margin-bottom:5px"><label style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:2px">తేదీ</label>'
+          +'<input type="date" value="'+(s.groomDate||'')+'" onchange="formSubEvs['+i+'].groomDate=this.value" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:6px;padding:6px;font-size:.8rem;outline:none"></div>';
+        groomBody+='<div><label style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:2px">సమయం</label>'
+          +'<input type="time" value="'+(s.groomTime||'')+'" onchange="formSubEvs['+i+'].groomTime=this.value" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:6px;padding:6px;font-size:.8rem;outline:none">'
+          +(s.groomTime?'<div style="font-size:.66rem;color:#22c55e;margin-top:2px">🕐 '+fmt12(s.groomTime)+'</div>':'')+'</div>';
+      }
+      var brideBody='';
+      if(s.brideEnabled){
+        brideBody+='<div style="margin-bottom:5px"><label style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:2px">తేదీ</label>'
+          +'<input type="date" value="'+(s.brideDate||'')+'" onchange="formSubEvs['+i+'].brideDate=this.value" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:6px;padding:6px;font-size:.8rem;outline:none"></div>';
+        brideBody+='<div><label style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:2px">సమయం</label>'
+          +'<input type="time" value="'+(s.brideTime||'')+'" onchange="formSubEvs['+i+'].brideTime=this.value" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:6px;padding:6px;font-size:.8rem;outline:none">'
+          +(s.brideTime?'<div style="font-size:.66rem;color:#ef4444;margin-top:2px">🕐 '+fmt12(s.brideTime)+'</div>':'')+'</div>';
+      }
+      var svcHtml=svcKeys.map(function(key,si){
+        return'<label style="display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--bdr);border-radius:5px;padding:4px 8px;cursor:pointer;font-size:.75rem">'
+          +'<input type="checkbox" '+(s.services&&s.services[key]?'checked':'')+' onchange="setSvc('+i+',this.dataset.k,this.checked)" data-k="'+key+'" style="accent-color:var(--acc)"> '+svcLabels[si]+'</label>';
+      }).join('');
+      return'<div class="sub-ev-item" style="border-color:var(--acc)">'
+        +'<div class="sub-ev-header"><span class="sub-ev-name" style="color:var(--acc)">📌 '+s.name+'</span><button class="sub-remove" onclick="rmSub('+i+')">✕</button></div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">'
+        +'<div style="background:rgba(34,197,94,.07);border:1.5px solid rgba(34,197,94,.3);border-radius:10px;padding:9px">'
+          +'<label style="display:flex;align-items:center;gap:5px;cursor:pointer;margin-bottom:7px;font-size:.8rem;font-weight:700;color:#22c55e">'
+          +'<input type="checkbox" '+(s.groomEnabled?'checked':'')+' onchange="formSubEvs['+i+'].groomEnabled=this.checked;refreshSubList()" style="accent-color:#22c55e;width:15px;height:15px"> 🤵 పెళ్ళికొడుకు</label>'
+          +groomBody+'</div>'
+        +'<div style="background:rgba(239,68,68,.07);border:1.5px solid rgba(239,68,68,.3);border-radius:10px;padding:9px">'
+          +'<label style="display:flex;align-items:center;gap:5px;cursor:pointer;margin-bottom:7px;font-size:.8rem;font-weight:700;color:#ef4444">'
+          +'<input type="checkbox" '+(s.brideEnabled?'checked':'')+' onchange="formSubEvs['+i+'].brideEnabled=this.checked;refreshSubList()" style="accent-color:#ef4444;width:15px;height:15px"> 👰 పెళ్లికూతురు</label>'
+          +brideBody+'</div>'
+        +'</div>'
+        +'<div style="margin-top:8px"><label style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:4px">Services</label>'
+          +'<div style="display:flex;gap:5px;flex-wrap:wrap">'+svcHtml+'</div></div>'
+        +'</div>';
+    }
+    // ── NON-SPLIT active ──
+    var groomVil=document.getElementById('fGroom_vil')?.value||'';
+    var brideVil=document.getElementById('fBride_vil')?.value||'';
+    var autoVil='';
+    if(s.name&&s.name.includes('Engagement'))autoVil='';
+    var showMore=s._showMore||isWed;
+    // Build date+place row side by side
+    var datePlace='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">'
+      +'<div><label style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:2px">తేదీ</label>'
+        +'<input type="date" value="'+(s.date||'')+'" onchange="formSubEvs['+i+'].date=this.value'+(isWed?';syncMainFromWedding('+i+')':'')+'" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:6px;padding:6px;font-size:.8rem;outline:none"></div>'
+      +'<div><label style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:2px">స్థలం</label>'
+        +'<input type="text" value="'+(s.location||autoVil||'')+'" placeholder="'+(autoVil||'వేదిక...')+'" onchange="formSubEvs['+i+'].location=this.value'+(isWed?';syncMainFromWedding('+i+')':'')+'" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:6px;padding:6px 8px;font-size:.8rem;outline:none"></div>'
+      +'</div>';
+    // Services beside date+place (shown always)
+    var svcHtml2=svcKeys.map(function(key,si){
+      return'<label style="display:flex;align-items:center;gap:3px;background:var(--card);border:1px solid var(--bdr);border-radius:5px;padding:3px 6px;cursor:pointer;font-size:.72rem">'
+        +'<input type="checkbox" '+(s.services&&s.services[key]?'checked':'')+' onchange="setSvc('+i+',this.dataset.k,this.checked)" data-k="'+key+'" style="accent-color:var(--acc)"> '+svcLabels[si]+'</label>';
+    }).join('');
+    var svcRow='<div style="margin-bottom:6px"><label style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:3px">Services</label>'
+      +'<div style="display:flex;gap:4px;flex-wrap:wrap">'+svcHtml2+'</div></div>';
+    // Time field (in More section or always for Wedding)
+    var moreHtml='';
+    if(showMore){
+      moreHtml='<div style="border-top:1px dashed var(--bdr);padding-top:7px;margin-top:4px">'
+        +'<div><label style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:2px">సమయం</label>'
+          +'<input type="time" value="'+(s.time||'')+'" onchange="formSubEvs['+i+'].time=this.value'+(isWed?';syncMainFromWedding('+i+')':'')+'" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:6px;padding:6px;font-size:.8rem;outline:none">'
+          +(s.time?'<div style="font-size:.68rem;color:var(--acc);margin-top:2px">🕐 '+fmt12(s.time)+'</div>':'')
+        +'</div></div>';
+    } else {
+      moreHtml='<button onclick="formSubEvs['+i+']._showMore=true;refreshSubList()" style="background:none;border:1px dashed var(--bdr);color:var(--muted);border-radius:6px;padding:4px 10px;font-size:.68rem;cursor:pointer;width:100%;margin-top:2px">▼ సమయం నమోదు చేయడానికి</button>';
+    }
+    return'<div class="sub-ev-item" style="border-color:var(--acc)">'
+      +'<div class="sub-ev-header"><span class="sub-ev-name" style="color:var(--acc)">📌 '+s.name+'</span><button class="sub-remove" onclick="rmSub('+i+')">✕</button></div>'
+      +datePlace+svcRow+moreHtml
+      +'</div>';
   }).join('');
 }
 function refreshSubList(){document.getElementById('subEvList').innerHTML=renderSubList();}
@@ -2065,7 +2150,8 @@ function saveSchedEv(){
     cam=document.querySelector('input[name=sCam2]:checked')?.value||'with';
   }
   const mainSub=checks[0];
-  const ev={id:Date.now().toString(),uid:cu?.id||'',type:typ,cat,name:mainSub+' Event',date:dt,mainTime:tm,location:loc,camera:cam,clientName:supName,clientPhone:supPhone,supportPhone:supPhone,subEvs:checks.slice(1).map(s=>({name:s,date:'',time:'',location:'',services:{photo:true,video:true,drone:false,others:false}})),reqGroup1:[],reqGroup2:[],reqGroup3:[],budget:'',advance:'',created:Date.now()};
+  const evTitle=document.getElementById('sEvTitle')?.value.trim()||mainSub+' Event';
+  const ev={id:Date.now().toString(),uid:cu?.id||'',type:typ,cat,name:evTitle,date:dt,mainTime:tm,location:loc,camera:cam,clientName:supName,clientPhone:supPhone,supportPhone:supPhone,subEvs:checks.slice(1).map(s=>({name:s,date:'',time:'',location:'',services:{photo:true,video:true,drone:false,others:false}})),reqGroup1:[],reqGroup2:[],reqGroup3:[],budget:'',advance:'',created:Date.now()};
   evs.push(ev);saveEvs();renAll();closeSchedMo();toast('✅ Schedule saved!');
 }
 
