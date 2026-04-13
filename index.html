@@ -83,20 +83,27 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .cal-nb:hover{background:var(--acc);color:#000;border-color:var(--acc);}
 .cbox{background:var(--card);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;margin-bottom:10px;}
 .ch{display:grid;grid-template-columns:repeat(7,1fr);background:var(--surf);border-bottom:1px solid var(--bdr);}
-.ch span{text-align:center;padding:5px 1px;font-size:.58rem;font-weight:700;color:var(--muted);text-transform:uppercase;}
+.ch span{text-align:center;padding:6px 1px;font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;}
 .cg{display:grid;grid-template-columns:repeat(7,1fr);}
-.cc{border-right:1px solid var(--bdr);border-bottom:1px solid var(--bdr);min-height:46px;padding:3px 2px 2px;cursor:pointer;transition:background .15s;}
+.cc{border-right:1px solid var(--bdr);border-bottom:1px solid var(--bdr);min-height:72px;padding:3px 2px 2px;cursor:pointer;transition:background .15s;overflow:hidden;vertical-align:top;}
 .cc:nth-child(7n){border-right:none;}
-.cc:hover:not(.emp){background:rgba(245,200,66,.05);}
-.cc.emp{cursor:default;background:rgba(0,0,0,.05);}
-.cc.tod .dn{background:var(--acc);color:#000;font-weight:700;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;}
-.cc.sd2{background:rgba(245,200,66,.08);outline:2px solid rgba(245,200,66,.3);outline-offset:-2px;}
-.dn{font-size:.68rem;font-weight:500;width:18px;height:18px;display:flex;align-items:center;justify-content:center;margin-bottom:1px;}
-.ed{border-radius:2px;padding:1px 2px;font-size:.48rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;margin-bottom:1px;}
-.ed.own{background:rgba(34,197,94,.18);color:var(--own);border-left:2px solid var(--own);}
-.ed.sup{background:rgba(239,68,68,.18);color:var(--sup);border-left:2px solid var(--sup);}
-.ed.sky{background:rgba(56,189,248,.18);color:var(--sky);border-left:2px solid var(--sky);}
-.ed.mb{font-size:.46rem;color:var(--muted);background:var(--bdr);border-left:none;}
+.cc:hover:not(.emp){background:rgba(245,200,66,.06);}
+.cc.emp{cursor:default;background:rgba(0,0,0,.04);}
+.cc.tod .dn{background:var(--acc);color:#000;font-weight:700;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;}
+.cc.sd2{background:rgba(245,200,66,.1);outline:2px solid rgba(245,200,66,.4);outline-offset:-2px;}
+.dn{font-size:.7rem;font-weight:600;width:20px;height:20px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;}
+.ed{border-radius:3px;padding:1px 3px;font-size:.44rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;margin-bottom:1px;line-height:1.4;}
+.ed.own{background:rgba(34,197,94,.2);color:var(--own);border-left:2px solid var(--own);}
+.ed.sup{background:rgba(239,68,68,.2);color:var(--sup);border-left:2px solid var(--sup);}
+.ed.sky{background:rgba(56,189,248,.2);color:var(--sky);border-left:2px solid var(--sky);}
+.ed.acc{background:rgba(245,200,66,.2);color:var(--acc);border-left:2px solid var(--acc);}
+.ed.mb{font-size:.44rem;color:var(--muted);background:var(--bdr);border-left:none;cursor:pointer;}
+/* Day popup */
+.day-popup{position:fixed;z-index:200;background:var(--card);border:1.5px solid var(--acc);border-radius:14px;padding:14px;min-width:220px;max-width:88vw;box-shadow:0 8px 32px rgba(0,0,0,.5);font-family:'DM Sans',sans-serif;}
+.day-popup-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.day-popup-title{font-weight:700;font-size:.9rem;color:var(--acc);}
+.day-popup-ev{padding:6px 8px;border-radius:8px;margin-bottom:5px;font-size:.78rem;cursor:pointer;}
+.day-popup-add{width:100%;background:linear-gradient(135deg,#f5c842,#ff9a3c);color:#000;border:none;padding:8px;border-radius:8px;font-weight:700;font-size:.78rem;cursor:pointer;margin-top:6px;}
 
 /* ── LEGEND ── */
 .lgnd{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
@@ -648,25 +655,95 @@ function fabClick(){swPage('myev');showAddForm();}
 function chM(d){cm+=d;if(cm>11){cm=0;cy++;}if(cm<0){cm=11;cy--;}renAll();}
 function renAll(){updCover();renCal();renNextEv();renUpcoming();}
 function renCal(){
-  document.getElementById('calTitle').textContent=`${MN[cm]} ${cy}`;
-  const g=document.getElementById('cg');g.innerHTML='';
-  const fd=new Date(cy,cm,1).getDay(),dim=new Date(cy,cm+1,0).getDate(),ts=fmt(now);
-  for(let i=0;i<fd;i++){const c=document.createElement('div');c.className='cc emp';g.appendChild(c);}
-  for(let d=1;d<=dim;d++){
-    const ds=`${cy}-${String(cm+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const de=evs.filter(e=>e.date===ds);
-    const se=[];evs.forEach(ev=>(ev.subEvs||[]).forEach(s=>{if(s.date===ds)se.push({...s,parentName:ev.name});}));
-    const cell=document.createElement('div');
-    cell.className='cc'+(ds===ts?' tod':'')+(ds===sd?' sd2':'');
-    cell.onclick=()=>{sd=ds;renCal();};
-    const dn=document.createElement('div');dn.className='dn';dn.textContent=d;cell.appendChild(dn);
-    let sh=0;
-    de.slice(0,1).forEach(ev=>{if(sh<2){const dot=document.createElement('div');dot.className='ed '+(ev.type==='own'?'own':'sup');dot.textContent=ev.name.slice(0,7);cell.appendChild(dot);sh++;}});
-    se.slice(0,1).forEach(s=>{if(sh<2){const dot=document.createElement('div');dot.className='ed sky';dot.textContent=s.name.slice(0,6);cell.appendChild(dot);sh++;}});
-    if(de.length+se.length>sh){const m=document.createElement('div');m.className='ed mb';m.textContent=`+${de.length+se.length-sh}`;cell.appendChild(m);}
-    g.appendChild(cell);
+  document.getElementById('calTitle').textContent=MN[cm]+' '+cy;
+  var g=document.getElementById('cg');g.innerHTML='';
+  var fd=new Date(cy,cm,1).getDay(),dim=new Date(cy,cm+1,0).getDate(),ts=fmt(now);
+  for(var i=0;i<fd;i++){var ec=document.createElement('div');ec.className='cc emp';g.appendChild(ec);}
+  for(var d=1;d<=dim;d++){
+    (function(day){
+      var ds=cy+'-'+String(cm+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+      // collect ALL events for this day
+      var dayEvs=[];
+      evs.forEach(function(ev){
+        if(ev.date===ds) dayEvs.push({name:ev.name,type:ev.type==='own'?'own':'sup',id:ev.id,time:ev.mainTime||''});
+        (ev.subEvs||[]).forEach(function(s){
+          if(s.date===ds) dayEvs.push({name:s.name,type:'sky',id:ev.id,time:s.time||''});
+          // split events
+          if(s.groomDate===ds) dayEvs.push({name:s.name+' (పెళ్ళికొడుకు)',type:'own',id:ev.id,time:s.groomTime||''});
+          if(s.brideDate===ds) dayEvs.push({name:s.name+' (పెళ్లికూతురు)',type:'sup',id:ev.id,time:s.brideTime||''});
+        });
+      });
+      var cell=document.createElement('div');
+      cell.className='cc'+(ds===ts?' tod':'')+(ds===sd?' sd2':'');
+      cell.onclick=function(e){e.stopPropagation();showDayPopup(ds,dayEvs,cell);};
+      var dn=document.createElement('div');dn.className='dn';dn.textContent=day;cell.appendChild(dn);
+      // Show ALL events — no truncation with +more
+      dayEvs.forEach(function(ev){
+        var dot=document.createElement('div');
+        dot.className='ed '+ev.type;
+        var t=ev.time?fmt12(ev.time)+' ':'' ;
+        dot.textContent=t+ev.name.slice(0,8);
+        dot.title=ev.name+(ev.time?' · '+fmt12(ev.time):'');
+        cell.appendChild(dot);
+      });
+      g.appendChild(cell);
+    })(d);
   }
+  // close any open popup when clicking outside
+  document.onclick=function(){closeDayPopup();};
 }
+
+function showDayPopup(ds,dayEvs,cellEl){
+  closeDayPopup();
+  sd=ds; renCal();
+  var popup=document.createElement('div');
+  popup.id='dayPopup';
+  popup.onclick=function(e){e.stopPropagation();};
+  var rect=cellEl.getBoundingClientRect();
+  var left=Math.min(rect.left,window.innerWidth-244);
+  var top=rect.bottom+6;
+  if(top+280>window.innerHeight) top=rect.top-290;
+  popup.style.cssText='position:fixed;left:'+Math.max(6,left)+'px;top:'+Math.max(6,top)+'px;z-index:500;background:var(--card);border:1.5px solid var(--acc);border-radius:14px;padding:14px;min-width:230px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,.65);font-family:DM Sans,sans-serif';
+  var d=new Date(ds+'T00:00:00');
+  // Header
+  var hdr=document.createElement('div');
+  hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:10px';
+  var htitle=document.createElement('div');
+  htitle.style.cssText='font-weight:700;font-size:.9rem;color:var(--acc)';
+  htitle.textContent='📅 '+d.getDate()+' '+MN[d.getMonth()]+' '+d.getFullYear();
+  var hclose=document.createElement('button');
+  hclose.style.cssText='background:var(--bdr);border:none;color:var(--text);width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:.85rem';
+  hclose.textContent='✕';hclose.onclick=closeDayPopup;
+  hdr.appendChild(htitle);hdr.appendChild(hclose);
+  popup.appendChild(hdr);
+  // Events list
+  if(dayEvs.length){
+    dayEvs.forEach(function(ev){
+      var bg=ev.type==='own'?'rgba(34,197,94,.12)':ev.type==='sup'?'rgba(239,68,68,.12)':'rgba(56,189,248,.12)';
+      var cl=ev.type==='own'?'#22c55e':ev.type==='sup'?'#ef4444':'#38bdf8';
+      var card=document.createElement('div');
+      card.style.cssText='padding:7px 9px;border-radius:8px;margin-bottom:5px;font-size:.78rem;cursor:pointer;background:'+bg+';border-left:3px solid '+cl;
+      var nm=document.createElement('div');nm.style.cssText='font-weight:700;color:var(--text)';nm.textContent=ev.name;
+      card.appendChild(nm);
+      if(ev.time){var tm=document.createElement('div');tm.style.cssText='font-size:.68rem;color:var(--muted);margin-top:2px';tm.textContent='🕐 '+fmt12(ev.time);card.appendChild(tm);}
+      (function(eid){card.onclick=function(){closeDayPopup();openEvById(eid);};})(ev.id);
+      popup.appendChild(card);
+    });
+  } else {
+    var empty=document.createElement('div');
+    empty.style.cssText='text-align:center;color:var(--muted);font-size:.75rem;padding:8px';
+    empty.textContent='ఈ రోజు events లేవు';
+    popup.appendChild(empty);
+  }
+  // Add button
+  var addBtn=document.createElement('button');
+  addBtn.style.cssText='width:100%;background:linear-gradient(135deg,#f5c842,#ff9a3c);color:#000;border:none;padding:9px;border-radius:9px;font-weight:700;font-size:.78rem;cursor:pointer;margin-top:8px';
+  addBtn.textContent='➕ ఈ తేదీకి Event Add చేయండి';
+  (function(dstr){addBtn.onclick=function(){closeDayPopup();openSchedMo(dstr);};})(ds);
+  popup.appendChild(addBtn);
+  document.body.appendChild(popup);
+}
+function closeDayPopup(){var p=document.getElementById('dayPopup');if(p)p.remove();}
 function renNextEv(){
   const todayStr=fmt(now);
   const all=[];evs.forEach(ev=>{all.push({date:ev.date,name:ev.name,type:ev.type,loc:ev.location,id:ev.id,isSub:false});(ev.subEvs||[]).forEach(se=>{if(se.date)all.push({date:se.date,name:`${ev.name} — ${se.name}`,type:'sky',loc:se.location||ev.location,id:ev.id,isSub:true});});});
@@ -798,10 +875,10 @@ function buildForm(ev){
       <input type="hidden" id="fEvName" value="${ev?.name||''}">
     </div>
     <div class="inline2">
-      <div class="fg"><label>Main తేదీ</label><input type="date" id="fDate" value="${ev?.date||''}"></div>
-      <div class="fg"><label>సమయం</label><input type="time" id="fMainTime" value="${ev?.mainTime||''}"></div>
+      <div class="fg"><label>Main తేదీ</label><input type="date" id="fDate" value="${ev?.date||''}" oninput="syncWeddingFields()"></div>
+      <div class="fg"><label>సమయం</label><input type="time" id="fMainTime" value="${ev?.mainTime||''}" oninput="syncWeddingFields()"></div>
     </div>
-    <div class="fg"><label>వేదిక / Location</label><input type="text" id="fLoc" value="${ev?.location||''}" placeholder="Kalyana Mandapam, నగరం..."></div>
+    <div class="fg"><label>వేదిక / Location</label><input type="text" id="fLoc" value="${ev?.location||''}" placeholder="Kalyana Mandapam, నగరం..." oninput="syncWeddingFields()"></div>
   </div>
 
   <div class="form-card">
@@ -890,6 +967,32 @@ function buildForm(ev){
     </div>
     <div id="fLinkBox" style="display:none;margin-top:8px"></div>
   </div>`;
+}
+
+// ══ SYNC WEDDING FIELDS ══
+function syncWeddingFields(){
+  var date=document.getElementById('fDate')?.value||'';
+  var time=document.getElementById('fMainTime')?.value||'';
+  var loc=document.getElementById('fLoc')?.value||'';
+  // Find Wedding sub-event and sync
+  formSubEvs.forEach(function(s,i){
+    if(s.name==='Wedding'||s.name==='వెడ్డింగ్'){
+      if(date && !s._dateLocked) s.date=date;
+      if(time && !s._timeLocked) s.time=time;
+      if(loc && !s._locLocked) s.location=loc;
+    }
+  });
+  refreshSubList();
+}
+function syncMainFromWedding(i){
+  var s=formSubEvs[i];
+  if(!s||(s.name!=='Wedding'&&s.name!=='వెడ్డింగ్'))return;
+  var dateEl=document.getElementById('fDate');
+  var timeEl=document.getElementById('fMainTime');
+  var locEl=document.getElementById('fLoc');
+  if(s.date&&dateEl&&!dateEl.value) dateEl.value=s.date;
+  if(s.time&&timeEl&&!timeEl.value) timeEl.value=s.time;
+  if(s.location&&locEl&&!locEl.value) locEl.value=s.location;
 }
 
 // ══ AUTO EVENT NAME ══
@@ -1059,7 +1162,33 @@ function renderSubList(){
         let autoVil='';
         if(groomSideNames.some(x=>s.name?.includes(x)))autoVil=groomVil;
         else if(brideSideNames.some(x=>s.name?.includes(x)))autoVil=brideVil;
-        return`<div class="sub-ev-item" id="sei${i}" style="border-color:var(--acc)"><div class="sub-ev-header"><span class="sub-ev-name" style="color:var(--acc)">📌 ${s.name}</span><button class="sub-remove" onclick="rmSub(${i})">✕</button></div><div class="inline2"><div class="fg"><label>తేదీ</label><input type="date" value="${s.date||''}" onchange="formSubEvs[${i}].date=this.value"></div><div class="fg"><label>సమయం (12hr)</label><input type="time" value="${s.time||''}" onchange="formSubEvs[${i}].time=this.value"></div></div>${s.time?`<div style="font-size:.7rem;color:var(--acc);padding:2px 0">🕐 ${fmt12(s.time)}</div>`:''}<div class="fg"><label>స్థలం ${autoVil?'(Auto: '+autoVil+')':''}</label><input type="text" value="${s.location||autoVil}" placeholder="${autoVil||'వేదిక...'}" onchange="formSubEvs[${i}].location=this.value" id="subloc${i}"></div><div class="fg"><label>Services</label><div style="display:flex;gap:6px;flex-wrap:wrap">${['📷 Photo','🎬 Video','🚁 Drone','📋 Others'].map((lbl,si)=>{const key=['photo','video','drone','others'][si];return`<label style="display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--bdr);border-radius:5px;padding:4px 8px;cursor:pointer;font-size:.75rem"><input type="checkbox" ${s.services?.[key]?'checked':''} onchange="formSubEvs[${i}].services['${key}']=this.checked" style="accent-color:var(--acc)"> ${lbl}</label>`;}).join('')}</div></div></div>`;
+        var isWed=(s.name==='Wedding'||s.name==='వెడ్డింగ్');
+        var showMore=s._showMore||isWed;
+        return`<div class="sub-ev-item" id="sei${i}" style="border-color:var(--acc)">
+          <div class="sub-ev-header">
+            <span class="sub-ev-name" style="color:var(--acc)">📌 ${s.name}</span>
+            <button class="sub-remove" onclick="rmSub(${i})">✕</button>
+          </div>
+          <div class="fg">
+            <label>తేదీ</label>
+            <input type="date" value="${s.date||''}" onchange="formSubEvs[${i}].date=this.value;${isWed?'syncMainFromWedding('+i+')':''}" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px;font-family:DM Sans,sans-serif;font-size:.84rem;outline:none">
+          </div>
+          ${showMore?`
+          <div class="fg" style="margin-top:6px">
+            <label>సమయం</label>
+            <input type="time" value="${s.time||''}" onchange="formSubEvs[${i}].time=this.value;${isWed?'syncMainFromWedding('+i+')':''}" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px;font-family:DM Sans,sans-serif;font-size:.84rem;outline:none">
+            ${s.time?`<div style="font-size:.7rem;color:var(--acc);padding:2px 0">🕐 ${fmt12(s.time)}</div>`:''}
+          </div>
+          <div class="fg" style="margin-top:4px">
+            <label>స్థలం ${autoVil?'(Auto: '+autoVil+')':''}</label>
+            <input type="text" value="${s.location||autoVil}" placeholder="${autoVil||'వేదిక...'}" onchange="formSubEvs[${i}].location=this.value;${isWed?'syncMainFromWedding('+i+')':''}" id="subloc${i}" style="width:100%;background:var(--surf);border:1px solid var(--bdr);color:var(--text);border-radius:7px;padding:7px 9px;font-family:DM Sans,sans-serif;font-size:.84rem;outline:none">
+          </div>
+          <div class="fg" style="margin-top:4px">
+            <label>Services</label>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">${['📷 Photo','🎬 Video','🚁 Drone','📋 Others'].map((lbl,si)=>{const key=['photo','video','drone','others'][si];return`<label style="display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--bdr);border-radius:5px;padding:4px 8px;cursor:pointer;font-size:.75rem"><input type="checkbox" ${s.services?.[key]?'checked':''} onchange="formSubEvs[${i}].services['${key}']=this.checked" style="accent-color:var(--acc)"> ${lbl}</label>`;}).join('')}</div>
+          </div>
+          `:`<button onclick="formSubEvs[${i}]._showMore=true;refreshSubList()" style="background:none;border:1px dashed var(--bdr);color:var(--muted);border-radius:6px;padding:4px 10px;font-size:.7rem;cursor:pointer;margin-top:5px;width:100%">+ More (Time, స్థలం, Services)</button>`}
+        </div>`;
       }
     } else {
       const isSpl=isSplitEvent(s.name);
@@ -1182,8 +1311,9 @@ function buildDetail(ev){
   </div>
   ${ev.notes?`<div class="det-section"><div class="det-sec-title">📝 Notes</div><div style="font-size:.8rem">${ev.notes}</div></div>`:''}
   <div class="det-section" style="display:flex;gap:7px;flex-wrap:wrap">
-    <button class="abtn pdf" onclick="genPDFById('${ev.id}')" style="flex:1">📥 PDF Download</button>
-    <button class="abtn wa" onclick="sharePdfWAById('${ev.id}')" style="flex:1">📤 WhatsApp PDF</button>
+    <button class="abtn pdf" onclick="genPDFById('${ev.id}')" style="flex:1">📥 PDF</button>
+    <button class="abtn wa" onclick="sharePdfWAById('${ev.id}')" style="flex:1">📤 WhatsApp</button>
+    <button onclick="downloadEvImage('${ev.id}')" style="flex:1;background:linear-gradient(135deg,#38bdf8,#0ea5e9);color:#fff;border:none;padding:10px 6px;border-radius:10px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">🖼 Image</button>
     <button onclick="editEv('${ev.id}')" class="abtn save" style="flex:1">✏️ Edit</button>
   </div>
   <div style="margin-top:7px;display:flex;gap:7px">
@@ -1262,21 +1392,44 @@ function _pdfFallbackDownload(htmlContent, fname){
   toast('📄 File download అయింది — PDF గా open చేయండి', 4000);
 }
 function showPdfWAOption(ev){
-  document.getElementById('pdfWaBanner')?.remove();
-  const banner = document.createElement('div');
-  banner.id = 'pdfWaBanner';
-  banner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--card);border:1.5px solid #25D366;border-radius:16px;padding:14px 16px;z-index:9999;display:flex;flex-direction:column;gap:10px;box-shadow:0 4px 24px rgba(0,0,0,.5);width:88vw;max-width:380px;font-family:DM Sans,sans-serif';
-  banner.innerHTML = '<div style="font-size:.85rem;color:var(--text);font-weight:600">📄 PDF తయారు!</div><div style="font-size:.75rem;color:var(--muted);line-height:1.6">📱 Print dialog లో <strong style=\"color:var(--text)\">\"Save as PDF\"</strong> select చేయండి → మీ phone లో save అవుతుంది</div><div style="display:flex;gap:8px"><button onclick="sharePdfWA()" style="flex:1;background:#25D366;color:#fff;border:none;padding:10px;border-radius:10px;font-weight:700;font-size:.82rem;cursor:pointer">📤 WhatsApp కి పంపు</button><button onclick="document.getElementById('pdfWaBanner')?.remove()" style="background:var(--surf);border:1px solid var(--bdr);color:var(--muted);padding:10px 12px;border-radius:10px;font-size:.9rem;cursor:pointer">✕</button></div>';
+  var old=document.getElementById('pdfWaBanner');
+  if(old)old.remove();
+  var banner=document.createElement('div');
+  banner.id='pdfWaBanner';
+  banner.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--card);border:1.5px solid #25D366;border-radius:16px;padding:14px 16px;z-index:9999;box-shadow:0 4px 24px rgba(0,0,0,.5);width:88vw;max-width:380px;font-family:sans-serif';
+
+  var t1=document.createElement('div');
+  t1.style.cssText='font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:6px';
+  t1.textContent='📄 PDF తయారు — Print dialog లో Save as PDF select చేయండి!';
+
+  var row=document.createElement('div');
+  row.style.cssText='display:flex;gap:8px;margin-top:8px';
+
+  var btnWA=document.createElement('button');
+  btnWA.style.cssText='flex:1;background:#25D366;color:#fff;border:none;padding:10px;border-radius:10px;font-weight:700;font-size:.82rem;cursor:pointer';
+  btnWA.textContent='📤 WhatsApp కి పంపు';
+  btnWA.onclick=sharePdfWA;
+
+  var btnX=document.createElement('button');
+  btnX.style.cssText='background:var(--surf);border:1px solid var(--bdr);color:var(--muted);padding:10px 14px;border-radius:10px;font-size:.9rem;cursor:pointer';
+  btnX.textContent='✕';
+  btnX.onclick=function(){var b=document.getElementById('pdfWaBanner');if(b)b.remove();};
+
+  row.appendChild(btnWA);
+  row.appendChild(btnX);
+  banner.appendChild(t1);
+  banner.appendChild(row);
   document.body.appendChild(banner);
-  setTimeout(()=>document.getElementById('pdfWaBanner')?.remove(), 15000);
+  setTimeout(function(){var b=document.getElementById('pdfWaBanner');if(b)b.remove();},15000);
 }
 function sharePdfWA(){
-  document.getElementById('pdfWaBanner')?.remove();
+  var b=document.getElementById('pdfWaBanner');
+  if(b)b.remove();
   if(window._lastPdfHtml && navigator.share){
-    const blob = new Blob([window._lastPdfHtml],{type:'text/html'});
-    const file = new File([blob], window._lastPdfName||'Booking.pdf',{type:'application/pdf'});
+    var blob=new Blob([window._lastPdfHtml],{type:'text/html'});
+    var file=new File([blob],window._lastPdfName||'Booking.pdf',{type:'application/pdf'});
     if(navigator.canShare && navigator.canShare({files:[file]})){
-      navigator.share({files:[file],title:'Booking PDF'}).then(()=>toast('✅ Shared!')).catch(()=>_waOpenPrintWin());
+      navigator.share({files:[file],title:'Booking PDF'}).then(function(){toast('✅ Shared!');}).catch(function(){_waOpenPrintWin();});
       return;
     }
   }
@@ -1286,10 +1439,18 @@ function _waOpenPrintWin(){
   if(window._lastPdfHtml){
     if(!window._lastPdfWin||window._lastPdfWin.closed){
       window._lastPdfWin=window.open('','_blank');
-      if(window._lastPdfWin){window._lastPdfWin.document.write(window._lastPdfHtml);window._lastPdfWin.document.close();setTimeout(()=>{try{window._lastPdfWin.print();}catch(e){}},400);}
-    } else {try{window._lastPdfWin.print();}catch(e){}}
-    toast('Print dialog లో "Save as PDF" → Files app నుండి WhatsApp కి share చేయండి',5000);
-  } else {toast('ముందు PDF download చేయండి',3000);}
+      if(window._lastPdfWin){
+        window._lastPdfWin.document.write(window._lastPdfHtml);
+        window._lastPdfWin.document.close();
+        setTimeout(function(){try{window._lastPdfWin.print();}catch(e){}},400);
+      }
+    } else {
+      try{window._lastPdfWin.print();}catch(e){}
+    }
+    toast('Print dialog లో Save as PDF select చేయండి',5000);
+  } else {
+    toast('ముందు PDF download చేయండి',3000);
+  }
 }
 function shareWAFallback(){_waOpenPrintWin();}
 function showPDFPreview(ev){
@@ -1524,6 +1685,239 @@ window.onload=function(){
 </body></html>`
 }
 
+
+// ══ IMAGE DOWNLOAD ══
+function downloadEvImage(id){
+  var ev=evs.find(function(e){return e.id===id;});
+  if(!ev){toast('Event కనుగొనలేదు');return;}
+  toast('🖼 Image తయారవుతోంది...',3000);
+  var studio=cu&&cu.studio?cu.studio:'My Studio';
+  var myName=cu&&cu.name?cu.name:'';
+  var myPhone=cu&&cu.ph?cu.ph:'';
+
+  var W=800,PAD=32;
+  var canvas=document.createElement('canvas');
+  canvas.width=W;
+
+  // measure height
+  var rows=[];
+  rows.push({type:'header'});
+  rows.push({type:'names',text:(ev.groom||'')+(ev.bride?' & '+ev.bride:'')});
+  rows.push({type:'main',date:ev.date,time:ev.mainTime,loc:ev.location});
+  (ev.subEvs||[]).forEach(function(s){
+    if(isSplitEvent&&isSplitEvent(s.name)){
+      if(s.groomEnabled||s.groomDate) rows.push({type:'sub',name:s.name+' (పెళ్ళికొడుకు)',date:s.groomDate||'',time:s.groomTime||''});
+      if(s.brideEnabled||s.brideDate) rows.push({type:'sub',name:s.name+' (పెళ్లికూతురు)',date:s.brideDate||'',time:s.brideTime||''});
+    } else {
+      rows.push({type:'sub',name:s.name,date:s.date||'',time:s.time||''});
+    }
+  });
+  if(ev.budget) rows.push({type:'budget',budget:ev.budget,advance:ev.advance});
+  rows.push({type:'footer',studio:studio,name:myName,phone:myPhone});
+
+  var rowH=52, hdrH=90, footH=50, nameH=64;
+  var totalH=hdrH+nameH+56+(rows.filter(function(r){return r.type==='sub';}).length*rowH)+
+    (ev.budget?56:0)+footH+PAD*2+80;
+  canvas.height=Math.max(totalH,400);
+
+  var ctx=canvas.getContext('2d');
+  // Background
+  var bg=ctx.createLinearGradient(0,0,W,canvas.height);
+  bg.addColorStop(0,'#0b0b1a');bg.addColorStop(1,'#1a0a2e');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,canvas.height);
+
+  // Header band
+  var hg=ctx.createLinearGradient(0,0,W,hdrH);
+  hg.addColorStop(0,'#8B1A00');hg.addColorStop(0.5,'#C0390A');hg.addColorStop(1,'#8B1A00');
+  ctx.fillStyle=hg;ctx.fillRect(0,0,W,hdrH);
+
+  // Studio name
+  ctx.fillStyle='#fff';
+  ctx.font='bold 26px sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText('📷 '+studio,W/2,40);
+  ctx.font='14px sans-serif';
+  ctx.fillStyle='rgba(255,255,255,.7)';
+  ctx.fillText(myName+(myPhone?' • '+myPhone:''),W/2,64);
+  ctx.fillStyle='rgba(255,255,255,.4)';
+  ctx.font='12px sans-serif';
+  ctx.fillText('BOOKING AGREEMENT',W/2,84);
+
+  var y=hdrH+30;
+  // Gold accent line
+  var ag=ctx.createLinearGradient(0,0,W,0);
+  ag.addColorStop(0,'#f5c842');ag.addColorStop(0.5,'#ff9a3c');ag.addColorStop(1,'#8B1A00');
+  ctx.fillStyle=ag;ctx.fillRect(0,y-10,W,4);
+  y+=20;
+
+  // Names
+  ctx.fillStyle='#f5c842';
+  ctx.font='bold 32px serif';
+  ctx.textAlign='center';
+  var namesText=(ev.groom||'?')+' & '+(ev.bride||'?');
+  ctx.fillText(namesText,W/2,y+24);
+  y+=50;
+
+  // Category chip
+  ctx.fillStyle='rgba(245,200,66,.15)';
+  roundRect(ctx,W/2-80,y,160,28,14);ctx.fill();
+  ctx.fillStyle='#f5c842';ctx.font='bold 13px sans-serif';ctx.textAlign='center';
+  ctx.fillText(CATS&&CATS[ev.cat]?CATS[ev.cat]:ev.cat||'Wedding',W/2,y+19);
+  y+=46;
+
+  // Main event row
+  if(ev.date||ev.mainTime||ev.location){
+    ctx.fillStyle='rgba(255,255,255,.06)';
+    roundRect(ctx,PAD,y,W-PAD*2,48,10);ctx.fill();
+    ctx.fillStyle='#fff';ctx.font='bold 14px sans-serif';ctx.textAlign='left';
+    var mainStr=(ev.date||'')+(ev.mainTime?' ⏰ '+fmt12(ev.mainTime):'')+(ev.location?' 📍 '+ev.location:'');
+    ctx.fillText('💒 Wedding: '+mainStr.slice(0,60),PAD+12,y+20);
+    if(ev.clientPhone){ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='12px sans-serif';ctx.fillText('📞 '+ev.clientPhone,PAD+12,y+38);}
+    y+=60;
+  }
+
+  // Sub events
+  (ev.subEvs||[]).forEach(function(s){
+    var isSpl=isSplitEvent&&isSplitEvent(s.name);
+    var pairs=[];
+    if(isSpl){
+      if(s.groomDate||s.groomEnabled) pairs.push({name:s.name+' (పెళ్ళికొడుకు)',date:s.groomDate||'',time:s.groomTime||''});
+      if(s.brideDate||s.brideEnabled) pairs.push({name:s.name+' (పెళ్లికూతురు)',date:s.brideDate||'',time:s.brideTime||''});
+    } else {
+      pairs.push({name:s.name,date:s.date||'',time:s.time||''});
+    }
+    pairs.forEach(function(p){
+      ctx.fillStyle='rgba(56,189,248,.08)';
+      roundRect(ctx,PAD,y,W-PAD*2,44,8);ctx.fill();
+      ctx.fillStyle='#38bdf8';ctx.font='bold 13px sans-serif';ctx.textAlign='left';
+      ctx.fillText('📌 '+p.name,PAD+12,y+16);
+      ctx.fillStyle='rgba(255,255,255,.6)';ctx.font='12px sans-serif';
+      var dstr=p.date+(p.time?' ⏰ '+fmt12(p.time):'');
+      ctx.fillText(dstr||'—',PAD+12,y+33);
+      y+=52;
+    });
+  });
+
+  // Budget
+  if(ev.budget){
+    y+=4;
+    ctx.fillStyle='rgba(34,197,94,.1)';
+    roundRect(ctx,PAD,y,W-PAD*2,44,8);ctx.fill();
+    ctx.fillStyle='#22c55e';ctx.font='bold 13px sans-serif';ctx.textAlign='left';
+    ctx.fillText('💰 Package: ₹'+parseInt(ev.budget).toLocaleString(),PAD+12,y+16);
+    ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='12px sans-serif';
+    if(ev.advance) ctx.fillText('✅ Advance: ₹'+parseInt(ev.advance).toLocaleString(),PAD+12,y+33);
+    y+=52;
+  }
+
+  // Footer
+  y+=12;
+  ctx.fillStyle='rgba(245,200,66,.08)';
+  ctx.fillRect(0,y,W,footH);
+  ctx.fillStyle='rgba(245,200,66,.3)';ctx.fillRect(0,y,W,2);
+  ctx.fillStyle='rgba(245,200,66,.6)';ctx.font='12px sans-serif';ctx.textAlign='center';
+  ctx.fillText('✦ '+studio+' ✦ Photography Booking ✦',W/2,y+20);
+  ctx.fillStyle='rgba(255,255,255,.4)';ctx.font='11px sans-serif';
+  ctx.fillText(new Date().toLocaleDateString('te-IN'),W/2,y+38);
+
+  // Download
+  var fname=((ev.groom||'')+(ev.bride?'_'+ev.bride:'')||'Booking').replace(/[^\w]/g,'_')+'_Event.png';
+  try{
+    canvas.toBlob(function(blob){
+      if(blob){
+        var url=URL.createObjectURL(blob);
+        var a=document.createElement('a');a.href=url;a.download=fname;
+        document.body.appendChild(a);a.click();
+        setTimeout(function(){URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+        toast('✅ Image downloaded!');
+      } else { toast('⚠️ Image error'); }
+    },'image/png');
+  }catch(err){toast('⚠️ '+err.message);}
+}
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);
+  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);
+  ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
+}
+
+// ══ CLIENT PDF BUILDER ══
+function buildClientPdfHtml(d, fmt12x){
+  var f = fmt12x || function(t){
+    if(!t) return '';
+    var parts = t.split(':'), h = parseInt(parts[0]), m = parseInt(parts[1]);
+    if(isNaN(h)) return '';
+    return (h%12||12) + ':' + String(m).padStart(2,'0') + ' ' + (h>=12?'PM':'AM');
+  };
+  function row(label, val){ return '<div class="row"><span>'+label+'</span><strong>'+(val||'—')+'</strong></div>'; }
+  function sec(title, body){ return '<div class="sec"><div class="sec-ttl">'+title+'</div>'+body+'</div>'; }
+  function splitSec(title, gDate, gTime, bDate, bTime){
+    return '<div class="sec"><div class="sec-ttl">'+title+'</div>'
+      +'<div class="split-grid">'
+      +'<div class="split-box groom-box"><div class="split-lbl" style="color:#22c55e">🤵 పెళ్ళికొడుకు</div><div>📅 '+(gDate||'—')+'</div><div>⏰ '+(f(gTime)||'—')+'</div></div>'
+      +'<div class="split-box bride-box"><div class="split-lbl" style="color:#ef4444">👰 పెళ్లికూతురు</div><div>📅 '+(bDate||'—')+'</div><div>⏰ '+(f(bTime)||'—')+'</div></div>'
+      +'</div></div>';
+  }
+  var css = '*{margin:0;padding:0;box-sizing:border-box;}'
+    +'body{font-family:sans-serif;background:#fff;color:#1a1a1a;padding:12px;}'
+    +'.hdr{background:linear-gradient(135deg,#0d0520,#3d1470);color:#fff;padding:18px;border-radius:12px;margin-bottom:12px;text-align:center;}'
+    +'.hdr h1{font-size:1.3rem;color:#f5c842;margin-bottom:4px;}'
+    +'.hdr p{font-size:.72rem;opacity:.7;}'
+    +'.sec{border:1px solid #ddd;border-radius:10px;padding:11px;margin-bottom:9px;}'
+    +'.sec-ttl{font-size:.8rem;font-weight:700;color:#8B1A00;margin-bottom:7px;}'
+    +'.row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f5f0e8;font-size:.76rem;}'
+    +'.row:last-child{border-bottom:none;}'
+    +'.row strong{color:#3d1470;}'
+    +'.split-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}'
+    +'.split-box{border-radius:8px;padding:8px;font-size:.72rem;line-height:1.7;}'
+    +'.groom-box{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.3);}'
+    +'.bride-box{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.3);}'
+    +'.split-lbl{font-weight:700;margin-bottom:4px;}'
+    +'.terms{background:#fffbf0;border:1px solid #f5c842;border-radius:9px;padding:10px;font-size:.7rem;line-height:1.9;margin-top:9px;}'
+    +'.actions{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}'
+    +'@media print{.actions{display:none!important;}@page{size:A4 portrait;margin:8mm 10mm;}body{padding:0;}}'
+    +'*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}';
+
+  var notes = d.notes ? sec('📝 Notes','<div style="font-size:.76rem;color:#555;line-height:1.7">'+d.notes+'</div>') : '';
+
+  var html = '<!DOCTYPE html><html><head>'
+    +'<meta charset="UTF-8">'
+    +'<meta name="viewport" content="width=device-width,initial-scale=1">'
+    +'<title>Booking</title>'
+    +'<style>'+css+'</style>'
+    +'</head><body>'
+    +'<div class="actions">'
+    +'<button onclick="window.print()" style="flex:1;background:linear-gradient(135deg,#8B1A00,#C0390A);color:#fff;border:none;padding:11px 16px;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer">📥 PDF Save చేయండి</button>'
+    +'<button onclick="doWAShare()" style="flex:1;background:#25D366;color:#fff;border:none;padding:11px 16px;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer">📤 WhatsApp Share</button>'
+    +'<button onclick="window.close()" style="background:#555;color:#fff;border:none;padding:11px 14px;border-radius:10px;font-size:.85rem;cursor:pointer">✕</button>'
+    +'</div>'
+    +'<div class="hdr"><h1>💍 '+d.groomName+' &amp; '+d.brideName+'</h1>'
+    +'<p>📞 '+d.clientPhone+(d.budget?' &nbsp;💰 ₹'+d.budget:'')+' &nbsp;📅 '+d.submittedDate+'</p></div>'
+    + sec('💍 Engagement', row('తేదీ',d.engagement.date)+row('సమయం',f(d.engagement.time))+row('స్థలం',d.engagement.place))
+    + splitSec('🌿 పసుపాయ (Pasupu Paaya)', d.pasupuPayaGroom.date, d.pasupuPayaGroom.time, d.pasupuPayaBride.date, d.pasupuPayaBride.time)
+    + sec('🤵 పెళ్ళికొడుకు (Pellikoduku)', row('తేదీ',d.pellikoduku.date)+row('సమయం',f(d.pellikoduku.time)))
+    + sec('👰 పెళ్ళికూతురు (Pellikuturu)', row('తేదీ',d.pellikuturu.date)+row('సమయం',f(d.pellikuturu.time)))
+    + splitSec('💛 హల్దీ (Haldi)', d.haldiGroom.date, d.haldiGroom.time, d.haldiBride.date, d.haldiBride.time)
+    + sec('🎉 రిసేప్సన్ (Reception)', row('తేదీ',d.reception.date)+row('సమయం',f(d.reception.time))+row('స్థలం',d.reception.place))
+    + sec('💒 వెడ్డింగ్ (Wedding)', row('తేదీ',d.wedding.date)+row('సమయం',f(d.wedding.time))+row('స్థలం',d.wedding.place))
+    + notes
+    +'<div class="terms"><strong style="color:#8B1A00">📋 గమనికలు:</strong><br>'
+    +'1. ఈవెంట్ లో కొత్త కార్యక్రమం ఉంటే ముందుగా చెప్పాలి.<br>'
+    +'2. Pre/Post Shoot ఖర్చులు మీరే భరించాల్సి ఉంటుంది.<br>'
+    +'3. Wedding తర్వాత 3 నెలల లోపు Selection, సంవత్సరం లోపు Delivery.<br>'
+    +'4. పెళ్లికి ముందు <strong>40% Advance</strong> ఇవ్వాల్సి ఉంటుంది.</div>'
+    +'<script>'
+    +'function doWAShare(){'
+    +'  var msg=decodeURIComponent(window.name||"");'
+    +'  if(msg) window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");'
+    +'  else window.open("https://wa.me/","_blank");'
+    +'}'
+    +'window.onload=function(){setTimeout(function(){window.print();},600);};'
+    +'<\/script>'
+    +'</body></html>';
+  return html;
+}
 
 // ══ SEND APPLICATION TO CLIENT ══
 function sendAppToClient(){
@@ -1913,28 +2307,15 @@ async function submitCF(uid,evid){
   const fmt12x=(t)=>{if(!t)return'';const[h,m]=t.split(':').map(Number);if(isNaN(h))return'';const ap=h>=12?'PM':'AM';const hr=h%12||12;return hr+':'+String(m).padStart(2,'0')+' '+ap;};
   const evLine=(lbl,d,t,p)=>{let s='';if(d)s+='\n  📅 '+d;if(t)s+=' ⏰ '+fmt12x(t);if(p)s+=' 📍 '+p;return s?'\n'+lbl+s:'';};
   const waMsg=`📷 *Photography Booking Request*\n\n💍 *${data.groomName} & ${data.brideName}*\n📞 ${data.clientPhone}${data.budget?'\n💰 Budget: ₹'+data.budget:''}${evLine('💍 Engagement:',data.engagement.date,data.engagement.time,data.engagement.place)}${evLine('🌿 పసుపాయ పెళ్ళికొడుకు:',data.pasupuPayaGroom.date,data.pasupuPayaGroom.time,'')}${evLine('🌿 పసుపాయ పెళ్లికూతురు:',data.pasupuPayaBride.date,data.pasupuPayaBride.time,'')}${evLine('🤵 పెళ్ళికొడుకు:',data.pellikoduku.date,data.pellikoduku.time,'')}${evLine('👰 పెళ్ళికూతురు:',data.pellikuturu.date,data.pellikuturu.time,'')}${evLine('💛 Haldi పెళ్ళికొడుకు:',data.haldiGroom.date,data.haldiGroom.time,'')}${evLine('💛 Haldi పెళ్లికూతురు:',data.haldiBride.date,data.haldiBride.time,'')}${evLine('🎉 Reception:',data.reception.date,data.reception.time,data.reception.place)}${evLine('💒 Wedding:',data.wedding.date,data.wedding.time,data.wedding.place)}\n\n📋 Submitted: ${data.submittedDate}`;
-  // Build PDF HTML
-  const pdfHtml=`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Booking - ${data.groomName} & ${data.brideName}</title><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;600;700&family=Noto+Sans+Telugu:wght@400;600&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'DM Sans',sans-serif;background:#fff;color:#1a1a1a;padding:16px;}h1{font-family:'Playfair Display',serif;}.hdr{background:linear-gradient(135deg,#0d0520,#3d1470);color:#fff;padding:20px;border-radius:14px;margin-bottom:14px;text-align:center;}.hdr h1{font-size:1.4rem;color:#f5c842;}.hdr p{font-size:.75rem;opacity:.7;margin-top:4px;}.sec{border:1px solid #e4e0d6;border-radius:12px;padding:13px;margin-bottom:10px;}.sec-ttl{font-family:'Playfair Display',serif;font-size:.85rem;color:#8B1A00;margin-bottom:8px;font-weight:700;}.row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0ede8;font-size:.78rem;}.row:last-child{border-bottom:none;}.row strong{color:#3d1470;}.split-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;}.split-box{border-radius:8px;padding:9px;font-size:.74rem;}.groom-box{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.3);}.bride-box{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.3);}.split-lbl{font-weight:700;margin-bottom:5px;font-size:.72rem;}.terms{background:#fffbf0;border:1px solid #f5c842;border-radius:10px;padding:11px;font-size:.72rem;line-height:1.9;}.actions{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}@media print{.actions{display:none!important;}@page{size:A4;margin:8mm 10mm;}}</style></head><body>
-<div class="actions">
-  <button onclick="window.print()" style="flex:1;background:linear-gradient(135deg,#8B1A00,#C0390A);color:#fff;border:none;padding:11px 16px;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer;font-family:'DM Sans',sans-serif">📥 PDF Download</button>
-  <button onclick="shareWA()" style="flex:1;background:#25D366;color:#fff;border:none;padding:11px 16px;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer;font-family:'DM Sans',sans-serif">📤 WhatsApp Share</button>
-  <button onclick="window.close()" style="background:#555;color:#fff;border:none;padding:11px 14px;border-radius:10px;font-size:.85rem;cursor:pointer">✕</button>
-</div>
-<div class="hdr"><h1>💍 ${data.groomName} & ${data.brideName}</h1><p>📞 ${data.clientPhone} ${data.budget?'• 💰 ₹'+data.budget:''} • 📅 ${data.submittedDate}</p></div>
-<div class="sec"><div class="sec-ttl">💍 Engagement</div><div class="row"><span>తేదీ</span><strong>${data.engagement.date||'—'}</strong></div><div class="row"><span>సమయం</span><strong>${fmt12x(data.engagement.time)||'—'}</strong></div><div class="row"><span>స్థలం</span><strong>${data.engagement.place||'—'}</strong></div></div>
-<div class="sec"><div class="sec-ttl">🌿 పసుపాయ (Pasupu Paaya)</div><div class="split-grid"><div class="split-box groom-box"><div class="split-lbl" style="color:#22c55e">🤵 పెళ్ళికొడుకు</div><div>📅 ${data.pasupuPayaGroom.date||'—'}</div><div>⏰ ${fmt12x(data.pasupuPayaGroom.time)||'—'}</div></div><div class="split-box bride-box"><div class="split-lbl" style="color:#ef4444">👰 పెళ్లికూతురు</div><div>📅 ${data.pasupuPayaBride.date||'—'}</div><div>⏰ ${fmt12x(data.pasupuPayaBride.time)||'—'}</div></div></div></div>
-<div class="sec"><div class="sec-ttl">🤵 పెళ్ళికొడుకు (Pellikoduku)</div><div class="row"><span>తేదీ</span><strong>${data.pellikoduku.date||'—'}</strong></div><div class="row"><span>సమయం</span><strong>${fmt12x(data.pellikoduku.time)||'—'}</strong></div></div>
-<div class="sec"><div class="sec-ttl">👰 పెళ్ళికూతురు (Pellikuturu)</div><div class="row"><span>తేదీ</span><strong>${data.pellikuturu.date||'—'}</strong></div><div class="row"><span>సమయం</span><strong>${fmt12x(data.pellikuturu.time)||'—'}</strong></div></div>
-<div class="sec"><div class="sec-ttl">💛 హల్దీ (Haldi)</div><div class="split-grid"><div class="split-box groom-box"><div class="split-lbl" style="color:#22c55e">🤵 పెళ్ళికొడుకు</div><div>📅 ${data.haldiGroom.date||'—'}</div><div>⏰ ${fmt12x(data.haldiGroom.time)||'—'}</div></div><div class="split-box bride-box"><div class="split-lbl" style="color:#ef4444">👰 పెళ్లికూతురు</div><div>📅 ${data.haldiBride.date||'—'}</div><div>⏰ ${fmt12x(data.haldiBride.time)||'—'}</div></div></div></div>
-<div class="sec"><div class="sec-ttl">🎉 రిసేప్సన్ (Reception)</div><div class="row"><span>తేదీ</span><strong>${data.reception.date||'—'}</strong></div><div class="row"><span>సమయం</span><strong>${fmt12x(data.reception.time)||'—'}</strong></div><div class="row"><span>స్థలం</span><strong>${data.reception.place||'—'}</strong></div></div>
-<div class="sec"><div class="sec-ttl">💒 వెడ్డింగ్ (Wedding)</div><div class="row"><span>తేదీ</span><strong>${data.wedding.date||'—'}</strong></div><div class="row"><span>సమయం</span><strong>${fmt12x(data.wedding.time)||'—'}</strong></div><div class="row"><span>స్థలం</span><strong>${data.wedding.place||'—'}</strong></div></div>
-${data.notes?`<div class="sec"><div class="sec-ttl">📝 Notes</div><div style="font-size:.78rem;color:#555;line-height:1.7">${data.notes}</div></div>`:''}
-<div class="terms"><strong style="color:#8B1A00">📋 గమనికలు:</strong><br>1. ఈవెంట్ లో కొత్త కార్యక్రమం ఉంటే ముందుగా చెప్పాలి.<br>2. Pre/Post Shoot ఖర్చులు మీరే భరించాల్సి ఉంటుంది.<br>3. Wedding తర్వాత 3 నెలల లోపు Selection, సంవత్సరం లోపు Delivery.<br>4. పెళ్లికి ముందు <strong>40% Advance</strong> ఇవ్వాల్సి ఉంటుంది.</div>
-<script>function shareWA(){const msg=${JSON.stringify('`📷 *Photography Booking Request*\\n\\n💍 *'+data.groomName+' & '+data.brideName+'*\\n📞 '+data.clientPhone+(data.budget?'\\n💰 ₹'+data.budget:'')+'\\n\\n💍 Engagement: '+(data.engagement.date||'—')+(data.engagement.time?' ⏰ '+fmt12x2(data.engagement.time):'')+(data.engagement.place?' 📍 '+data.engagement.place:'')+'\\n🌿 PP Groom: '+(data.pasupuPayaGroom.date||'—')+(data.pasupuPayaGroom.time?' ⏰ '+fmt12x2(data.pasupuPayaGroom.time):'')+'\\n🌿 PP Bride: '+(data.pasupuPayaBride.date||'—')+(data.pasupuPayaBride.time?' ⏰ '+fmt12x2(data.pasupuPayaBride.time):'')+'\\n🤵 పెళ్ళికొడుకు: '+(data.pellikoduku.date||'—')+(data.pellikoduku.time?' ⏰ '+fmt12x2(data.pellikoduku.time):'')+'\\n👰 పెళ్ళికూతురు: '+(data.pellikuturu.date||'—')+(data.pellikuturu.time?' ⏰ '+fmt12x2(data.pellikuturu.time):'')+'\\n💛 Haldi Groom: '+(data.haldiGroom.date||'—')+(data.haldiGroom.time?' ⏰ '+fmt12x2(data.haldiGroom.time):'')+'\\n💛 Haldi Bride: '+(data.haldiBride.date||'—')+(data.haldiBride.time?' ⏰ '+fmt12x2(data.haldiBride.time):'')+'\\n🎉 Reception: '+(data.reception.date||'—')+(data.reception.time?' ⏰ '+fmt12x2(data.reception.time):'')+(data.reception.place?' 📍 '+data.reception.place:'')+'\\n💒 Wedding: '+(data.wedding.date||'—')+(data.wedding.time?' ⏰ '+fmt12x2(data.wedding.time):'')+(data.wedding.place?' 📍 '+data.wedding.place:'')`')};function fmt12x2(t){if(!t)return'';const[h,m]=t.split(':').map(Number);if(isNaN(h))return'';const ap=h>=12?'PM':'AM';const hr=h%12||12;return hr+':'+String(m).padStart(2,'0')+' '+ap;}window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');}
-<\/script></body></html>`;
-  // Open PDF in new window
-  const pdfWin=window.open('','_blank');
-  if(pdfWin){pdfWin.document.write(pdfHtml);pdfWin.document.close();}
+  // Build PDF HTML — waMsg passed via window.name to avoid nested template literal issues
+  const pdfHtml = buildClientPdfHtml(data, fmt12x);
+  // Open PDF window and auto-print
+  const pdfWin = window.open('', '_blank');
+  if(pdfWin){
+    pdfWin.name = encodeURIComponent(waMsg); // pass waMsg via window.name
+    pdfWin.document.write(pdfHtml);
+    pdfWin.document.close();
+  }
   // Show success screen
   document.body.innerHTML=`
   <div style="min-height:100vh;background:#0b0b0d;display:flex;align-items:center;justify-content:center;padding:20px;font-family:'DM Sans',sans-serif">
