@@ -1,86 +1,114 @@
-# 📷 Divine Pixels — Photographer App
+# 🚩 హనుమాన్ శోభాయాత్ర 2026
 
-**Phone లో APK లా Install చేయడానికి ఈ Steps చేయండి:**
-
----
-
-## ✅ STEP 1 — Firebase Setup (5 నిమిషాలు, ఉచితం)
-
-1. **https://console.firebase.google.com** తెరవండి
-2. మీ Gmail **divinepixels.dvn@gmail.com** తో login చేయండి
-3. **"Add project"** → Project name: `divine-pixels-dvn` → Continue → Continue → Create project
-4. Left menu లో **"Firestore Database"** → **"Create database"** → **"Start in test mode"** → Next → Enable
-5. Left menu లో **"Project settings"** (gear icon) → **"Your apps"** → **Web icon `</>`** నొక్కండి
-6. App nickname: `divine-pixels-web` → **Register app**
-7. **firebaseConfig** లో ఉన్న values copy చేయండి
+పెద్దాపురం - సామర్లకోట | మే 12, 2026
 
 ---
 
-## ✅ STEP 2 — index.html లో Firebase Config పెట్టండి
+## 🌐 GitHub Pages మీద Publish చేయడం
 
-`index.html` ఫైల్ లో ఈ భాగం కనుగొనండి:
-```
-const fbCfg = {
-  apiKey: "AIzaSyBXXX...",
-```
+### Step 1: GitHub Repository తయారు చేయండి
 
-మీరు copy చేసిన values అక్కడ పెట్టండి.
+1. [github.com](https://github.com) లో Login అవ్వండి
+2. **New Repository** నొక్కండి
+3. Repository name: `hjsy2026` అని పెట్టండి
+4. **Public** select చేయండి
+5. **Create repository** నొక్కండి
 
----
+### Step 2: Files Upload చేయండి
 
-## ✅ STEP 3 — GitHub లో Upload (5 నిమిషాలు, ఉచితం)
+1. Repository తెరిచాక **"uploading an existing file"** నొక్కండి
+2. `index.html` ని drag & drop చేయండి
+3. **Commit changes** నొక్కండి
 
-1. **https://github.com** → Sign up (ఉచితం) లేదా Login
-2. **"New repository"** → Name: `divine-pixels` → Public → Create
-3. **"uploading an existing file"** link నొక్కండి
-4. ఈ files అన్నీ upload చేయండి:
-   - `index.html`
-   - `manifest.json`
-   - `sw.js`
-   - `icon-192.png`
-   - `icon-512.png`
-   - `.github/workflows/deploy.yml`
-5. **"Commit changes"** నొక్కండి
+### Step 3: GitHub Pages Enable చేయండి
 
----
-
-## ✅ STEP 4 — GitHub Pages Enable
-
-1. Repository → **Settings** → **Pages** (left menu)
-2. **Source:** "GitHub Actions" select చేయండి
-3. 2-3 నిమిషాలు wait చేయండి
-4. మీ App URL వస్తుంది: `https://yourusername.github.io/divine-pixels/`
+1. Repository లో **Settings** → **Pages** కి వెళ్ళండి
+2. Source: **Deploy from a branch** select చేయండి
+3. Branch: **main** → **/ (root)** select చేయండి
+4. **Save** నొక్కండి
+5. కొన్ని నిమిషాల్లో site live అవుతుంది:
+   `https://YOUR_USERNAME.github.io/hjsy2026/`
 
 ---
 
-## 📱 STEP 5 — Phone లో Install (APK లా!)
+## 🔥 Firebase Real-Time Sync Setup
 
-### Android:
-1. Chrome browser లో app URL తెరవండి
-2. Address bar లో **Install icon** వస్తుంది (లేదా menu → "Add to Home screen")
-3. Install చేయండి → Home screen లో icon వస్తుంది
+అందరి posts అందరికి కనిపించాలంటే Firebase అవసరం.
 
-### iPhone:
-1. Safari browser లో URL తెరవండి
-2. Share button → **"Add to Home Screen"**
-3. Add నొక్కండి
+### Step 1: Firebase Project తయారు చేయండి
 
----
+1. [console.firebase.google.com](https://console.firebase.google.com) తెరవండి
+2. **Add project** → Project name: `hjsy2026` → **Continue**
+3. Google Analytics: Disable చేసి **Create project**
 
-## 🔄 App Update చేయడం (APK అవసరం లేదు!)
+### Step 2: Realtime Database Enable చేయండి
 
-`index.html` లో ఏ మార్పు చేసినా GitHub లో upload చేయండి — **1 నిమిషంలో అందరి phones లో auto-update!**
+1. Left menu లో **Build** → **Realtime Database**
+2. **Create Database** నొక్కండి
+3. Location: **us-central1** → **Next**
+4. **Start in test mode** select చేయండి → **Enable**
 
----
+### Step 3: Database Rules Update చేయండి
 
-## 📱 Client Booking Link ఇలా పని చేస్తుంది:
+Rules tab లో ఈ rules పెట్టండి (ఎవరైనా చదవగలరు, admin మాత్రమే రాయగలరు):
 
-```
-https://yourusername.github.io/divine-pixels/?mode=clientform&uid=YOUR_ID
+```json
+{
+  "rules": {
+    "posts": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}
 ```
 
-Client ఈ link తెరిస్తే → Wedding form వస్తుంది → Submit చేస్తే → మీకు notification!
+**Publish** నొక్కండి.
+
+### Step 4: Firebase Config తీసుకోండి
+
+1. Firebase Console లో **Project Settings** (⚙️ icon) నొక్కండి
+2. **Your apps** section లో **</>** (Web) నొక్కండి
+3. App name: `hjsy2026-web` → **Register app**
+4. `firebaseConfig` object copy చేయండి
+
+### Step 5: index.html లో Config పెట్టండి
+
+`index.html` లో ఈ భాగం వెతకండి:
+
+```javascript
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  ...
+};
+```
+
+దాని బదులు Firebase నుండి copy చేసిన config పెట్టండి.
+
+### Step 6: Updated index.html ని GitHub లో Upload చేయండి
+
+1. GitHub repository తెరవండి
+2. `index.html` నొక్కండి → ✏️ Edit నొక్కండి
+3. అన్నీ delete చేసి new content paste చేయండి
+4. **Commit changes** నొక్కండి
 
 ---
 
-**Support:** divinepixels.dvn@gmail.com | 9100308833
+## ✅ Result
+
+- Website: `https://YOUR_USERNAME.github.io/hjsy2026/`
+- ఒక్కరు post చేస్తే **అందరికి instant గా కనిపిస్తుంది** 🚀
+- Login: ID = `HJSY26`, Password = `051226`
+
+---
+
+## 📱 Features
+
+- 🚩 నమోదు + ID Card download
+- 📝 పోస్ట్లు (text + photos + videos)  
+- 📸 ఫోటోస్ gallery + download
+- 🎬 వీడియోస్
+- 📰 న్యూస్
+- ❤️ జై శ్రీరామ్ likes
+- 🔥 Real-time sync (Firebase)
